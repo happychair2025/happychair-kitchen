@@ -354,7 +354,12 @@ function renderCards(){
       html+='<div class="card-tbl-timer" id="timer-'+id+'">'+fmtTimer(c.declared_at)+'</div></div>';
       
       // Guest name
-      var gn=c.guest_name||'Guest';
+      var gn='Guest';
+      if(c.guest_name){
+        var parts=c.guest_name.split(' ');
+        gn=parts[0].toUpperCase();
+        if(parts.length>1&&parts[1])gn+=' '+parts[1].charAt(0).toUpperCase()+'.';
+      }
       html+='<div class="guest-name">'+gn+'</div>';
       
       // Allergens
@@ -533,7 +538,12 @@ function showLockout(id){
   var lc=document.getElementById('lockoutContent');
   
   var allergens=(c.allergens||[]).join(', ');
-  var gn=c.guest_name||'Guest';
+  var gn='Guest';
+      if(c.guest_name){
+        var parts=c.guest_name.split(' ');
+        gn=parts[0].toUpperCase();
+        if(parts.length>1&&parts[1])gn+=' '+parts[1].charAt(0).toUpperCase()+'.';
+      }
   
   lc.innerHTML='<div class="lockout-title">'+(c._assetLabel||'TABLE')+'</div>'+
     '<div style="font-size:22px;font-weight:700;color:var(--t1);margin-bottom:8px">'+gn+'</div>'+
