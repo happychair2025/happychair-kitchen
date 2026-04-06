@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HC Kitchen · AllergenShield™</title>
+<title>HC Kitchen · AllergyShield™</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
@@ -195,7 +195,7 @@ body.dimmed .summary{opacity:.3}
 
 <!-- SUMMARY BAR -->
 <div class="summary" id="summaryBar">
-<span class="ct">0 Tables</span> · <span class="ct">0 Allergens</span> · <span class="allack">All Acknowledged</span>
+<span class="ct">0 Tables</span> · <span class="ct">0 Allergies</span> · <span class="allack">All Acknowledged</span>
 </div>
 
 </div>
@@ -439,7 +439,7 @@ function updateSummary(){
   var bar=document.getElementById('summaryBar');
   var parts=[];
   parts.push('<span class="ct">'+tables.size+' Table'+(tables.size!==1?'s':'')+'</span>');
-  parts.push('<span class="ct">'+allergenCount+' Allergen'+(allergenCount!==1?'s':'')+'</span>');
+  parts.push('<span class="ct">'+allergenCount+' Allergy'+(allergenCount!==1?'ies':'y')+'</span>');
   if(anaphCount>0)parts.push('<span style="color:var(--danger);font-weight:700">'+anaphCount+' Anaphylaxis</span>');
   if(unackCount>0)parts.push('<span class="unack">'+unackCount+' Unacknowledged</span>');
   else if(ids.length>0)parts.push('<span class="allack">All Acknowledged</span>');
