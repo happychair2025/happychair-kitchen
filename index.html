@@ -396,7 +396,8 @@ function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var b
 
 async function loadExisting(){
   if(!venueId)return;
-  var {data}=await sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).is('closed_at',null).order('created_at',{ascending:false});
+  var today=new Date();today.setHours(0,0,0,0);
+  var {data}=await sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false});
   if(data){data.forEach(function(d){d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');cards[d.id]=d});renderCards();cacheCards()}
 }
 
