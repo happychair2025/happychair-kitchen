@@ -17,15 +17,12 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSyst
   --t1:#e2e8f0;--t2:#94a3b8;
 }
 
-/* HIGH CONTRAST MODE */
 body.hc-mode{--bg:#000000;--s1:#0a0a0a;--s2:#111111;--b:#333;--b2:#555;--danger:#ff3333;--warn:#ffcc00;--t1:#ffffff;--t2:#cccccc}
 body.hc-mode .card-k{border-width:2px}
 body.hc-mode .card-k .al-name{font-weight:800}
 
-/* LAYOUT */
 #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
-/* HEADER */
 .hdr{height:48px;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 20px;flex-shrink:0;z-index:100}
 .hdr-left{display:flex;align-items:center;gap:10px;flex:1}
 .hdr-mark svg{width:24px;height:30px}
@@ -35,26 +32,21 @@ body.hc-mode .card-k .al-name{font-weight:800}
 .hdr-btn:hover{border-color:var(--b2);background:var(--s2)}
 .hdr-btn.on{border-color:var(--cyan);color:var(--cyan)}
 
-/* HEARTBEAT */
 .hb{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .3s}
 .hb.ok{background:var(--ok);animation:hbPulse 2s ease infinite}
 .hb.warn{background:var(--warn);animation:hbPulse 1s ease infinite}
 .hb.off{background:var(--danger);animation:hbPulse .5s ease infinite}
 @keyframes hbPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
 
-/* MAIN AREA */
 .main{flex:1;overflow-y:auto;padding:16px 20px;position:relative}
 
-/* OFFLINE BANNER */
 .offline-banner{display:none;position:fixed;top:48px;left:0;right:0;background:rgba(239,68,68,.15);border-bottom:2px solid var(--danger);padding:14px 20px;z-index:90;text-align:center;color:var(--danger);font-size:18px;font-weight:700}
 .offline-banner.on{display:block}
 
-/* ALLERGY CARD */
 .card-k{background:var(--s1);border:1px solid var(--b);border-radius:12px;margin-bottom:12px;position:relative;overflow:hidden;transition:border-color .3s,opacity .3s;touch-action:pan-y}
 .card-k .accent{position:absolute;left:0;top:0;bottom:0;width:5px}
 .card-k .card-body{padding:16px 20px 16px 24px}
 
-/* CARD STATES */
 .card-k.new{animation:amberPulse 2s ease infinite}
 .card-k.new.fast{animation:amberPulse 1s ease infinite}
 .card-k.anaph-new{animation:redPulse 1.2s ease infinite}
@@ -66,13 +58,11 @@ body.hc-mode .card-k .al-name{font-weight:800}
 @keyframes redPulse{0%,100%{border-color:rgba(239,68,68,.8)}50%{border-color:rgba(239,68,68,.2)}}
 @keyframes ackFlash{0%{background:rgba(16,185,129,.2)}100%{background:var(--s1)}}
 
-/* TABLE HEADER */
 .card-tbl{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .card-tbl-name{font-size:28px;font-weight:700}
 .card-tbl-timer{font-size:16px;font-weight:600;color:var(--t2)}
 .card-guests{font-size:16px;color:var(--t2);margin-bottom:12px}
 
-/* GUEST ROW */
 .guest-row{padding:10px 0;border-top:1px solid rgba(30,45,61,.4)}
 .guest-row:first-child{border-top:none}
 .guest-name{font-size:18px;font-weight:700;margin-bottom:6px}
@@ -87,28 +77,23 @@ body.hc-mode .card-k .al-name{font-weight:800}
 .badge.updated{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:var(--cyan);animation:fadeIn .3s}
 .al-notes{font-size:16px;color:var(--t2);font-weight:500}
 
-/* ACK STATUS */
 .ack-status{font-size:16px;font-weight:600;margin-top:10px;display:flex;align-items:center;gap:8px}
 .ack-status.acked{color:var(--cyan)}
 .ack-status.protocol{color:var(--ok)}
 
-/* HOLD TO ACK */
 .hold-zone{margin-top:12px;position:relative;height:60px;border-radius:10px;background:var(--s2);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
 .hold-zone .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(245,158,11,.15);width:0;transition:none;border-radius:10px}
 .hold-zone .label{position:relative;z-index:1;font-size:16px;font-weight:700;color:var(--t1)}
 
-/* PROTOCOL CONFIRM */
 .protocol-btn{margin-top:10px;height:60px;background:rgba(239,68,68,.1);border:2px solid var(--danger);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--danger);cursor:pointer;transition:.15s}
 .protocol-btn:active{background:rgba(239,68,68,.2)}
 
-/* LOCKOUT OVERLAY */
 .lockout{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);padding:40px;overflow-y:auto}
 .lockout.on{display:flex;flex-direction:column}
 .lockout .lockout-card{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .lockout-title{font-size:32px;font-weight:800;color:var(--danger);margin-bottom:12px;text-align:center}
 .lockout-sub{font-size:18px;color:var(--t2);margin-bottom:32px;text-align:center}
 
-/* GHOST TABS */
 .ghost-tabs{position:fixed;right:0;top:48px;bottom:40px;width:36px;display:flex;flex-direction:column;gap:4px;padding:8px 0;z-index:50}
 .ghost-tab{width:36px;min-height:80px;border-radius:8px 0 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;cursor:pointer;font-size:12px;font-weight:700;color:#fff;writing-mode:vertical-lr;text-orientation:mixed;transition:.15s}
 .ghost-tab.amber{background:rgba(245,158,11,.6);animation:ghostPulse 4s ease infinite}
@@ -117,46 +102,36 @@ body.hc-mode .card-k .al-name{font-weight:800}
 .ghost-timer{font-size:10px;font-weight:600;writing-mode:horizontal-tb}
 @keyframes ghostPulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-/* SUMMARY BAR */
 .summary{height:40px;background:var(--s1);border-top:1px solid var(--b);display:flex;align-items:center;justify-content:center;gap:16px;font-size:14px;font-weight:600;color:var(--t2);flex-shrink:0}
 .summary .ct{color:var(--t1)}
 .summary .unack{color:var(--danger);font-weight:700}
 .summary .allack{color:var(--ok)}
 
-/* EMPTY STATE */
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:.5}
 .empty svg{margin-bottom:20px}
 .empty-text{font-size:22px;font-weight:600;color:var(--t2)}
 
-/* AUDIO ACTIVATE */
 .audio-prompt{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
 .audio-prompt-btn{padding:24px 48px;background:var(--s1);border:2px solid var(--warn);border-radius:16px;font-size:22px;font-weight:700;color:var(--warn);cursor:pointer;font-family:inherit}
 
-/* ANIMATIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideOut{to{opacity:0;transform:translateY(20px)}}
-
-/* BURN-IN: subtle pixel shift */
-@keyframes pixelShift{
-  0%{transform:translate(0,0)}25%{transform:translate(1px,1px)}
-  50%{transform:translate(0,2px)}75%{transform:translate(1px,0)}100%{transform:translate(0,0)}
-}
+@keyframes pixelShift{0%{transform:translate(0,0)}25%{transform:translate(1px,1px)}50%{transform:translate(0,2px)}75%{transform:translate(1px,0)}100%{transform:translate(0,0)}}
 .main{animation:pixelShift 120s linear infinite}
-
-/* DIM */
 body.dimmed .main{opacity:.3;transition:opacity 1s}
 body.dimmed .summary{opacity:.3}
+
+.vol-slider{width:80px;height:4px;-webkit-appearance:none;appearance:none;background:var(--b);border-radius:2px;outline:none;cursor:pointer}
+.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--cyan);border:none;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- AUDIO ACTIVATION PROMPT -->
 <div class="audio-prompt" id="audioPrompt" onclick="activateAudio()">
 <div class="audio-prompt-btn">Tap to Activate · HC Kitchen</div>
 </div>
 
-<!-- HEADER -->
 <div class="hdr">
 <div class="hdr-left">
 <div class="hdr-mark"><svg viewBox="0 0 72.71 90.04"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg></div>
@@ -167,33 +142,28 @@ body.dimmed .summary{opacity:.3}
 <button class="hdr-btn on" id="audioBtn" onclick="toggleMute()" title="Audio">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
 </button>
+<input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="60" title="Volume" oninput="setVolume(this.value)">
 <button class="hdr-btn" id="contrastBtn" onclick="toggleContrast()" title="Contrast">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg>
 </button>
 </div>
 </div>
 
-<!-- OFFLINE BANNER -->
 <div class="offline-banner" id="offlineBanner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
 
-<!-- LOCKOUT OVERLAY (anaphylaxis) -->
 <div class="lockout" id="lockout">
 <div class="lockout-card" id="lockoutContent"></div>
 </div>
 
-<!-- MAIN CARDS AREA -->
 <div class="main" id="cardArea">
-<!-- Empty state shown by default -->
 <div class="empty" id="emptyState">
 <svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg>
 <div class="empty-text">No Active Allergies</div>
 </div>
 </div>
 
-<!-- GHOST TABS -->
 <div class="ghost-tabs" id="ghostTabs"></div>
 
-<!-- SUMMARY BAR -->
 <div class="summary" id="summaryBar">
 <span class="ct">0 Tables</span> · <span class="ct">0 Allergies</span> · <span class="allack">All Acknowledged</span>
 </div>
@@ -202,9 +172,6 @@ body.dimmed .summary{opacity:.3}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════════
 var SUPABASE_URL='https://hnrojtcctqgtzdrinyvu.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhucm9qdGNjdHFndHpkcmlueXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjczMzIsImV4cCI6MjA4OTYwMzMzMn0.WpDoLtCxvCIeYPTlxqxQaD-WAXCs0CEPcGt7GjFI8J0';
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -213,22 +180,17 @@ var params=new URLSearchParams(window.location.search);
 var venueId=params.get('venue');
 var deviceName=params.get('device')||'Kitchen Display';
 
-// ═══════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════
-var cards={};       // id → declaration data + ui state
-var ghosted={};     // id → true if minimized
+var cards={};
+var ghosted={};
 var muted=false;
+var volume=0.6;
 var audioReady=false;
 var ctx=null;
 var online=true;
 var dimTimer=null;
-var ACK_TIMEOUT=90000;      // 90s standard
-var ACK_TIMEOUT_ANAPH=30000; // 30s anaphylaxis
+var ACK_TIMEOUT=90000;
+var ACK_TIMEOUT_ANAPH=30000;
 
-// ═══════════════════════════════════════════════════════════════
-// AUDIO
-// ═══════════════════════════════════════════════════════════════
 function activateAudio(){
   ctx=new(window.AudioContext||window.webkitAudioContext)();
   ctx.resume();audioReady=true;
@@ -240,7 +202,7 @@ function playChime(freq,dur,vol){
   if(!audioReady||!ctx)return;
   var o=ctx.createOscillator(),g=ctx.createGain();
   o.connect(g);g.connect(ctx.destination);
-  o.frequency.value=freq;g.gain.setValueAtTime(vol||.3,ctx.currentTime);
+  o.frequency.value=freq;g.gain.setValueAtTime((vol||.3)*volume,ctx.currentTime);
   g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+dur);
   o.start();o.stop(ctx.currentTime+dur);
 }
@@ -250,14 +212,13 @@ function chimeStandard(){
 }
 
 function chimeAnaphylaxis(){
-  // Cannot be muted
+  var sv=volume;volume=1;
   playChime(880,.15,.4);
   setTimeout(function(){playChime(880,.15,.4)},250);
-  setTimeout(function(){playChime(880,.15,.4)},500);
+  setTimeout(function(){playChime(880,.15,.4);volume=sv},500);
 }
 
 function chimeUrgent(){
-  // Cannot be muted — loops
   var iv=setInterval(function(){
     playChime(660,.2,.4);setTimeout(function(){playChime(880,.2,.4)},200);
   },400);
@@ -266,8 +227,17 @@ function chimeUrgent(){
 
 function chimeAck(){playChime(1200,.05,.15)}
 
+function setVolume(v){
+  volume=v/100;
+  if(volume===0){muted=true}else{muted=false}
+  var btn=document.getElementById('audioBtn');
+  btn.classList.toggle('on',!muted);
+}
+
 function toggleMute(){
   muted=!muted;
+  if(!muted){volume=0.6;document.getElementById('volSlider').value=60}
+  else{document.getElementById('volSlider').value=0}
   var btn=document.getElementById('audioBtn');
   btn.classList.toggle('on',!muted);
 }
@@ -277,12 +247,10 @@ function toggleContrast(){
   document.getElementById('contrastBtn').classList.toggle('on',document.body.classList.contains('hc-mode'));
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════════
-function fmtTimer(ms){
-  var s=Math.floor((Date.now()-new Date(ms).getTime())/1000);
-  if(s<0)s=0;
+function fmtTimer(ts){
+  if(!ts)return'0:00';
+  var s=Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if(s<0||isNaN(s))s=0;
   var m=Math.floor(s/60);s=s%60;
   return m+':'+String(s).padStart(2,'0');
 }
@@ -294,44 +262,38 @@ function fmtTime(ts){
 }
 
 function sevColor(sev){
-  var m={ANAPHYLAXIS:'danger',SEVERE:'warn',DISCOMFORT:'cyan',UNKNOWN:'t2'};
-  return m[(sev||'').toUpperCase()]||'t2';
+  var m={anaphylaxis:'danger',severe:'warn',discomfort:'cyan',unsure:'t2'};
+  return m[(sev||'').toLowerCase()]||'t2';
 }
 
 function sevClass(sev){
-  var m={ANAPHYLAXIS:'anaph',SEVERE:'severe',DISCOMFORT:'discomfort',UNKNOWN:'unknown'};
-  return m[(sev||'').toUpperCase()]||'unknown';
+  var m={anaphylaxis:'anaph',severe:'severe',discomfort:'discomfort',unsure:'unknown'};
+  return m[(sev||'').toLowerCase()]||'unknown';
 }
 
-function isAnaph(sev){return(sev||'').toUpperCase()==='ANAPHYLAXIS'}
+function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
 
 function stripNotes(notes){
   if(!notes)return'';
-  // Strip to keywords
   return notes.replace(/carries /gi,'').replace(/severe reaction to /gi,'').replace(/if exposed to /gi,'').trim();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER CARDS
-// ═══════════════════════════════════════════════════════════════
 function renderCards(){
   var area=document.getElementById('cardArea');
   var ids=Object.keys(cards);
-  
-  // Filter out ghosted and closed
+
   var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at});
   var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at});
-  
-  // Sort: anaphylaxis first, then unack'd, then by time
+
   visible.sort(function(a,b){
     var ca=cards[a],cb=cards[b];
     var aa=isAnaph(ca.severity)?0:1,ab=isAnaph(cb.severity)?0:1;
     if(aa!==ab)return aa-ab;
     var ua=ca.kitchen_ack_at?1:0,ub=cb.kitchen_ack_at?1:0;
     if(ua!==ub)return ua-ub;
-    return new Date(cb.declared_at)-new Date(ca.declared_at);
+    return new Date(cb.created_at)-new Date(ca.created_at);
   });
-  
+
   if(visible.length===0&&ghostIds.length===0){
     area.innerHTML='<div class="empty" id="emptyState"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div>';
   } else {
@@ -343,17 +305,16 @@ function renderCards(){
       var anaph=isAnaph(c.severity);
       var elapsed=c._escalated?'fast':'';
       var stateClass=acked?(protocolDone?'protocol':'acked'):(anaph?'anaph-new '+elapsed:'new '+elapsed);
-      var accentColor=anaph?'var(--danger)':c.severity==='SEVERE'?'var(--warn)':c.severity==='DISCOMFORT'?'var(--cyan)':'var(--t2)';
-      
+      var sev=(c.severity||'').toLowerCase();
+      var accentColor=anaph?'var(--danger)':sev==='severe'?'var(--warn)':sev==='discomfort'?'var(--cyan)':'var(--t2)';
+
       html+='<div class="card-k '+stateClass+'" id="ck-'+id+'" data-id="'+id+'" style="animation-duration:'+(anaph?'1.2s':'2s')+'">';
       html+='<div class="accent" style="background:'+accentColor+'"></div>';
       html+='<div class="card-body">';
-      
-      // Table + timer
+
       html+='<div class="card-tbl"><div class="card-tbl-name">'+(c._assetLabel||'Table')+'</div>';
-      html+='<div class="card-tbl-timer" id="timer-'+id+'">'+fmtTimer(c.declared_at)+'</div></div>';
-      
-      // Guest name
+      html+='<div class="card-tbl-timer" id="timer-'+id+'">'+fmtTimer(c.created_at)+'</div></div>';
+
       var gn='Guest';
       if(c.guest_name){
         var parts=c.guest_name.split(' ');
@@ -361,58 +322,47 @@ function renderCards(){
         if(parts.length>1&&parts[1])gn+=' '+parts[1].charAt(0).toUpperCase()+'.';
       }
       html+='<div class="guest-name">'+gn+'</div>';
-      
-      // Allergens
+
       var allergens=c.allergens||[];
       allergens.forEach(function(a){
         html+='<div class="al-name">'+a+'</div>';
       });
-      
-      // Badges
+
       html+='<div class="badges">';
-      html+='<div class="badge '+sevClass(c.severity)+'">'+((c.severity||'UNKNOWN').toUpperCase())+'</div>';
+      html+='<div class="badge '+sevClass(c.severity)+'">'+((c.severity||'unknown').toUpperCase())+'</div>';
       if(c.cross_contact)html+='<div class="badge xc">XC (Cross-Contact)</div>';
       if(c._updated)html+='<div class="badge updated">UPDATED</div>';
       html+='</div>';
-      
-      // Notes
+
       if(c.notes){
         html+='<div class="al-notes">'+stripNotes(c.notes)+'</div>';
       }
-      
-      // Ack status
+
       if(acked){
         html+='<div class="ack-status acked">ACKNOWLEDGED · '+fmtTime(c.kitchen_ack_at)+' · '+(c.kitchen_ack_by||deviceName)+'</div>';
       }
       if(protocolDone){
         html+='<div class="ack-status protocol">PROTOCOL CONFIRMED · '+fmtTime(c.protocol_confirmed_at)+'</div>';
       }
-      
-      // Hold to ack (if not acked)
+
       if(!acked){
         html+='<div class="hold-zone" id="hold-'+id+'" ontouchstart="startHold(\''+id+'\')" ontouchend="endHold(\''+id+'\')" onmousedown="startHold(\''+id+'\')" onmouseup="endHold(\''+id+'\')" onmouseleave="endHold(\''+id+'\')">';
         html+='<div class="fill" id="fill-'+id+'"></div>';
         html+='<div class="label" id="holdLabel-'+id+'">Press and Hold to Acknowledge</div>';
         html+='</div>';
       }
-      
-      // Protocol confirm (if acked but not confirmed, and is anaphylaxis)
+
       if(acked&&!protocolDone&&anaph){
         html+='<div class="protocol-btn" onclick="confirmProtocol(\''+id+'\')">Confirm Protocol</div>';
       }
-      
+
       html+='</div></div>';
     });
     area.innerHTML=html;
   }
-  
-  // Render ghost tabs
+
   renderGhosts(ghostIds);
-  
-  // Update summary
   updateSummary();
-  
-  // Handle dim
   resetDim();
 }
 
@@ -425,7 +375,7 @@ function renderGhosts(ghostIds){
     var anaph=isAnaph(c.severity);
     html+='<div class="ghost-tab '+(anaph?'red':'amber')+'" onclick="restoreGhost(\''+id+'\')">';
     html+='<div>'+(c._assetLabel||'T?')+'</div>';
-    html+='<div class="ghost-timer" id="gtimer-'+id+'">'+fmtTimer(c.declared_at)+'</div>';
+    html+='<div class="ghost-timer" id="gtimer-'+id+'">'+fmtTimer(c.created_at)+'</div>';
     html+='</div>';
   });
   gt.innerHTML=html;
@@ -440,7 +390,7 @@ function updateSummary(){
     if(isAnaph(c.severity))anaphCount++;
     if(!c.kitchen_ack_at)unackCount++;
   });
-  
+
   var bar=document.getElementById('summaryBar');
   var parts=[];
   parts.push('<span class="ct">'+tables.size+' Table'+(tables.size!==1?'s':'')+'</span>');
@@ -451,9 +401,6 @@ function updateSummary(){
   bar.innerHTML=parts.join(' · ');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HOLD TO ACKNOWLEDGE
-// ═══════════════════════════════════════════════════════════════
 var holdTimers={};
 
 function startHold(id){
@@ -463,9 +410,7 @@ function startHold(id){
   function tick(){
     var p=Math.min((Date.now()-start)/1500,1);
     if(fill)fill.style.width=(p*100)+'%';
-    if(p>=1){
-      doAcknowledge(id);return;
-    }
+    if(p>=1){doAcknowledge(id);return;}
     if(p>=.5&&label)label.textContent='Almost there…';
     holdTimers[id]=requestAnimationFrame(tick);
   }
@@ -482,33 +427,22 @@ function endHold(id){
 
 async function doAcknowledge(id){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
-  
   var c=cards[id];
   c.kitchen_ack_at=new Date().toISOString();
   c.kitchen_ack_by=deviceName;
-  
-  // Flash
+
   var el=document.getElementById('ck-'+id);
   if(el){el.classList.add('flash');setTimeout(function(){el.classList.remove('flash')},200)}
-  
   chimeAck();
-  
-  // Save to Supabase
+
   await sb.from('allergen_declarations').update({
     kitchen_ack_at:c.kitchen_ack_at,
     kitchen_ack_by:c.kitchen_ack_by
   }).eq('id',id);
-  
-  // If anaphylaxis lockout was active, check if we need protocol
-  if(isAnaph(c.severity)){
-    showLockoutProtocol(id);
-  } else {
-    closeLockout();
-  }
-  
+
+  if(isAnaph(c.severity)){showLockoutProtocol(id)}
+  else{closeLockout()}
   renderCards();
-  
-  // Cache
   cacheCards();
 }
 
@@ -516,35 +450,30 @@ async function confirmProtocol(id){
   var c=cards[id];
   c.protocol_confirmed_at=new Date().toISOString();
   c.protocol_confirmed_by=deviceName;
-  
   chimeAck();
-  
+
   await sb.from('allergen_declarations').update({
     protocol_confirmed_at:c.protocol_confirmed_at,
     protocol_confirmed_by:c.protocol_confirmed_by
   }).eq('id',id);
-  
+
   closeLockout();
   renderCards();
   cacheCards();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ANAPHYLAXIS LOCKOUT
-// ═══════════════════════════════════════════════════════════════
 function showLockout(id){
   var c=cards[id];
   var lk=document.getElementById('lockout');
   var lc=document.getElementById('lockoutContent');
-  
   var allergens=(c.allergens||[]).join(', ');
   var gn='Guest';
-      if(c.guest_name){
-        var parts=c.guest_name.split(' ');
-        gn=parts[0].toUpperCase();
-        if(parts.length>1&&parts[1])gn+=' '+parts[1].charAt(0).toUpperCase()+'.';
-      }
-  
+  if(c.guest_name){
+    var parts=c.guest_name.split(' ');
+    gn=parts[0].toUpperCase();
+    if(parts.length>1&&parts[1])gn+=' '+parts[1].charAt(0).toUpperCase()+'.';
+  }
+
   lc.innerHTML='<div class="lockout-title">'+(c._assetLabel||'TABLE')+'</div>'+
     '<div style="font-size:22px;font-weight:700;color:var(--t1);margin-bottom:8px">'+gn+'</div>'+
     '<div style="font-size:28px;font-weight:800;color:var(--danger);margin-bottom:16px">'+allergens+'</div>'+
@@ -556,7 +485,6 @@ function showLockout(id){
     '<div class="hold-zone" style="max-width:400px;width:100%;height:70px" ontouchstart="startHold(\''+id+'\')" ontouchend="endHold(\''+id+'\')" onmousedown="startHold(\''+id+'\')" onmouseup="endHold(\''+id+'\')" onmouseleave="endHold(\''+id+'\')">'+
     '<div class="fill" id="fill-'+id+'"></div>'+
     '<div class="label" id="holdLabel-'+id+'">Press and Hold to Acknowledge</div></div>';
-  
   lk.classList.add('on');
 }
 
@@ -564,29 +492,22 @@ function showLockoutProtocol(id){
   var c=cards[id];
   var lk=document.getElementById('lockout');
   var lc=document.getElementById('lockoutContent');
-  
+
   lc.innerHTML='<div style="width:60px;height:60px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid var(--ok);display:flex;align-items:center;justify-content:center;margin-bottom:16px">'+
     '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>'+
     '<div class="lockout-title" style="color:var(--ok)">ACKNOWLEDGED</div>'+
     '<div class="lockout-sub">Now confirm the allergy protocol has been communicated</div>'+
     '<div class="protocol-btn" style="max-width:400px;width:100%;height:70px;font-size:22px" onclick="confirmProtocol(\''+id+'\')">Confirm Protocol</div>';
-  
   lk.classList.add('on');
 }
 
-function closeLockout(){
-  document.getElementById('lockout').classList.remove('on');
-}
+function closeLockout(){document.getElementById('lockout').classList.remove('on')}
 
-// ═══════════════════════════════════════════════════════════════
-// GHOST / MINIMIZE
-// ═══════════════════════════════════════════════════════════════
 function minimizeCard(id){
-  if(!cards[id].kitchen_ack_at)return; // Can only minimize acked cards
+  if(!cards[id].kitchen_ack_at)return;
   ghosted[id]=true;
   cards[id].minimized_at=new Date().toISOString();
   renderCards();cacheCards();
-  // Update Supabase
   sb.from('allergen_declarations').update({minimized_at:cards[id].minimized_at}).eq('id',id);
 }
 
@@ -597,7 +518,6 @@ function restoreGhost(id){
   sb.from('allergen_declarations').update({restored_at:cards[id].restored_at}).eq('id',id);
 }
 
-// Swipe detection
 var touchStartX=0,touchCardId=null;
 document.addEventListener('touchstart',function(e){
   var card=e.target.closest('.card-k');
@@ -610,59 +530,44 @@ document.addEventListener('touchend',function(e){
   touchCardId=null;
 });
 
-// ═══════════════════════════════════════════════════════════════
-// ESCALATION TIMEOUT
-// ═══════════════════════════════════════════════════════════════
 function checkEscalations(){
   Object.keys(cards).forEach(function(id){
     var c=cards[id];
     if(c.kitchen_ack_at||c.closed_at)return;
-    var elapsed=Date.now()-new Date(c.declared_at).getTime();
+    var elapsed=Date.now()-new Date(c.created_at).getTime();
     var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
     if(elapsed>timeout&&!c._escalated){
       c._escalated=true;
-      // Speed up pulse
       var el=document.getElementById('ck-'+id);
       if(el)el.classList.add('fast');
-      // Second chime
       if(isAnaph(c.severity))chimeAnaphylaxis();
       else chimeStandard();
     }
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// TIMERS
-// ═══════════════════════════════════════════════════════════════
 setInterval(function(){
   Object.keys(cards).forEach(function(id){
     if(cards[id].closed_at)return;
     var el=document.getElementById('timer-'+id);
-    if(el)el.textContent=fmtTimer(cards[id].declared_at);
+    if(el)el.textContent=fmtTimer(cards[id].created_at);
     var gel=document.getElementById('gtimer-'+id);
-    if(gel)gel.textContent=fmtTimer(cards[id].declared_at);
+    if(gel)gel.textContent=fmtTimer(cards[id].created_at);
   });
   checkEscalations();
 },1000);
 
-// ═══════════════════════════════════════════════════════════════
-// DIM / BURN-IN
-// ═══════════════════════════════════════════════════════════════
 function resetDim(){
   document.body.classList.remove('dimmed');
   clearTimeout(dimTimer);
   var activeCount=Object.keys(cards).filter(function(id){return !cards[id].closed_at}).length;
   if(activeCount===0){
-    dimTimer=setTimeout(function(){document.body.classList.add('dimmed')},180000); // 3 min
+    dimTimer=setTimeout(function(){document.body.classList.add('dimmed')},180000);
   }
 }
-
 document.addEventListener('touchstart',resetDim);
 document.addEventListener('mousedown',resetDim);
 
-// ═══════════════════════════════════════════════════════════════
-// OFFLINE / CACHE
-// ═══════════════════════════════════════════════════════════════
 function cacheCards(){
   try{localStorage.setItem('hc_kitchen_cards',JSON.stringify(cards));
   localStorage.setItem('hc_kitchen_ghosts',JSON.stringify(ghosted))}catch(e){}
@@ -690,9 +595,6 @@ function setOnline(v){
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SUPABASE REALTIME
-// ═══════════════════════════════════════════════════════════════
 async function loadExisting(){
   if(!venueId)return;
   var {data}=await sb.from('allergen_declarations')
@@ -700,7 +602,7 @@ async function loadExisting(){
     .eq('venue_id',venueId)
     .is('closed_at',null)
     .order('created_at',{ascending:false});
-  
+
   if(data){
     data.forEach(function(d){
       d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');
@@ -712,37 +614,32 @@ async function loadExisting(){
 
 function subscribe(){
   if(!venueId)return;
-  
+
   sb.channel('kitchen-'+venueId)
     .on('postgres_changes',{
       event:'INSERT',schema:'public',table:'allergen_declarations',
       filter:'venue_id=eq.'+venueId
     },function(payload){
       var d=payload.new;
-      // Fetch asset info
       sb.from('assets').select('label,zone').eq('id',d.asset_id).single().then(function(res){
         d._assetLabel=(res.data?res.data.label:'T?')+(res.data&&res.data.zone?' · '+res.data.zone:'');
-        
-        // Check if this is an update to an existing session
+
         var existing=Object.keys(cards).find(function(id){
           return cards[id].guest_session_id===d.guest_session_id&&!cards[id].closed_at;
         });
-        
+
         if(existing){
-          // Mid-meal update
           cards[existing]._updated=true;
           cards[existing].allergens=(cards[existing].allergens||[]).concat(d.allergens||[]);
-          cards[existing].kitchen_ack_at=null; // Need re-ack for new items
+          cards[existing].kitchen_ack_at=null;
           chimeStandard();
         } else {
           cards[d.id]=d;
-          // Mark delivery
           sb.from('allergen_declarations').update({
             delivered_to_kitchen_at:new Date().toISOString(),
             device_id:deviceName
           }).eq('id',d.id);
-          
-          // Audio
+
           if(isAnaph(d.severity)){
             chimeAnaphylaxis();
             showLockout(d.id);
@@ -750,7 +647,7 @@ function subscribe(){
             chimeStandard();
           }
         }
-        
+
         renderCards();cacheCards();resetDim();
       });
     })
@@ -760,15 +657,9 @@ function subscribe(){
     },function(payload){
       var d=payload.new;
       if(cards[d.id]){
-        // Preserve UI state
         var uiState={_assetLabel:cards[d.id]._assetLabel,_updated:cards[d.id]._updated,_escalated:cards[d.id]._escalated};
         cards[d.id]=Object.assign(d,uiState);
-        
-        // If closed, remove ghost
-        if(d.closed_at){
-          delete ghosted[d.id];
-        }
-        
+        if(d.closed_at){delete ghosted[d.id]}
         renderCards();cacheCards();
       }
     })
@@ -776,26 +667,19 @@ function subscribe(){
       if(status==='SUBSCRIBED')setOnline(true);
       else if(status==='CLOSED'||status==='CHANNEL_ERROR')setOnline(false);
     });
-  
-  // Heartbeat check
+
   setInterval(function(){
     var hb=document.getElementById('heartbeat');
     if(!online&&hb.className!=='hb off'){setOnline(false)}
   },5000);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// VENUE LOAD
-// ═══════════════════════════════════════════════════════════════
 async function loadVenue(){
   if(!venueId)return;
   var {data}=await sb.from('venues').select('name').eq('id',venueId).single();
   if(data)document.getElementById('venueName').textContent=data.name+' · Kitchen';
 }
 
-// ═══════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════
 loadCache();
 if(Object.keys(cards).length>0)renderCards();
 loadVenue();
