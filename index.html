@@ -38,6 +38,29 @@ body.hc-mode .card-k .al-name{font-weight:800}
 .hb.off{background:var(--danger);animation:hbPulse .5s ease infinite}
 @keyframes hbPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
 
+.tab-bar{display:flex;gap:0;background:var(--s1);border-bottom:1px solid var(--b);flex-shrink:0}
+.tab-btn{flex:1;padding:10px 12px;font-size:13px;font-weight:700;color:var(--t2);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab-btn.on{color:var(--cyan);border-color:var(--cyan)}
+.tab-ct{display:inline-flex;min-width:18px;height:18px;border-radius:9px;font-size:11px;font-weight:700;padding:0 5px;align-items:center;justify-content:center;margin-left:4px;background:rgba(148,163,184,.1);color:var(--t2)}
+.tab-btn.on .tab-ct{background:rgba(34,211,238,.1);color:var(--cyan)}
+.verified-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.v-tile{background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.v-tile:hover{border-color:var(--b2)}
+.v-tile .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+.v-tile-tbl{font-size:14px;font-weight:700;color:var(--t1)}
+.v-tile-guest{font-size:11px;color:var(--t2);font-weight:600;margin-top:2px}
+.v-tile-al{font-size:12px;font-weight:700;margin-top:4px}
+.v-tile-status{font-size:10px;font-weight:700;margin-top:4px;color:var(--ok);display:flex;align-items:center;gap:3px}
+.verify-btn{margin-top:10px;height:50px;background:rgba(16,185,129,.08);border:2px solid var(--ok);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--ok);cursor:pointer;gap:8px;transition:.15s}
+.verify-btn:active{background:rgba(16,185,129,.15)}
+.avoid-block{background:rgba(239,68,68,.06);border-left:3px solid;padding:10px 12px;margin:8px 0;border-radius:0 6px 6px 0;font-size:14px;line-height:1.6}
+.avoid-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+.avoid-list{font-weight:500}
+.pos-disabled{margin-top:10px;padding-top:10px;border-top:1px solid rgba(30,45,61,.4)}
+.pos-header{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pos-label{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.3px}
+.pos-tag{font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.15);color:var(--t2);font-weight:600}
+.pos-box{padding:10px 12px;background:rgba(148,163,184,.03);border:1px dashed rgba(148,163,184,.12);border-radius:8px;color:var(--t2);font-size:13px;font-weight:500}
 .main{flex:1;overflow-y:auto;padding:16px 20px;position:relative}
 
 .offline-banner{display:none;position:fixed;top:48px;left:0;right:0;background:rgba(239,68,68,.15);border-bottom:2px solid var(--danger);padding:14px 20px;z-index:90;text-align:center;color:var(--danger);font-size:18px;font-weight:700}
@@ -50,7 +73,8 @@ body.hc-mode .card-k .al-name{font-weight:800}
 .card-k.new{animation:amberPulse 2s ease infinite}
 .card-k.new.fast{animation:amberPulse 1s ease infinite}
 .card-k.anaph-new{animation:redPulse 1.2s ease infinite}
-.card-k.acked{border-color:var(--b);opacity:.85}
+.card-k.acked-prep{border-color:var(--warn);opacity:1}
+.card-k.verified{border-color:var(--ok);opacity:.8}
 .card-k.protocol{border-color:var(--ok)}
 .card-k.flash{animation:ackFlash .15s ease}
 
@@ -142,8 +166,9 @@ body.dimmed .summary{opacity:.3}
 
 <div class="hdr">
 <div class="hdr-left">
-<div class="hdr-mark"><svg viewBox="0 0 72.71 90.04"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg></div>
+<div class="hdr-mark" id="venueLogo" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),#0891b2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--bg)">H</div>
 <div class="hdr-venue" id="venueName">HC Kitchen</div>
+<div style="font-size:11px;color:var(--t2);font-weight:500;margin-left:auto;margin-right:12px" id="headerClock"></div>
 </div>
 <div class="hdr-right">
 <div class="hb ok" id="heartbeat" title="Connected"></div>
@@ -157,6 +182,12 @@ body.dimmed .summary{opacity:.3}
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg>
 </button>
 </div>
+</div>
+
+<div class="tab-bar" id="tabBar">
+<div class="tab-btn on" data-tab="active" onclick="switchTab('active')">Active <span class="tab-ct" id="ctActive">0</span></div>
+<div class="tab-btn" data-tab="prepping" onclick="switchTab('prepping')">Prepping <span class="tab-ct" id="ctPrepping">0</span></div>
+<div class="tab-btn" data-tab="verified" onclick="switchTab('verified')">Verified <span class="tab-ct" id="ctVerified">0</span></div>
 </div>
 
 <div class="offline-banner" id="offlineBanner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
@@ -223,6 +254,7 @@ function getAllergenDef(name){
   return ALLERGEN_DEFS[key]||null;
 }
 
+// NOTE: Supabase needs verified_at and verified_by columns
 var ACK_TIMEOUT=90000;
 var ACK_TIMEOUT_ANAPH=30000;
 
@@ -290,11 +322,11 @@ function toggleContrast(){
 }
 
 function fmtTimer(ts){
-  if(!ts)return'0:00';
-  var s=Math.floor((Date.now()-new Date(ts).getTime())/1000);
-  if(s<0||isNaN(s))s=0;
-  var m=Math.floor(s/60);s=s%60;
-  return m+':'+String(s).padStart(2,'0');
+  if(!ts)return'0:00:00';
+  var sec=Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if(sec<0||isNaN(sec))sec=0;
+  var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;
+  return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
 function fmtTime(ts){
@@ -327,14 +359,24 @@ function renderCards(){
   var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at});
   var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at});
 
-  visible.sort(function(a,b){
-    var ca=cards[a],cb=cards[b];
-    var aa=isAnaph(ca.severity)?0:1,ab=isAnaph(cb.severity)?0:1;
-    if(aa!==ab)return aa-ab;
-    var ua=ca.kitchen_ack_at?1:0,ub=cb.kitchen_ack_at?1:0;
-    if(ua!==ub)return ua-ub;
-    return new Date(cb.created_at)-new Date(ca.created_at);
-  });
+  var activeCards=visible.filter(function(id){return !cards[id].kitchen_ack_at});
+    var preppingCards=visible.filter(function(id){return cards[id].kitchen_ack_at&&!cards[id].verified_at});
+    var verifiedCards=visible.filter(function(id){return !!cards[id].verified_at});
+
+    function sevSort(a,b){
+      var ca=cards[a],cb=cards[b];
+      var aa=isAnaph(ca.severity)?0:1,ab=isAnaph(cb.severity)?0:1;
+      if(aa!==ab)return aa-ab;
+      return new Date(cb.created_at)-new Date(ca.created_at);
+    }
+    activeCards.sort(sevSort);
+    preppingCards.sort(sevSort);
+    verifiedCards.sort(sevSort);
+
+    if(currentTab==='active')visible=activeCards.concat(preppingCards);
+    else if(currentTab==='prepping')visible=preppingCards;
+    else if(currentTab==='verified')visible=verifiedCards;
+    else visible=activeCards.concat(preppingCards).concat(verifiedCards);
 
   if(visible.length===0&&ghostIds.length===0){
     area.innerHTML='<div class="empty" id="emptyState"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div>';
@@ -346,9 +388,10 @@ function renderCards(){
       var protocolDone=!!c.protocol_confirmed_at;
       var anaph=isAnaph(c.severity);
       var elapsed=c._escalated?'fast':'';
-      var stateClass=acked?(protocolDone?'protocol':'acked'):(anaph?'anaph-new '+elapsed:'new '+elapsed);
+      var verified=!!c.verified_at;
+      var stateClass=verified?'verified':(acked?(protocolDone&&anaph?'protocol':'acked-prep'):(anaph?'anaph-new '+elapsed:'new '+elapsed));
       var sev=(c.severity||'').toLowerCase();
-      var accentColor=anaph?'var(--danger)':sev==='severe'?'var(--warn)':sev==='discomfort'?'var(--cyan)':'var(--t2)';
+      var accentColor=verified?'var(--ok)':anaph?'var(--danger)':sev==='severe'?'var(--warn)':sev==='discomfort'?'var(--cyan)':'var(--t2)';
 
       html+='<div class="card-k '+stateClass+'" id="ck-'+id+'" data-id="'+id+'" style="animation-duration:'+(anaph?'1.2s':'2s')+'">';
       html+='<div class="accent" style="background:'+accentColor+'"></div>';
@@ -376,34 +419,27 @@ function renderCards(){
       if(c._updated)html+='<div class="badge updated">UPDATED</div>';
       html+='</div>';
 
-      var allDefs=[];
-      allergens.forEach(function(a){
-        var defs=getAllergenDef(a);
-        if(defs){
-          var defColor=anaph?'danger':'warn';
-          var bgCol=anaph?'rgba(239,68,68,.06)':'rgba(245,158,11,.06)';
-          var brCol=anaph?'rgba(239,68,68,.15)':'rgba(245,158,11,.15)';
-          var txtCol=anaph?'#ef4444':'#f59e0b';
-          var pillBg=anaph?'rgba(239,68,68,.1)':'rgba(245,158,11,.08)';
-          var pillBr=anaph?'rgba(239,68,68,.2)':'rgba(245,158,11,.2)';
-          html+='<div style="background:'+bgCol+';border:1px solid '+brCol+';border-radius:8px;padding:10px 12px;margin:6px 0 8px">';
-          html+='<div style="font-size:12px;font-weight:700;color:'+txtCol+';text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">'+a+' — avoid all of these</div>';
-          html+='<div style="display:flex;flex-wrap:wrap;gap:5px">';
-          defs.forEach(function(d){
-            html+='<span style="padding:3px 8px;border-radius:5px;font-size:12px;font-weight:600;background:'+pillBg+';color:'+txtCol+';border:1px solid '+pillBr+'">'+d+'</span>';
-          });
-          html+='</div></div>';
-        }
-      });
+      if(anaph||sev==='severe'){
+        allergens.forEach(function(a){
+          var defs=getAllergenDef(a);
+          if(defs){
+            var txtCol=anaph?'#ef4444':'#f59e0b';
+            html+='<div class="avoid-block" style="border-color:'+txtCol+'">';
+            html+='<div class="avoid-title" style="color:'+txtCol+'">Avoid All</div>';
+            html+='<div class="avoid-list" style="color:var(--t1)">'+defs.join(' · ')+'</div>';
+            html+='</div>';
+          }
+        });
+      }
 
       if(c.notes){
         html+='<div class="al-notes">'+stripNotes(c.notes)+'</div>';
       }
 
 
-      html+='<div style="margin-top:10px;border-top:1px solid rgba(30,45,61,.4);padding-top:10px">';
-      html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px">Order Items</span><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.2);color:#94a3b8;font-weight:600;margin-left:4px">POS integration coming soon</span></div>';
-      html+='<div style="padding:10px 12px;background:rgba(148,163,184,.04);border:1px dashed rgba(148,163,184,.15);border-radius:8px;color:#636e7b;font-size:13px;font-weight:500">Connect Toast, Square, or Clover to auto-flag allergens in each dish.</div>';
+      html+='<div class="pos-disabled">';
+      html+='<div class="pos-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="pos-label">Order Items</span><span class="pos-tag">Coming Soon</span></div>';
+      html+='<div class="pos-box">Connect Toast, Square, or Clover to auto-flag allergens in each dish.</div>';
       html+='</div>';
 
       if(acked){
@@ -423,10 +459,34 @@ function renderCards(){
       if(acked&&!protocolDone&&anaph){
         html+='<div class="protocol-btn" onclick="confirmProtocol(\''+id+'\')">Confirm Protocol</div>';
       }
+      if(acked&&(!anaph||protocolDone)&&!verified){
+        html+='<div class="verify-btn" onclick="verifyDish(\''+id+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Verify Safe to Serve</div>';
+      }
+      if(verified){
+        html+='<div class="ack-status protocol"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> VERIFIED SAFE · '+fmtTime(c.verified_at)+' · '+(c.verified_by||deviceName)+'</div>';
+      }
 
       html+='</div></div>';
     });
     area.innerHTML=html;
+    if(currentTab==='verified'&&verifiedCards.length>0){
+      var gHtml='<div class="verified-grid">';
+      verifiedCards.forEach(function(id){
+        var vc=cards[id];
+        var vSev=(vc.severity||'').toLowerCase();
+        var vCol=isAnaph(vc.severity)?'var(--danger)':vSev==='severe'?'var(--warn)':'var(--cyan)';
+        var gn='Guest';
+        if(vc.guest_name){var p=vc.guest_name.split(' ');gn=p[0].toUpperCase();if(p.length>1&&p[1])gn+=' '+p[1].charAt(0).toUpperCase()+'.';}
+        gHtml+='<div class="v-tile" onclick="switchTab(\'active\')"><div class="accent" style="background:var(--ok)"></div>';
+        gHtml+='<div class="v-tile-tbl">'+(vc._assetLabel||'Table')+'</div>';
+        gHtml+='<div class="v-tile-guest">'+gn+'</div>';
+        gHtml+='<div class="v-tile-al" style="color:'+vCol+'">'+(vc.allergens||[]).join(', ')+'</div>';
+        gHtml+='<div class="v-tile-status"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Verified · '+fmtTime(vc.verified_at)+'</div>';
+        gHtml+='</div>';
+      });
+      gHtml+='</div>';
+      area.innerHTML=gHtml;
+    }
   }
 
   renderGhosts(ghostIds);
@@ -467,6 +527,9 @@ function updateSummary(){
   if(unackCount>0)parts.push('<span class="unack">'+unackCount+' Unacknowledged</span>');
   else if(ids.length>0)parts.push('<span class="allack">All Acknowledged</span>');
   bar.innerHTML=parts.join(' · ');
+  var ca=document.getElementById('ctActive');if(ca)ca.textContent=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].kitchen_ack_at}).length;
+  var cp=document.getElementById('ctPrepping');if(cp)cp.textContent=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&cards[id].kitchen_ack_at&&!cards[id].verified_at}).length;
+  var cv=document.getElementById('ctVerified');if(cv)cv.textContent=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!!cards[id].verified_at}).length;
 }
 
 var holdTimers={};
@@ -571,6 +634,18 @@ function showLockoutProtocol(id){
 
 function closeLockout(){document.getElementById('lockout').classList.remove('on')}
 
+async function verifyDish(id){
+  var c=cards[id];
+  c.verified_at=new Date().toISOString();
+  c.verified_by=deviceName;
+  chimeAck();
+  await sb.from('allergen_declarations').update({
+    verified_at:c.verified_at,
+    verified_by:c.verified_by
+  }).eq('id',id);
+  renderCards();cacheCards();
+}
+
 function minimizeCard(id){
   if(!cards[id].kitchen_ack_at)return;
   ghosted[id]=true;
@@ -623,6 +698,7 @@ setInterval(function(){
     if(gel)gel.textContent=fmtTimer(cards[id].created_at);
   });
   checkEscalations();
+  var hc=document.getElementById('headerClock');if(hc){var now=new Date();hc.textContent=now.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'})+' · '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 },1000);
 
 function resetDim(){
@@ -745,7 +821,15 @@ function subscribe(){
 async function loadVenue(){
   if(!venueId)return;
   var {data}=await sb.from('venues').select('name').eq('id',venueId).single();
-  if(data)document.getElementById('venueName').textContent=data.name+' · Kitchen';
+  if(data){document.getElementById('venueName').textContent=data.name+' · Kitchen';var lg=document.getElementById('venueLogo');if(lg)lg.textContent=data.name.charAt(0);}
+}
+
+var currentTab='active';
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('on',b.dataset.tab===tab)});
+  renderCards();
 }
 
 loadCache();
