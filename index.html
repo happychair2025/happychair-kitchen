@@ -74,6 +74,7 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--danger:#f33;-
 .sln.dv{background:#10b981}
 .sln.dg{background:#636e7b}
 .exp{background:var(--s1);border:1px solid #1e2d3d;border-top:none;border-radius:0 0 10px 10px;padding:4px 18px 16px;margin-bottom:6px}
+.row-err{padding:10px 14px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:#ef4444;font-size:14px;font-weight:600;margin:8px 0;text-align:center}
 .prog{display:flex;align-items:center;padding:10px 0}
 .ps{display:flex;flex-direction:column;align-items:center;flex:1}
 .pd{width:18px;height:18px;border-radius:50%;border:2px solid #2d3f54;display:flex;align-items:center;justify-content:center;z-index:2}
@@ -163,6 +164,10 @@ function toggleMute(){muted=!muted;if(!muted){volume=0.6;document.getElementById
 function updateVolIcon(){var c=document.getElementById('volCtrl');if(!c)return;c.classList.remove('vol-off','vol-low','vol-med','vol-muted');if(muted||volume===0){c.classList.add('vol-off','vol-muted')}else if(volume<0.33){c.classList.add('vol-low')}else if(volume<0.66){c.classList.add('vol-med')}}
 function toggleContrast(){document.body.classList.toggle('hc-mode');document.getElementById('contrastBtn').classList.toggle('on',document.body.classList.contains('hc-mode'))}
 
+// Surfaces a row-level error visibly. Force-expands the card so retry buttons
+// are reachable and auto-clears after 8s if no retry happens.
+function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;renderCards();setTimeout(function(){var ex=document.getElementById('ex-'+id);if(ex)ex.style.display=''},0);setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;renderCards()}},8000)}
+
 function fmtTimer(ts){if(!ts)return'0:00:00';var sec=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(sec<0||isNaN(sec))sec=0;var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
 function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
@@ -229,6 +234,10 @@ function renderCards(){
 
     // Expanded details
     h+='<div class="exp" id="'+exId+'" style="display:none">';
+
+    // Row-level error (surfaced when a write fails — reverted local state +
+    // visible message so the operator knows the action didn't take effect).
+    if(c._error)h+='<div class="row-err">'+c._error+'</div>';
 
     // Horizontal progress rail
     h+='<div class="prog">';
@@ -319,33 +328,58 @@ function startHold(id){
 }
 function endHold(id){if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}var fill=document.getElementById('fill-'+id);if(fill)fill.style.width='0'}
 
+// Optimistic-with-revert pattern: local state updates immediately so the UI
+// responds to the 1.5s hold completing, then the DB write follows. On failure
+// the local state is reverted to the prior valid state so the operator never
+// sees an indeterminate mixed state. Chime + cache fire ONLY after the DB
+// confirms — the chime now means "the database accepted the transition."
 async function doAck(id){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
-  var c=cards[id];c.kitchen_ack_at=new Date().toISOString();c.kitchen_ack_by=deviceName;
+  var c=cards[id];if(!c)return;
+  var prev={kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:c.status};
+  c.kitchen_ack_at=new Date().toISOString();c.kitchen_ack_by=deviceName;c.status='acknowledged';
+  renderCards();
+  var {error}=await sb.from('allergen_declarations').update({kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:'acknowledged'}).eq('id',id);
+  if(error){console.error('[kitchen] acknowledge failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't acknowledge — try again");return}
+  delete c._error;
   chimeAck();
-  await sb.from('allergen_declarations').update({kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by}).eq('id',id);
   if(isAnaph(c.severity)){showLockoutProtocol(id)}else{closeLockout()}
   renderCards();cacheCards();
 }
 
 async function confirmProtocol(id){
-  var c=cards[id];c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
+  var c=cards[id];if(!c)return;
+  var prev={protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by};
+  c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
+  renderCards();
+  var {error}=await sb.from('allergen_declarations').update({protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by}).eq('id',id);
+  if(error){console.error('[kitchen] protocol confirm failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't confirm prep area — try again");return}
+  delete c._error;
   chimeAck();
-  await sb.from('allergen_declarations').update({protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by}).eq('id',id);
   closeLockout();renderCards();cacheCards();
 }
 
 async function verifyDish(id){
-  var c=cards[id];c.verified_at=new Date().toISOString();c.verified_by=deviceName;
+  var c=cards[id];if(!c)return;
+  var prev={verified_at:c.verified_at,verified_by:c.verified_by};
+  c.verified_at=new Date().toISOString();c.verified_by=deviceName;
+  renderCards();
+  var {error}=await sb.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
+  if(error){console.error('[kitchen] verify failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
+  delete c._error;
   chimeAck();
-  await sb.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
   renderCards();cacheCards();
 }
 
 async function markServed(id){
-  var c=cards[id];c.served_at=new Date().toISOString();
+  var c=cards[id];if(!c)return;
+  var prev={served_at:c.served_at,status:c.status};
+  c.served_at=new Date().toISOString();c.status='resolved';
+  renderCards();
+  var {error}=await sb.from('allergen_declarations').update({served_at:c.served_at,status:'resolved'}).eq('id',id);
+  if(error){console.error('[kitchen] mark served failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't mark served — try again");return}
+  delete c._error;
   chimeAck();
-  await sb.from('allergen_declarations').update({served_at:c.served_at}).eq('id',id);
   renderCards();cacheCards();
 }
 
@@ -366,7 +400,18 @@ function showLockoutProtocol(id){
 
 function closeLockout(){document.getElementById('lockout').classList.remove('on')}
 
-function minimizeCard(id){if(!cards[id].kitchen_ack_at)return;ghosted[id]=true;renderCards();cacheCards();sb.from('allergen_declarations').update({minimized_at:new Date().toISOString()}).eq('id',id)}
+// Minimize is a local UI preference (ghosting the card into the side rail).
+// The minimized_at write is bookkeeping for admin reporting. If the write
+// fails the ghost state stays — operator chose to hide it — but we surface
+// the error so the divergence isn't silent.
+async function minimizeCard(id){
+  if(!cards[id]||!cards[id].kitchen_ack_at)return;
+  ghosted[id]=true;renderCards();
+  var {error}=await sb.from('allergen_declarations').update({minimized_at:new Date().toISOString()}).eq('id',id);
+  if(error){console.error('[kitchen] minimize bookkeeping failed:',error);showRowError(id,"Hidden locally, but couldn't sync — try again");return}
+  delete cards[id]._error;
+  cacheCards();
+}
 function restoreGhost(id){delete ghosted[id];renderCards();cacheCards()}
 
 var touchStartX=0,touchCardId=null;
@@ -410,7 +455,7 @@ function subscribe(){
         d._assetLabel=(res.data?res.data.label:'T?')+(res.data&&res.data.zone?' · '+res.data.zone:'');
         var existing=Object.keys(cards).find(function(id){return cards[id].guest_session_id===d.guest_session_id&&!cards[id].closed_at});
         if(existing){cards[existing]._updated=true;cards[existing].allergens=(cards[existing].allergens||[]).concat(d.allergens||[]);cards[existing].kitchen_ack_at=null;chimeStandard()}
-        else{cards[d.id]=d;sb.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id);if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}}
+        else{cards[d.id]=d;sb.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}}
         renderCards();cacheCards();resetDim();
       });
     })
