@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Environment — every variant (.env, .env.local, .env.production, …).
+# No secrets belong in this repo: the Supabase key in index.html is the public
+# anon key, which is a client-side value by design. This rule is preventive.
+.env*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# NOTE: build output is deliberately NOT ignored here.
+# vercel.json sets buildCommand "echo skip" and outputDirectory "." — this repo
+# is served straight from its root with no build step, so there is nothing to
+# ignore. The sibling happychair-tableside repo intentionally COMMITS its dist/
+# for deployment; adding a dist/ rule here would silently break that pattern if
+# a build is ever introduced. Add one only alongside a real build pipeline.
