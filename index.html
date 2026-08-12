@@ -171,7 +171,38 @@ function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;
 function fmtTimer(ts){if(!ts)return'0:00:00';var sec=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(sec<0||isNaN(sec))sec=0;var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
 function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
+// NOT SANITISATION. Strips three English phrases and trims, so the note reads as a
+// fragment on the card. It does NOT escape HTML — every caller must wrap the result in
+// esc(). It has already been mistaken for a sanitiser once.
 function stripNotes(n){if(!n)return'';return n.replace(/carries /gi,'').replace(/severe reaction to /gi,'').replace(/if exposed to /gi,'').trim()}
+
+// Escape EVERY value interpolated into innerHTML. This file builds every surface by
+// string concatenation, and `allergens` / `notes` are guest-controlled free text that
+// arrives through an UNAUTHENTICATED insert — anyone holding the publishable key can
+// write them, for any venue. Escape values that look operator-controlled too: the only
+// thing making `assets.label` safe is an RLS policy, and a policy is a thing someone
+// can change. A larger diff is the cheaper problem.
+//
+// The ' escape is needed for ATTRIBUTE contexts (id="…", class="…").
+//
+// ⚠ It does NOT make the inline-handler path safe, and must not be recorded as if it
+// does. Ids are interpolated into JS string literals inside onclick="fn('X')". The HTML
+// parser decodes the attribute value BEFORE the JS is evaluated, so a quote escaped to
+// &#39; comes back as ' and produces fn(''') — a SYNTAX ERROR, not a safe string.
+// Escaping there converts an injection into a broken handler; it does not neutralise it.
+//
+// That path is safe today only because every id is a server-generated UUID and cannot
+// contain a quote. esc() on those ids is inert defence-in-depth. If a NON-UUID value
+// ever reaches a handler it needs JS-string escaping or a delegated listener bound in
+// JS — not esc().
+function esc(v){
+  return String(v==null?'':v)
+    .replace(/&/g,'&amp;')   // MUST be first — otherwise the entities below double-encode
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 
 var CK='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
@@ -221,23 +252,23 @@ function renderCards(){
 
     if(!isSrv&&!isOpen)rowCls=rowCls.replace('row ','row closed ');
 
-    h+='<div class="'+rowCls+'" onclick="toggleCard(\''+id+'\')">';
+    h+='<div class="'+rowCls+'" onclick="toggleCard(\''+esc(id)+'\')">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
-    h+='<div class="r-tbl"'+(isSrv?' style="color:#636e7b"':'')+'>'+((c._assetLabel||'Table').split(' ')[0])+'</div>';
-    h+='<div class="r-guest"'+(isSrv?' style="color:#636e7b"':'')+'>'+guestLabel(c)+'</div>';
-    h+='<div class="r-al" style="color:'+(isSrv?'#636e7b':sevCol)+'">'+allergens+'</div>';
-    h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:#636e7b"':'')+'>'+((c.severity||'unknown').toUpperCase())+'</div>';
+    h+='<div class="r-tbl"'+(isSrv?' style="color:#636e7b"':'')+'>'+esc((c._assetLabel||'Table').split(' ')[0])+'</div>';
+    h+='<div class="r-guest"'+(isSrv?' style="color:#636e7b"':'')+'>'+esc(guestLabel(c))+'</div>';
+    h+='<div class="r-al" style="color:'+(isSrv?'#636e7b':sevCol)+'">'+esc(allergens)+'</div>';
+    h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:#636e7b"':'')+'>'+esc((c.severity||'unknown').toUpperCase())+'</div>';
     if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">XC</div>';
-    h+='<div class="r-tm"'+(isSrv?' style="color:#636e7b"':'')+' id="timer-'+id+'">'+(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</div>';
+    h+='<div class="r-tm"'+(isSrv?' style="color:#636e7b"':'')+' id="timer-'+esc(id)+'">'+(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</div>';
     h+='<div class="stages">'+d1+l1+d2+l2+d3+l3+d4+'</div>';
     h+='</div>';
 
     // Expanded details
-    h+='<div class="exp" id="'+exId+'" style="display:none">';
+    h+='<div class="exp" id="'+esc(exId)+'" style="display:none">';
 
     // Row-level error (surfaced when a write fails — reverted local state +
     // visible message so the operator knows the action didn't take effect).
-    if(c._error)h+='<div class="row-err">'+c._error+'</div>';
+    if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
 
     // Horizontal progress rail
     h+='<div class="prog">';
@@ -254,23 +285,26 @@ function renderCards(){
     if((an||sv==='severe')&&!isSrv){
       (c.allergens||[]).forEach(function(a){
         var defs=getAllergenDef(a);
-        if(defs)h+='<div class="avoid" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all</div><div class="avoid-l">'+defs.join(' · ')+'</div></div>';
+        // defs.map(esc) not esc(defs.join(…)) — the ' · ' separator is ours and must
+        // stay literal; escaping the joined string would leave it intact but is the
+        // wrong shape and breaks the moment a separator character needs escaping.
+        if(defs)h+='<div class="avoid" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
       });
     }
-    if(c.notes&&!isSrv)h+='<div class="al-notes">'+stripNotes(c.notes)+'</div>';
+    if(c.notes&&!isSrv)h+='<div class="al-notes">'+esc(stripNotes(c.notes))+'</div>';
 
     // Action buttons
     if(!acked){
-      h+='<div class="hold-btn '+(an?'red':'amber')+'" ontouchstart="startHold(\''+id+'\')" ontouchend="endHold(\''+id+'\')" onmousedown="startHold(\''+id+'\')" onmouseup="endHold(\''+id+'\')" onmouseleave="endHold(\''+id+'\')"><div class="hold-fill" id="fill-'+id+'"></div><span class="hold-lbl" id="holdLabel-'+id+'">Hold to Confirm Allergy Received</span></div>';
+      h+='<div class="hold-btn '+(an?'red':'amber')+'" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
     }
     if(acked&&!proto&&an){
-      h+='<div class="hold-btn red" onclick="confirmProtocol(\''+id+'\')" style="margin-top:8px"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
+      h+='<div class="hold-btn red" onclick="confirmProtocol(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
     }
     if(acked&&(!an||proto)&&!verified&&!isSrv){
-      h+='<div class="hold-btn green" onclick="verifyDish(\''+id+'\')" style="margin-top:8px"><span class="hold-lbl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Verify Safe to Serve</span></div>';
+      h+='<div class="hold-btn green" onclick="verifyDish(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Verify Safe to Serve</span></div>';
     }
     if(verified&&!isSrv){
-      h+='<div class="hold-btn" style="margin-top:8px;background:var(--s2);border:1px solid var(--b2);color:var(--t1)" onclick="markServed(\''+id+'\')"><span class="hold-lbl">Mark as Served</span></div>';
+      h+='<div class="hold-btn" style="margin-top:8px;background:var(--s2);border:1px solid var(--b2);color:var(--t1)" onclick="markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark as Served</span></div>';
     }
 
     // POS disabled
@@ -303,7 +337,7 @@ function toggleCard(id){var el=document.getElementById('ex-'+id);if(!el)return;e
 
 function renderGhosts(gIds){
   var gt=document.getElementById('ghostTabs');if(!gIds.length){gt.innerHTML='';return}
-  var h='';gIds.forEach(function(id){var c=cards[id];h+='<div class="ghost-tab '+(isAnaph(c.severity)?'red':'amber')+'" onclick="restoreGhost(\''+id+'\')"><div>'+(c._assetLabel||'T?').split(' ')[0]+'</div></div>'});
+  var h='';gIds.forEach(function(id){var c=cards[id];h+='<div class="ghost-tab '+(isAnaph(c.severity)?'red':'amber')+'" onclick="restoreGhost(\''+esc(id)+'\')"><div>'+esc((c._assetLabel||'T?').split(' ')[0])+'</div></div>'});
   gt.innerHTML=h;
 }
 
@@ -387,14 +421,14 @@ function showLockout(id){
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
   var allergens=(c.allergens||[]).join(', '),gn=guestLabel(c);
   var avoidHtml='';
-  (c.allergens||[]).forEach(function(a){var d=getAllergenDef(a);if(d)avoidHtml+='<div style="border-left:3px solid #ef4444;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:4px">Avoid all</div><div style="font-size:18px;font-weight:500;color:#e2e8f0;line-height:1.5">'+d.join(' · ')+'</div></div>'});
-  lc.innerHTML='<div class="lockout-title">'+(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:#e2e8f0;margin-bottom:8px">'+gn+'</div><div style="font-size:32px;font-weight:800;color:#ef4444;margin-bottom:16px">'+allergens+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+id+'\')" ontouchend="endHold(\''+id+'\')" onmousedown="startHold(\''+id+'\')" onmouseup="endHold(\''+id+'\')" onmouseleave="endHold(\''+id+'\')"><div class="hold-fill" id="fill-'+id+'"></div><span class="hold-lbl" id="holdLabel-'+id+'">Hold to Confirm Allergy Received</span></div>';
+  (c.allergens||[]).forEach(function(a){var d=getAllergenDef(a);if(d)avoidHtml+='<div style="border-left:3px solid #ef4444;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:4px">Avoid all</div><div style="font-size:18px;font-weight:500;color:#e2e8f0;line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>'});
+  lc.innerHTML='<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:#e2e8f0;margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:#ef4444;margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
   lk.classList.add('on');
 }
 
 function showLockoutProtocol(id){
   var lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
-  lc.innerHTML='<div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid #10b981;display:flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="lockout-title" style="color:#10b981">ALLERGY RECEIVED</div><div class="lockout-sub">Confirm prep area, utensils, and surfaces are separated</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" onclick="confirmProtocol(\''+id+'\')"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
+  lc.innerHTML='<div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid #10b981;display:flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="lockout-title" style="color:#10b981">ALLERGY RECEIVED</div><div class="lockout-sub">Confirm prep area, utensils, and surfaces are separated</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" onclick="confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
   lk.classList.add('on');
 }
 
@@ -435,8 +469,15 @@ setInterval(function(){
 function resetDim(){document.body.classList.remove('dimmed');clearTimeout(dimTimer);var n=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at}).length;if(!n)dimTimer=setTimeout(function(){document.body.classList.add('dimmed')},180000)}
 document.addEventListener('touchstart',resetDim);document.addEventListener('mousedown',resetDim);
 
-function cacheCards(){try{localStorage.setItem('hc_k_cards',JSON.stringify(cards));localStorage.setItem('hc_k_ghosts',JSON.stringify(ghosted))}catch(e){}}
-function loadCache(){try{var c=localStorage.getItem('hc_k_cards');var g=localStorage.getItem('hc_k_ghosts');if(c)cards=JSON.parse(c);if(g)ghosted=JSON.parse(g)}catch(e){}}
+// v2 — 2026-08-12, bumped when HTML escaping shipped. A payload stored in a pre-fix
+// cache re-renders at startup, and deleting the row from the database CANNOT reach it.
+// Changing the key is the only eviction path that exists. The removeItem calls clear
+// the old keys so a stale payload does not sit in storage indefinitely.
+var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
+function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
+function loadCache(){try{
+  localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
+  var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(c)cards=JSON.parse(c);if(g)ghosted=JSON.parse(g)}catch(e){}}
 function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
 
 async function loadExisting(){
