@@ -177,6 +177,29 @@ function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;
 function fmtTimer(ts){if(!ts)return'0:00:00';var sec=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(sec<0||isNaN(sec))sec=0;var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
 function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
+// Ascending risk order. SEV_RANK is derived from SEV_ORDER so the list and the
+// ranking cannot drift apart — the same shape tableside uses (happychair-tableside
+// a720b36), so the writer and this reader agree on what "higher risk" means. The two
+// are separate repos with no shared package; matching the shape is the only
+// guarantee available.
+var SEV_ORDER=['unsure','discomfort','severe','anaphylaxis'];
+var SEV_RANK=SEV_ORDER.reduce(function(a,v,i){a[v]=i;return a},{});
+// Higher of two severities, never a downgrade. The two unrecognised cases are
+// DELIBERATELY asymmetric. This reads like an inconsistency to a fast reader and is
+// not one — do not collapse them into a single branch:
+//  - unrecognised INCOMING is skipped, never ranked lowest. Ranking an unknown as
+//    lowest is a silent claim that we know it to be safe, and we do not. Skipping
+//    can only ever preserve what is already on the card.
+//  - unrecognised CURRENT yields to a known value, because a known severity is
+//    strictly better signal for isAnaph / sevCol / checkEscalations downstream.
+// Both directions resolve toward the value we can actually reason about.
+function maxSeverity(cur,inc){
+  var ri=SEV_RANK[(inc||'').toLowerCase()];
+  if(ri===undefined)return cur;
+  var rc=SEV_RANK[(cur||'').toLowerCase()];
+  if(rc===undefined)return inc;
+  return ri>rc?inc:cur;
+}
 // NOT SANITISATION. Strips three English phrases and trims, so the note reads as a
 // fragment on the card. It does NOT escape HTML — every caller must wrap the result in
 // esc(). It has already been mistaken for a sanitiser once.
@@ -511,8 +534,49 @@ function subscribe(){
       var d=payload.new;
       sb.from('assets').select('label,zone').eq('id',d.asset_id).single().then(function(res){
         d._assetLabel=(res.data?res.data.label:'T?')+(res.data&&res.data.zone?' · '+res.data.zone:'');
-        var existing=Object.keys(cards).find(function(id){return cards[id].guest_session_id===d.guest_session_id&&!cards[id].closed_at});
-        if(existing){cards[existing]._updated=true;cards[existing].allergens=(cards[existing].allergens||[]).concat(d.allergens||[]);cards[existing].kitchen_ack_at=null;chimeStandard()}
+        // Merge only a genuine continuation: same guest session AND same table.
+        // Both guards are load-bearing.
+        //  - Truthy check: guest_session_id is nullable and 6 of 9 live rows are
+        //    NULL, and `null === null` is true — without this, any NULL-session row
+        //    merged into the first open NULL-session card.
+        //  - asset_id check: a shared session id alone never proved same-table, so
+        //    two guests sharing one would concatenate across tables. A cook would
+        //    read allergens nobody at that table declared, and the guest who did
+        //    declare them would have no card at all.
+        var existing=d.guest_session_id&&Object.keys(cards).find(function(id){
+          return cards[id].guest_session_id===d.guest_session_id&&cards[id].asset_id===d.asset_id&&!cards[id].closed_at
+        });
+        if(existing){
+          var cur=cards[existing];
+          // Severity is reconciled, not silently kept. Previously the merge left the
+          // existing value in place, so a guest adding an anaphylaxis allergen to a
+          // discomfort session stayed 'discomfort' — the same severity flattening
+          // fixed on the writer side in tableside a720b36, reappearing on the reader.
+          var merged=maxSeverity(cur.severity,d.severity);
+          var upgraded=merged!==cur.severity;
+          cur._updated=true;
+          cur.allergens=(cur.allergens||[]).concat(d.allergens||[]);
+          cur.severity=merged;
+          // Cross-contact merges with the same never-downgrade shape as severity.
+          // Discarding d.cross_contact flattened it exactly as severity was flattened:
+          // the lockout's XC badge reads this field, and tableside computes it with
+          // some() across the declared allergens, so a merge that drops it loses a
+          // flag the guest did set.
+          cur.cross_contact=cur.cross_contact||d.cross_contact;
+          cur.kitchen_ack_at=null;
+          // Everything downstream of severity is re-derived, not just stored. Row
+          // colour (buildCard sevCol/rowCls) and the escalation timeout
+          // (checkEscalations isAnaph) read c.severity and pick it up on the render
+          // below. The _escalated latch does NOT — and this next line is the whole
+          // reason the timeout change takes effect. checkEscalations fires at most
+          // once per card (`!c._escalated`), so an upgraded card that already
+          // escalated as 'discomfort' would keep the 90s timeout it fired against and
+          // never get the 30s anaphylaxis one. That defect would have survived the
+          // severity fix and been invisible: severity correct on the card, escalation
+          // still slow. Not redundant — do not remove.
+          if(upgraded)delete cur._escalated;
+          if(isAnaph(merged)){chimeAnaphylaxis();showLockout(existing)}else{chimeStandard()}
+        }
         else{cards[d.id]=d;sb.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}}
         renderCards();cacheCards();resetDim();
       });
