@@ -90,6 +90,12 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--danger:#f33;-
 .avoid{border-left:3px solid;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0}
 .avoid-t{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
 .avoid-l{font-size:16px;font-weight:500;color:#e2e8f0;line-height:1.5}
+.avoid-miss{border-color:#94a3b8}
+.avoid-miss .avoid-t{color:#94a3b8}
+.avoid-miss .avoid-l{color:#94a3b8}
+.avoid.low{padding:6px 10px;margin:6px 0}
+.avoid.low .avoid-t{font-size:11px}
+.avoid.low .avoid-l{font-size:14px}
 .al-notes{font-size:16px;color:var(--t2);font-weight:500;margin:6px 0}
 .hold-btn{position:relative;overflow:hidden;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;cursor:pointer;border:none;width:100%;user-select:none;-webkit-user-select:none;touch-action:none;margin-top:10px}
 .hold-btn.red{background:#ef4444;color:#fff}
@@ -281,14 +287,19 @@ function renderCards(){
     h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
     h+='</div>';
 
-    // Avoid all (anaphylaxis + severe only)
-    if((an||sv==='severe')&&!isSrv){
+    // Avoid all — one block per declared allergen, hit or miss. Severity gates
+    // prominence (.low), never existence: an allergen with no derivative list is
+    // the one most likely to be mishandled, so it must never be the one we omit.
+    if(!isSrv){
+      var lowW=(an||sv==='severe')?'':' low';
       (c.allergens||[]).forEach(function(a){
         var defs=getAllergenDef(a);
         // defs.map(esc) not esc(defs.join(…)) — the ' · ' separator is ours and must
         // stay literal; escaping the joined string would leave it intact but is the
         // wrong shape and breaks the moment a separator character needs escaping.
-        if(defs)h+='<div class="avoid" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
+        // Same reasoning for the ' — ' in the heading.
+        if(defs)h+='<div class="avoid'+lowW+'" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all — '+esc(a)+'</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
+        else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">No derivative list — '+esc(a)+'</div><div class="avoid-l">Not in the reference list. Confirm ingredients with the guest.</div></div>';
       });
     }
     if(c.notes&&!isSrv)h+='<div class="al-notes">'+esc(stripNotes(c.notes))+'</div>';
@@ -421,7 +432,13 @@ function showLockout(id){
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
   var allergens=(c.allergens||[]).join(', '),gn=guestLabel(c);
   var avoidHtml='';
-  (c.allergens||[]).forEach(function(a){var d=getAllergenDef(a);if(d)avoidHtml+='<div style="border-left:3px solid #ef4444;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:4px">Avoid all</div><div style="font-size:18px;font-weight:500;color:#e2e8f0;line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>'});
+  // Same hit/miss branch and labelling as buildCard. Severity prominence does not
+  // apply here — the lockout only fires on anaphylaxis, so every block is full weight.
+  (c.allergens||[]).forEach(function(a){
+    var d=getAllergenDef(a);
+    if(d)avoidHtml+='<div style="border-left:3px solid #ef4444;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:4px">Avoid all — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:#e2e8f0;line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
+    else avoidHtml+='<div style="border-left:3px solid #94a3b8;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px">No derivative list — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:#94a3b8;line-height:1.5">Not in the reference list. Confirm ingredients with the guest.</div></div>';
+  });
   lc.innerHTML='<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:#e2e8f0;margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:#ef4444;margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
   lk.classList.add('on');
 }
