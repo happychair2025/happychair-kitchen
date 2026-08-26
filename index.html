@@ -156,6 +156,19 @@ var params=new URLSearchParams(window.location.search);
 var venueId=params.get('venue');
 var deviceName=params.get('device')||'Kitchen Display';
 var cards={},ghosted={},muted=false,volume=0.6,audioReady=false,ctx=null,online=true,dimTimer=null;
+// Session label map: asset_id -> "T4 · Patio". Derived display data, NOT a card
+// column. It lives here (and in its own cache key) so `cards` can stay pure database
+// shape while an offline reload still knows which table a card belongs to.
+var assetLabels={},labelPending={};
+// Lockout queue. `lockoutActive` names the ONE declaration currently in the modal;
+// `lockoutStage` is 'receive' (hold to confirm) or 'protocol' (confirm prep cleared).
+// Pending cases wait in `lockoutQueue` and are shown one at a time, dismissed
+// individually. Deliberately NOT one modal with a count: a single hold clearing four
+// cases is one operator action standing in for four distinct acknowledgements.
+var lockoutQueue=[],lockoutActive=null,lockoutStage=null,lastAnaphAlarm=0;
+// In-flight guard for the delivery handshake, so a load + a realtime INSERT racing the
+// same row do not both issue the UPDATE. Not a substitute for the IS NULL guard.
+var deliveryPending={};
 var ACK_TIMEOUT=90000,ACK_TIMEOUT_ANAPH=30000;
 var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Sour cream','Buttermilk'],milk:['Whole milk','Skim milk','Cream','Butter','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Ice cream'],eggs:['Whole eggs','Egg whites','Egg yolks','Mayonnaise','Meringue','Albumin','Lysozyme','Aioli'],peanuts:['Peanut oil','Peanut butter','Peanut flour','Ground nuts','Mixed nuts','Satay','Arachis oil'],'tree nuts':['Almonds','Cashews','Walnuts','Pecans','Pistachios','Macadamia','Hazelnuts','Brazil nuts','Pine nuts','Marzipan','Praline','Nougat'],fish:['Cod','Salmon','Tuna','Bass','Anchovy','Sardine','Fish sauce','Worcestershire','Caesar dressing','Fish stock','Surimi'],shellfish:['Shrimp','Crab','Lobster','Crawfish','Mussels','Clams','Oysters','Scallops','Squid','Calamari'],wheat:['Flour','Bread','Pasta','Breadcrumbs','Couscous','Semolina','Durum','Spelt','Farro','Seitan','Soy sauce','Roux'],soy:['Soy sauce','Tofu','Tempeh','Edamame','Miso','Soy lecithin','Soybean oil','Soy protein','Tamari'],sesame:['Sesame oil','Sesame seeds','Tahini','Hummus','Halva','Sesame paste','Gomashio'],gluten:['Wheat flour','Barley','Rye','Bread','Pasta','Beer','Soy sauce','Breadcrumbs','Couscous','Malt','Seitan'],mustard:['Yellow mustard','Dijon','Whole grain mustard','Mustard powder','Mustard seed','Mustard oil'],celery:['Celery stalks','Celery salt','Celery seed','Celeriac','Celery powder','Soup stock'],lupin:['Lupin flour','Lupin seeds','Lupin beans','Some breads','Some pastries'],mollusks:['Clams','Mussels','Oysters','Scallops','Snails','Squid','Octopus','Calamari'],'sulfur dioxide':['Wine','Dried fruit','Pickled foods','Vinegar','Some juices','Molasses']};
 function getAllergenDef(n){return ALLERGEN_DEFS[(n||'').toLowerCase()]||null}
@@ -239,6 +252,254 @@ function guestLabel(c){
   var gn='Guest';
   if(c.guest_name){var p=c.guest_name.split(' ');gn=p[0].toUpperCase();if(p.length>1&&p[1])gn+=' '+p[1].charAt(0).toUpperCase()+'.';}
   return gn;
+}
+
+// =====================================================================
+// INGEST CONTRACT
+// =====================================================================
+// ingestDeclaration() is the ONLY way a declaration may enter `cards`. Four paths
+// reach it - cache restore, initial/resync load, realtime INSERT, realtime UPDATE -
+// and previously only the realtime INSERT branch carried the escalation contract.
+// A board that reconnected mid-service therefore ingested anaphylaxis rows SILENTLY:
+// no lockout, no alarm, and no delivered_to_kitchen_at write, so the gap was
+// invisible on both ends. Every branch now goes through here.
+//
+// UNDERSCORE-FIELD CONTRACT (one rule, every path):
+//   Underscore-prefixed fields are EPHEMERAL, IN-MEMORY, SESSION-SCOPED UI state.
+//   They are never persisted to the cache and never arrive from the database.
+//   foldRow() copies non-underscore keys only, which enforces the second half.
+//
+//   _assetLabel      derived table label; re-derived from assetLabels on every ingest
+//   _escalated       checkEscalations chime latch; cleared on a severity upgrade
+//   _updated         set when a continuation merged into this card. WRITE-ONLY since
+//                    the v2 rewrite (475ec9c) dropped the "UPDATED" badge that read
+//                    it. Kept because removing it is a UI decision, not an ingest one.
+//   _reackRequired   a merge forced re-acknowledgement. Load-bearing: the merge nulls
+//                    kitchen_ack_at LOCALLY while the row in the database still holds
+//                    the old ack, so any later fold of that row would silently restore
+//                    it and drop the re-ack requirement. foldRow re-applies the null.
+//   _error           transient row-level write error; self-clears after 8s
+//
+// Before this change `loadExisting()` did a wholesale `cards[d.id]=d`, dropping
+// _updated and _escalated, while the realtime UPDATE handler deliberately preserved
+// them - so the same card ended in different UI state depending on how it arrived.
+// One contract now covers both.
+function isUiField(k){return k.charAt(0)==='_'}
+function labelFrom(a){return (a&&a.label?a.label:'T?')+(a&&a.zone?' · '+a.zone:'')}
+function labelFor(assetId){return assetLabels[assetId]||'T?'}
+function rememberLabel(assetId,label){if(assetId&&label)assetLabels[assetId]=label}
+
+// Union, order-preserving, case-insensitive. Dedupe is REQUIRED, not cosmetic: the
+// fold below is monotonic, so without it every reconnect resync would concatenate the
+// row's own allergens onto themselves and the list would grow without bound.
+function unionAllergens(a,b){
+  var out=[],seen={};
+  (a||[]).concat(b||[]).forEach(function(x){
+    var k=String(x==null?'':x).trim().toLowerCase();
+    if(!k||seen[k])return;seen[k]=true;out.push(x);
+  });
+  return out;
+}
+// notes / guest_name merge rule - DETERMINISTIC, AUTHORITATIVE-WINS, NEVER CONCATENATE.
+// The incoming database value wins when it is non-empty; otherwise the value already
+// on the card is kept. Two reasons it is not concatenation: there is no correct way to
+// combine two guests' free text, and `notes` is guest-authored text rendered unlabelled
+// next to the derivative lists a cook acts on - gluing two of them together makes an
+// already-open placement problem worse. The non-empty guard keeps the merge additive in
+// intent: a follow-up row carrying no note must not erase a note the guest did write.
+function firstNonEmpty(a,b){
+  if(a!=null&&String(a).trim()!=='')return a;
+  return (b!=null&&String(b).trim()!=='')?b:(a==null?b:a);
+}
+
+// Fold an AUTHORITATIVE database row over the card already held.
+// Lifecycle columns (ack/verify/serve/close/delivery timestamps) are taken wholesale -
+// the database owns operational truth. The three safety-bearing fields fold
+// MONOTONICALLY (union / never-downgrade), which is what makes a re-fold safe: a
+// resync, a replayed UPDATE, or a reconnect can never quietly drop an allergen or
+// lower a severity that a merge had already raised. The trade is that a genuine
+// downgrade in the database is not reflected on the board until reload; on an allergy
+// surface that failure direction is the correct one.
+function foldRow(cur,d){
+  var allergens=unionAllergens(cur.allergens,d.allergens);
+  var severity=maxSeverity(cur.severity,d.severity);
+  var xc=!!(cur.cross_contact||d.cross_contact);
+  var notes=firstNonEmpty(d.notes,cur.notes);
+  var gname=firstNonEmpty(d.guest_name,cur.guest_name);
+  Object.keys(d).forEach(function(k){if(!isUiField(k))cur[k]=d[k]});
+  cur.allergens=allergens;cur.severity=severity;cur.cross_contact=xc;
+  cur.notes=notes;cur.guest_name=gname;
+  if(cur._reackRequired)cur.kitchen_ack_at=null;
+  return cur;
+}
+
+// Merge only a genuine continuation: same guest session AND same table.
+// Both guards are load-bearing.
+//  - Truthy check: guest_session_id is nullable and most live rows are NULL, and
+//    `null === null` is true - without this, any NULL-session row merged into the
+//    first open NULL-session card.
+//  - asset_id check: a shared session id alone never proved same-table, so two guests
+//    sharing one would concatenate across tables. A cook would read allergens nobody
+//    at that table declared, and the guest who did declare them would have no card.
+function findContinuation(d){
+  if(!d.guest_session_id)return null;
+  return Object.keys(cards).find(function(id){
+    return cards[id].guest_session_id===d.guest_session_id&&cards[id].asset_id===d.asset_id&&!cards[id].closed_at
+  })||null;
+}
+
+// Content-only combine for a continuation. The host card keeps its own id and its own
+// lifecycle timestamps; only the safety content merges.
+function mergeContent(cur,d){
+  var before=cur.severity;
+  cur.allergens=unionAllergens(cur.allergens,d.allergens);
+  // Severity is reconciled, not silently kept (517eabf). Previously the merge left the
+  // existing value in place, so a guest adding an anaphylaxis allergen to a discomfort
+  // session stayed 'discomfort' - severity flattening on the reader side.
+  cur.severity=maxSeverity(cur.severity,d.severity);
+  // Cross-contact merges with the same never-downgrade shape. The lockout's XC badge
+  // reads this field and tableside computes it with some() across declared allergens,
+  // so a merge that drops it loses a flag the guest did set.
+  cur.cross_contact=!!(cur.cross_contact||d.cross_contact);
+  cur.notes=firstNonEmpty(d.notes,cur.notes);
+  cur.guest_name=firstNonEmpty(d.guest_name,cur.guest_name);
+  cur._updated=true;
+  cur._reackRequired=true;
+  cur.kitchen_ack_at=null;
+  // Everything downstream of severity is re-derived, not just stored. Row colour and
+  // the escalation timeout read c.severity and pick it up on the next render. The
+  // _escalated latch does NOT - and this line is the whole reason the timeout change
+  // takes effect. checkEscalations fires at most once per card (`!c._escalated`), so
+  // an upgraded card that already escalated as 'discomfort' would keep the 90s timeout
+  // it fired against and never get the 30s anaphylaxis one. Not redundant.
+  if(cur.severity!==before)delete cur._escalated;
+  return cur.severity!==before;
+}
+
+// The condition the lockout modal exists for: an un-acknowledged, still-open
+// anaphylaxis declaration. Deliberately independent of how the row arrived.
+function lockoutEligible(c){
+  return !!c&&isAnaph(c.severity)&&!c.kitchen_ack_at&&!c.closed_at&&!c.served_at;
+}
+
+// Alarm throttle. A load path can enqueue several cases in one tick; three overlapping
+// bursts of chimeAnaphylaxis() read as noise, not as three escalations. One burst per
+// 3s window, so a case arriving later still gets its own alarm.
+function anaphAlarm(){
+  var t=Date.now();if(t-lastAnaphAlarm<3000)return;lastAnaphAlarm=t;chimeAnaphylaxis();
+}
+
+function enqueueLockout(id){
+  if(lockoutActive===id)return;
+  if(lockoutQueue.indexOf(id)!==-1)return;
+  lockoutQueue.push(id);
+  anaphAlarm();
+  if(!lockoutActive)advanceLockout();
+}
+
+// Advances by EXACTLY ONE eligible case. Cases that were acknowledged, closed or
+// served while they waited are skipped here rather than pruned on write - the queue
+// holds ids, and eligibility is re-read from the card at the moment it would be shown.
+function advanceLockout(){
+  while(lockoutQueue.length){
+    var id=lockoutQueue.shift();
+    if(!lockoutEligible(cards[id]))continue;
+    lockoutActive=id;lockoutStage='receive';showLockout(id);return;
+  }
+  lockoutActive=null;lockoutStage=null;closeLockout();
+}
+
+function dismissLockout(id){
+  if(lockoutActive!==id)return;
+  lockoutActive=null;lockoutStage=null;
+  advanceLockout();
+}
+
+// delivered_to_kitchen_at handshake. ATOMIC, not a client-side check: the .is() filter
+// becomes `WHERE id = ? AND delivered_to_kitchen_at IS NULL`, and Postgres re-evaluates
+// that predicate after taking the row lock, so a replay, a reconnect resync, or a
+// second board cannot overwrite a true first-delivery timestamp with a later false one.
+// Reading the column client-side first and branching on it would leave exactly that
+// race open. ALLERGYSHIELD_EVENT_SCHEMA_V1 refuses to synthesize delivered_to_kitchen;
+// backfilling from a later ingest is the same error in a different direction.
+// Zero rows returned is the SUCCESS case for a row already delivered - not an error.
+function recordDelivery(id,existingTs){
+  if(!id||existingTs||deliveryPending[id])return;
+  deliveryPending[id]=true;
+  sb.from('allergen_declarations')
+    .update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName})
+    .eq('id',id)
+    .is('delivered_to_kitchen_at',null)
+    .select('id,delivered_to_kitchen_at,device_id')
+    .then(function(res){
+      delete deliveryPending[id];
+      if(res.error){console.error('[kitchen] delivery handshake failed:',res.error);return}
+      if(res.data&&res.data.length&&cards[id]){
+        cards[id].delivered_to_kitchen_at=res.data[0].delivered_to_kitchen_at;
+        cards[id].device_id=res.data[0].device_id;
+        cacheCards();
+      }
+    },function(e){delete deliveryPending[id];console.error('[kitchen] delivery handshake threw:',e)});
+}
+
+// source: 'cache' | 'load' | 'realtime-insert' | 'realtime-update'
+// Returns the id of the card the row landed on (a continuation returns its host).
+// Does NOT render - callers render once, so a load of N rows is one render.
+function ingestDeclaration(d,source){
+  if(!d||!d.id)return null;
+  // `assets` is a query artifact of the embed, not a column. Harvest the label into
+  // the session map and drop it so cards hold database columns only.
+  if(d.assets){rememberLabel(d.asset_id,labelFrom(d.assets));delete d.assets}
+
+  var id=d.id,fresh=!cards[id],merged=false;
+
+  // Continuation merge stays realtime-INSERT-only. Applying it on the load path would
+  // change which rows are one card on every refresh; that is a card-identity decision,
+  // not an ingest one, and is recorded as an open item rather than taken here.
+  if(source==='realtime-insert'&&fresh){
+    var host=findContinuation(d);
+    if(host){
+      mergeContent(cards[host],d);
+      id=host;merged=true;
+      // The merged-in row physically reached this board even though it renders inside
+      // another card. Stamp its own delivery so the audit trail is not a lie by omission.
+      recordDelivery(d.id,d.delivered_to_kitchen_at);
+    }
+  }
+
+  if(!merged){
+    if(fresh){
+      var seed={};Object.keys(d).forEach(function(k){if(!isUiField(k))seed[k]=d[k]});
+      cards[id]=seed;
+    }else{
+      foldRow(cards[id],d);
+    }
+    // 'cache' is a pre-network restore of local state, not evidence of delivery.
+    if(source!=='cache')recordDelivery(id,cards[id].delivered_to_kitchen_at);
+  }
+
+  var c=cards[id];
+  c._assetLabel=labelFor(c.asset_id);
+
+  // ---- escalation contract ----
+  // Skipped for 'cache': the restore runs before any network call, so it cannot know
+  // whether the row was acknowledged elsewhere since, and alarming on stale local
+  // state is its own trust violation. loadExisting() runs immediately after and arms
+  // escalation from authoritative data. On a board with no network at all the 1s
+  // checkEscalations latch still chimes for an un-acked anaphylaxis past 30s.
+  if(source!=='cache'){
+    if(lockoutEligible(c))enqueueLockout(id);
+    else if(merged)chimeStandard();
+    else if(fresh&&source==='realtime-insert')chimeStandard();
+    // No standard chime on 'load': a refresh is not a new arrival. The anaphylaxis
+    // lockout is asymmetric to that on purpose - it is an escalation, not a notice.
+  }
+
+  // The visible case was acknowledged/closed/served somewhere else (another board, or
+  // this board's own realtime echo). Advance rather than sit on a resolved lockout.
+  if(lockoutActive===id&&lockoutStage==='receive'&&!lockoutEligible(c))dismissLockout(id);
+
+  return id;
 }
 
 function renderCards(){
@@ -410,8 +671,15 @@ async function doAck(id){
   var {error}=await sb.from('allergen_declarations').update({kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:'acknowledged'}).eq('id',id);
   if(error){console.error('[kitchen] acknowledge failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't acknowledge — try again");return}
   delete c._error;
+  // The re-ack the merge demanded has now happened, and the database row carries the
+  // fresh timestamp, so foldRow must stop re-nulling it.
+  delete c._reackRequired;
   chimeAck();
-  if(isAnaph(c.severity)){showLockoutProtocol(id)}else{closeLockout()}
+  // Anaphylaxis stays in the modal for stage 2 (prep area) on the SAME card - the
+  // queue must not advance here. dismissLockout is a no-op unless `id` is the case
+  // actually on screen, so acknowledging an inline card can never close another
+  // case's lockout.
+  if(isAnaph(c.severity)){showLockoutProtocol(id)}else{dismissLockout(id)}
   renderCards();cacheCards();
 }
 
@@ -424,7 +692,8 @@ async function confirmProtocol(id){
   if(error){console.error('[kitchen] protocol confirm failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't confirm prep area — try again");return}
   delete c._error;
   chimeAck();
-  closeLockout();renderCards();cacheCards();
+  // End of stage 2 - this case is done. Advance to the next queued lockout, if any.
+  dismissLockout(id);renderCards();cacheCards();
 }
 
 async function verifyDish(id){
@@ -466,12 +735,17 @@ function showLockout(id){
   lk.classList.add('on');
 }
 
+// Stage 2 for a case already in the modal. Claims the single modal slot explicitly so
+// a queued case cannot be shown over it.
 function showLockoutProtocol(id){
+  lockoutActive=id;lockoutStage='protocol';
   var lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
   lc.innerHTML='<div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid var(--ok);display:flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="stroke:var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="lockout-title" style="color:var(--ok)">ALLERGY RECEIVED</div><div class="lockout-sub">Confirm prep area, utensils, and surfaces are separated</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" onclick="confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
   lk.classList.add('on');
 }
 
+// Raw hide. Everything that ENDS a case goes through dismissLockout() so the queue
+// advances by exactly one; this is only the mechanical close.
 function closeLockout(){document.getElementById('lockout').classList.remove('on')}
 
 // Minimize is a local UI preference (ghosting the card into the side rail).
@@ -513,79 +787,113 @@ document.addEventListener('touchstart',resetDim);document.addEventListener('mous
 // cache re-renders at startup, and deleting the row from the database CANNOT reach it.
 // Changing the key is the only eviction path that exists. The removeItem calls clear
 // the old keys so a stale payload does not sit in storage indefinitely.
-var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
-function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
+// v3 - 2026-08-26, bumped when underscore fields stopped being persisted. A v2 payload
+// carries a latched _escalated and a stale _assetLabel; changing the key is the only
+// eviction path that exists, and it is what actually removes _escalated persistence by
+// subtraction. Deleting the write alone would leave latched payloads in storage on every
+// board already in service. The removeItem calls clear v1 and v2 so they do not sit
+// there indefinitely.
+var CACHE_K='hc_k_cards_v3',GHOST_K='hc_k_ghosts_v3',LABEL_K='hc_k_labels_v3';
+// Strips UI state on the way out - the cache holds database shape only. Derived table
+// labels are cached separately (LABEL_K) rather than as a card field, so an offline
+// reload still knows which table a card belongs to without smuggling _assetLabel back
+// into the payload.
+function stripUi(c){var o={};Object.keys(c).forEach(function(k){if(!isUiField(k))o[k]=c[k]});return o}
+function cacheCards(){try{
+  var pure={};Object.keys(cards).forEach(function(id){pure[id]=stripUi(cards[id])});
+  localStorage.setItem(CACHE_K,JSON.stringify(pure));
+  localStorage.setItem(GHOST_K,JSON.stringify(ghosted));
+  localStorage.setItem(LABEL_K,JSON.stringify(assetLabels));
+}catch(e){}}
+function cacheLabels(){try{localStorage.setItem(LABEL_K,JSON.stringify(assetLabels))}catch(e){}}
 function loadCache(){try{
-  localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
-  var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(c)cards=JSON.parse(c);if(g)ghosted=JSON.parse(g)}catch(e){}}
+  ['hc_k_cards','hc_k_ghosts','hc_k_cards_v2','hc_k_ghosts_v2'].forEach(function(k){localStorage.removeItem(k)});
+  var l=localStorage.getItem(LABEL_K);if(l)assetLabels=JSON.parse(l)||{};
+  var g=localStorage.getItem(GHOST_K);if(g)ghosted=JSON.parse(g)||{};
+  // Restore through the ingest contract like every other path, so a cached row cannot
+  // enter `cards` in a shape no other path could produce.
+  var c=localStorage.getItem(CACHE_K);
+  if(c){var parsed=JSON.parse(c)||{};Object.keys(parsed).forEach(function(k){ingestDeclaration(parsed[k],'cache')})}
+}catch(e){}}
 function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
 
+// The load path. Also the resync path - see subscribe(). Every row goes through
+// ingestDeclaration, so an un-acknowledged anaphylaxis row picked up here locks out,
+// alarms, and records delivery exactly as one arriving over realtime does. Before this
+// it was `cards[d.id]=d` with no severity branch at all, which is how a board that
+// reconnected mid-service ingested anaphylaxis silently.
 async function loadExisting(){
   if(!venueId)return;
   var today=new Date();today.setHours(0,0,0,0);
-  var {data}=await sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false});
-  if(data){data.forEach(function(d){d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');cards[d.id]=d});renderCards();cacheCards()}
+  var {data,error}=await sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false});
+  if(error){console.error('[kitchen] load failed:',error);setOnline(false);return}
+  if(!data)return;
+  setOnline(true);
+  // Ingested oldest-first so the lockout queue surfaces the longest-waiting case first.
+  // The query stays newest-first because renderCards does its own sort.
+  data.slice().reverse().forEach(function(d){ingestDeclaration(d,'load')});
+  renderCards();cacheCards();
+}
+
+// Backfills the window a dropped channel missed. Throttled so a wake-then-resubscribe
+// does not fire it twice.
+var resyncAt=0;
+function resync(){var t=Date.now();if(t-resyncAt<3000)return;resyncAt=t;loadExisting()}
+
+// Resolves a table label without blocking ingest. Previously the realtime INSERT
+// handler awaited this fetch BEFORE touching cards, so a failed or hanging assets
+// query meant the declaration never ingested at all - a second silent alarm-loss path
+// on the same surface. The card now lands first and the label patches in after.
+function resolveAssetLabel(assetId){
+  if(!assetId||assetLabels[assetId]||labelPending[assetId])return;
+  labelPending[assetId]=true;
+  sb.from('assets').select('label,zone').eq('id',assetId).single().then(function(res){
+    delete labelPending[assetId];
+    if(res.error||!res.data)return;
+    rememberLabel(assetId,labelFrom(res.data));
+    Object.keys(cards).forEach(function(k){if(cards[k].asset_id===assetId)cards[k]._assetLabel=labelFor(assetId)});
+    // Repaint the modal if the case on screen is the one that just learned its label.
+    if(lockoutActive&&lockoutStage==='receive'&&cards[lockoutActive]&&cards[lockoutActive].asset_id===assetId)showLockout(lockoutActive);
+    renderCards();cacheLabels();
+  },function(e){delete labelPending[assetId];console.error('[kitchen] asset label lookup failed:',e)});
 }
 
 function subscribe(){
   if(!venueId)return;
+  var everSubscribed=false;
   sb.channel('kitchen-'+venueId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
-      var d=payload.new;
-      sb.from('assets').select('label,zone').eq('id',d.asset_id).single().then(function(res){
-        d._assetLabel=(res.data?res.data.label:'T?')+(res.data&&res.data.zone?' · '+res.data.zone:'');
-        // Merge only a genuine continuation: same guest session AND same table.
-        // Both guards are load-bearing.
-        //  - Truthy check: guest_session_id is nullable and 6 of 9 live rows are
-        //    NULL, and `null === null` is true — without this, any NULL-session row
-        //    merged into the first open NULL-session card.
-        //  - asset_id check: a shared session id alone never proved same-table, so
-        //    two guests sharing one would concatenate across tables. A cook would
-        //    read allergens nobody at that table declared, and the guest who did
-        //    declare them would have no card at all.
-        var existing=d.guest_session_id&&Object.keys(cards).find(function(id){
-          return cards[id].guest_session_id===d.guest_session_id&&cards[id].asset_id===d.asset_id&&!cards[id].closed_at
-        });
-        if(existing){
-          var cur=cards[existing];
-          // Severity is reconciled, not silently kept. Previously the merge left the
-          // existing value in place, so a guest adding an anaphylaxis allergen to a
-          // discomfort session stayed 'discomfort' — the same severity flattening
-          // fixed on the writer side in tableside a720b36, reappearing on the reader.
-          var merged=maxSeverity(cur.severity,d.severity);
-          var upgraded=merged!==cur.severity;
-          cur._updated=true;
-          cur.allergens=(cur.allergens||[]).concat(d.allergens||[]);
-          cur.severity=merged;
-          // Cross-contact merges with the same never-downgrade shape as severity.
-          // Discarding d.cross_contact flattened it exactly as severity was flattened:
-          // the lockout's XC badge reads this field, and tableside computes it with
-          // some() across the declared allergens, so a merge that drops it loses a
-          // flag the guest did set.
-          cur.cross_contact=cur.cross_contact||d.cross_contact;
-          cur.kitchen_ack_at=null;
-          // Everything downstream of severity is re-derived, not just stored. Row
-          // colour (buildCard sevCol/rowCls) and the escalation timeout
-          // (checkEscalations isAnaph) read c.severity and pick it up on the render
-          // below. The _escalated latch does NOT — and this next line is the whole
-          // reason the timeout change takes effect. checkEscalations fires at most
-          // once per card (`!c._escalated`), so an upgraded card that already
-          // escalated as 'discomfort' would keep the 90s timeout it fired against and
-          // never get the 30s anaphylaxis one. That defect would have survived the
-          // severity fix and been invisible: severity correct on the card, escalation
-          // still slow. Not redundant — do not remove.
-          if(upgraded)delete cur._escalated;
-          if(isAnaph(merged)){chimeAnaphylaxis();showLockout(existing)}else{chimeStandard()}
-        }
-        else{cards[d.id]=d;sb.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}}
-        renderCards();cacheCards();resetDim();
-      });
+      // Ingest FIRST, label second. The alarm path must not sit behind a network call.
+      ingestDeclaration(payload.new,'realtime-insert');
+      renderCards();cacheCards();resetDim();
+      resolveAssetLabel(payload.new.asset_id);
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
-      var d=payload.new;if(cards[d.id]){var ui={_assetLabel:cards[d.id]._assetLabel,_updated:cards[d.id]._updated,_escalated:cards[d.id]._escalated};cards[d.id]=Object.assign(d,ui);if(d.closed_at)delete ghosted[d.id];renderCards();cacheCards()}
+      var d=payload.new;
+      // Unchanged: an UPDATE for a row this board has never seen is ignored. The
+      // resync below is what closes that window, rather than half-ingesting a row
+      // whose INSERT was missed.
+      if(!cards[d.id])return;
+      ingestDeclaration(d,'realtime-update');
+      if(d.closed_at)delete ghosted[d.id];
+      renderCards();cacheCards();
     })
-    .subscribe(function(status){if(status==='SUBSCRIBED')setOnline(true);else if(status==='CLOSED'||status==='CHANNEL_ERROR')setOnline(false)});
+    .subscribe(function(status){
+      if(status==='SUBSCRIBED'){
+        setOnline(true);
+        // A RE-subscribe means the channel dropped and recovered. Anything inserted
+        // during the gap was never delivered to this board; without this the board
+        // looks healthy and is missing rows.
+        if(everSubscribed)resync();
+        everSubscribed=true;
+      }
+      else if(status==='CLOSED'||status==='CHANNEL_ERROR')setOnline(false);
+    });
 }
+
+// Tablet wake / tab restore. A socket can die without ever emitting CLOSED, so
+// resubscribe alone is not sufficient coverage for the named failure mode.
+document.addEventListener('visibilitychange',function(){if(!document.hidden)resync()});
 
 async function loadVenue(){
   if(!venueId)return;
