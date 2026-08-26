@@ -10,8 +10,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
-:root{--bg:#0d1117;--s1:#141d2b;--s2:#1a2535;--b:#1e2d3d;--b2:#2d3f54;--cyan:#22d3ee;--warn:#f59e0b;--danger:#ef4444;--ok:#10b981;--t1:#e2e8f0;--t2:#94a3b8}
-body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--danger:#f33;--warn:#fc0;--t1:#fff;--t2:#ccc}
+:root{--bg:#0d1117;--s1:#141d2b;--s2:#1a2535;--b:#1e2d3d;--b2:#2d3f54;--b-soft:rgba(30,45,61,.3);--cyan:#22d3ee;--warn:#f59e0b;--danger:#ef4444;--ok:#10b981;--t1:#e2e8f0;--t2:#94a3b8;--t3:#636e7b;--t4:#4a5568}
+body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(51,51,51,.3);--danger:#f33;--warn:#fc0;--ok:#0f0;--cyan:#0ff;--t1:#fff;--t2:#ccc;--t3:#999;--t4:#777}
 #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .hdr{height:52px;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 20px;flex-shrink:0;z-index:100}
 .hdr-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),#0891b2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--bg);margin-right:10px;flex-shrink:0}
@@ -37,12 +37,12 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--danger:#f33;-
 .offline-banner{display:none;position:fixed;top:52px;left:0;right:0;background:rgba(239,68,68,.15);border-bottom:2px solid var(--danger);padding:14px 20px;z-index:90;text-align:center;color:var(--danger);font-size:20px;font-weight:700}
 .offline-banner.on{display:block}
 .main{flex:1;overflow-y:auto;padding:12px 16px;position:relative}
-.sec-l{font-size:13px;font-weight:700;color:#636e7b;text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px 4px;display:flex;align-items:center;gap:8px}
+.sec-l{font-size:13px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px 4px;display:flex;align-items:center;gap:8px}
 .sec-ct{font-size:12px;padding:2px 8px;border-radius:10px;font-weight:700}
-.sec-ct.red{background:rgba(239,68,68,.15);color:#ef4444}
-.sec-ct.amber{background:rgba(245,158,11,.12);color:#f59e0b}
-.sec-ct.gray{background:rgba(148,163,184,.08);color:#94a3b8}
-.sec-ln{flex:1;height:1px;background:#1e2d3d}
+.sec-ct.red{background:rgba(239,68,68,.15);color:var(--danger)}
+.sec-ct.amber{background:rgba(245,158,11,.12);color:var(--warn)}
+.sec-ct.gray{background:rgba(148,163,184,.08);color:var(--t2)}
+.sec-ln{flex:1;height:1px;background:var(--b)}
 .row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--s1);border-radius:10px 10px 0 0;cursor:pointer;position:relative;overflow:hidden;border:1px solid transparent;border-bottom:none}
 .row.closed{border-radius:10px;border-bottom:1px solid transparent;margin-bottom:6px}
 .row.pulse-r{animation:rp 1.2s ease infinite}
@@ -54,63 +54,63 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--danger:#f33;-
 @keyframes ap{0%,100%{border-color:rgba(245,158,11,.5)}50%{border-color:rgba(245,158,11,.1)}}
 .row .ac{position:absolute;left:0;top:0;bottom:0;width:4px}
 .r-tbl{font-size:22px;font-weight:700;color:#fff;min-width:40px}
-.r-guest{font-size:17px;font-weight:600;color:#e2e8f0;min-width:80px}
+.r-guest{font-size:17px;font-weight:600;color:var(--t1);min-width:80px}
 .r-al{font-size:22px;font-weight:700;flex:1}
 .r-sev{padding:4px 10px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase}
-.r-sev.r{background:rgba(239,68,68,.2);color:#ef4444}
-.r-sev.a{background:rgba(245,158,11,.15);color:#f59e0b}
+.r-sev.r{background:rgba(239,68,68,.2);color:var(--danger)}
+.r-sev.a{background:rgba(245,158,11,.15);color:var(--warn)}
 .r-xc{padding:3px 8px;border-radius:6px;font-size:13px;font-weight:700}
-.r-xc.r{background:rgba(239,68,68,.15);color:#ef4444}
-.r-xc.a{background:rgba(245,158,11,.08);color:#f59e0b}
+.r-xc.r{background:rgba(239,68,68,.15);color:var(--danger)}
+.r-xc.a{background:rgba(245,158,11,.08);color:var(--warn)}
 .r-tm{font-size:18px;font-weight:600;color:#fff;min-width:80px;text-align:right;font-variant-numeric:tabular-nums}
 .stages{display:flex;align-items:center;gap:0;min-width:100px}
-.stg{width:16px;height:16px;border-radius:50%;border:2px solid #2d3f54;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.stg.da{border-color:#f59e0b;background:#f59e0b}
-.stg.dv{border-color:#10b981;background:#10b981}
-.stg.dg{border-color:#636e7b;background:#636e7b}
+.stg{width:16px;height:16px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stg.da{border-color:var(--warn);background:var(--warn)}
+.stg.dv{border-color:var(--ok);background:var(--ok)}
+.stg.dg{border-color:var(--t3);background:var(--t3)}
 .stg svg{width:9px;height:9px}
-.sln{width:12px;height:2px;background:#1e2d3d;flex-shrink:0}
-.sln.da{background:#f59e0b}
-.sln.dv{background:#10b981}
-.sln.dg{background:#636e7b}
-.exp{background:var(--s1);border:1px solid #1e2d3d;border-top:none;border-radius:0 0 10px 10px;padding:4px 18px 16px;margin-bottom:6px}
-.row-err{padding:10px 14px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:#ef4444;font-size:14px;font-weight:600;margin:8px 0;text-align:center}
+.sln{width:12px;height:2px;background:var(--b);flex-shrink:0}
+.sln.da{background:var(--warn)}
+.sln.dv{background:var(--ok)}
+.sln.dg{background:var(--t3)}
+.exp{background:var(--s1);border:1px solid var(--b);border-top:none;border-radius:0 0 10px 10px;padding:4px 18px 16px;margin-bottom:6px}
+.row-err{padding:10px 14px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:var(--danger);font-size:14px;font-weight:600;margin:8px 0;text-align:center}
 .prog{display:flex;align-items:center;padding:10px 0}
 .ps{display:flex;flex-direction:column;align-items:center;flex:1}
-.pd{width:18px;height:18px;border-radius:50%;border:2px solid #2d3f54;display:flex;align-items:center;justify-content:center;z-index:2}
-.pd.da{border-color:#f59e0b;background:#f59e0b}
-.pd.dv{border-color:#10b981;background:#10b981}
-.pd.dg{border-color:#636e7b;background:#636e7b}
+.pd{width:18px;height:18px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;z-index:2}
+.pd.da{border-color:var(--warn);background:var(--warn)}
+.pd.dv{border-color:var(--ok);background:var(--ok)}
+.pd.dg{border-color:var(--t3);background:var(--t3)}
 .pd svg{width:10px;height:10px}
-.plbl{font-size:12px;font-weight:600;margin-top:3px;color:#4a5568}
-.plbl.a{color:#f59e0b}.plbl.v{color:#10b981}.plbl.g{color:#636e7b}
-.ptm{font-size:11px;color:#94a3b8;margin-top:1px}
-.pln{flex:1;height:2px;background:#1e2d3d;margin:0 -2px;z-index:1}
-.pln.a{background:#f59e0b}.pln.v{background:#10b981}.pln.g{background:#636e7b}
+.plbl{font-size:12px;font-weight:600;margin-top:3px;color:var(--t4)}
+.plbl.a{color:var(--warn)}.plbl.v{color:var(--ok)}.plbl.g{color:var(--t3)}
+.ptm{font-size:11px;color:var(--t2);margin-top:1px}
+.pln{flex:1;height:2px;background:var(--b);margin:0 -2px;z-index:1}
+.pln.a{background:var(--warn)}.pln.v{background:var(--ok)}.pln.g{background:var(--t3)}
 .avoid{border-left:3px solid;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0}
 .avoid-t{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
-.avoid-l{font-size:16px;font-weight:500;color:#e2e8f0;line-height:1.5}
-.avoid-miss{border-color:#94a3b8}
-.avoid-miss .avoid-t{color:#94a3b8}
-.avoid-miss .avoid-l{color:#94a3b8}
+.avoid-l{font-size:16px;font-weight:500;color:var(--t1);line-height:1.5}
+.avoid-miss{border-color:var(--t2)}
+.avoid-miss .avoid-t{color:var(--t2)}
+.avoid-miss .avoid-l{color:var(--t2)}
 .avoid.low{padding:6px 10px;margin:6px 0}
 .avoid.low .avoid-t{font-size:11px}
 .avoid.low .avoid-l{font-size:14px}
 .al-notes{font-size:16px;color:var(--t2);font-weight:500;margin:6px 0}
 .hold-btn{position:relative;overflow:hidden;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;cursor:pointer;border:none;width:100%;user-select:none;-webkit-user-select:none;touch-action:none;margin-top:10px}
-.hold-btn.red{background:#ef4444;color:#fff}
-.hold-btn.amber{background:#f59e0b;color:#0d1117}
-.hold-btn.green{background:#10b981;color:#fff}
+.hold-btn.red{background:var(--danger);color:#fff}
+.hold-btn.amber{background:var(--warn);color:var(--bg)}
+.hold-btn.green{background:var(--ok);color:#fff}
 .hold-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,0,0,.25);border-radius:10px}
 .hold-lbl{position:relative;z-index:1;display:flex;align-items:center;gap:6px}
-.pos-d{margin-top:10px;padding-top:10px;border-top:1px solid rgba(30,45,61,.3);display:flex;align-items:center;gap:6px;font-size:13px;color:#4a5568;font-weight:600}
-.pos-tag{padding:2px 8px;border-radius:4px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.12);font-size:11px;color:#636e7b;font-weight:600;margin-left:4px}
+.pos-d{margin-top:10px;padding-top:10px;border-top:1px solid var(--b-soft);display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t4);font-weight:600}
+.pos-tag{padding:2px 8px;border-radius:4px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.12);font-size:11px;color:var(--t3);font-weight:600;margin-left:4px}
 .ghost-tabs{position:fixed;right:0;top:52px;bottom:40px;width:36px;display:flex;flex-direction:column;gap:4px;padding:8px 0;z-index:50}
 .ghost-tab{width:36px;min-height:80px;border-radius:8px 0 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;writing-mode:vertical-lr;text-orientation:mixed}
 .ghost-tab.amber{background:rgba(245,158,11,.6)}
 .ghost-tab.red{background:rgba(239,68,68,.7)}
 .summary{height:40px;background:var(--s1);border-top:1px solid var(--b);display:flex;align-items:center;justify-content:center;gap:14px;font-size:14px;font-weight:600;color:var(--t2);flex-shrink:0}
-.summary .w{color:#fff}.summary .rd{color:#ef4444;font-weight:700}
+.summary .w{color:#fff}.summary .rd{color:var(--danger);font-weight:700}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:.5}
 .empty svg{margin-bottom:20px}
 .empty-text{font-size:24px;font-weight:600;color:var(--t2)}
@@ -143,7 +143,7 @@ body.dimmed .summary{opacity:.3}
 </div>
 <div class="offline-banner" id="offlineBanner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
 <div class="lockout" id="lockout"><div class="lockout-card" id="lockoutContent"></div></div>
-<div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div></div>
+<div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div></div>
 <div class="ghost-tabs" id="ghostTabs"></div>
 <div class="summary" id="summaryBar"><span class="w">0 Tables</span> · <span class="w">0 Allergies</span></div>
 </div>
@@ -255,7 +255,7 @@ function renderCards(){
   needs.sort(sSort);working.sort(sSort);served.sort(sSort);
 
   if(!needs.length&&!working.length&&!served.length&&!ghostIds.length){
-    area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path fill="#22d3ee" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div>';
+    area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div>';
     updateSummary();resetDim();return;
   }
 
@@ -263,8 +263,8 @@ function renderCards(){
   function buildCard(id){
     var c=cards[id],an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
     var acked=!!c.kitchen_ack_at,proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
-    var sevCol=an?'#ef4444':sv==='severe'?'#f59e0b':sv==='discomfort'?'#22d3ee':'#94a3b8';
-    var accCol=isSrv?'#636e7b':verified?'#10b981':sevCol;
+    var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
+    var accCol=isSrv?'var(--t3)':verified?'var(--ok)':sevCol;
     var rowCls=isSrv?'row closed served':(!acked?(an?'row pulse-r':'row pulse-a'):(verified?'row closed safe':'row working'));
     var allergens=(c.allergens||[]).join(', ');
     var exId='ex-'+id;
@@ -283,12 +283,12 @@ function renderCards(){
 
     h+='<div class="'+rowCls+'" onclick="toggleCard(\''+esc(id)+'\')">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
-    h+='<div class="r-tbl"'+(isSrv?' style="color:#636e7b"':'')+'>'+esc((c._assetLabel||'Table').split(' ')[0])+'</div>';
-    h+='<div class="r-guest"'+(isSrv?' style="color:#636e7b"':'')+'>'+esc(guestLabel(c))+'</div>';
-    h+='<div class="r-al" style="color:'+(isSrv?'#636e7b':sevCol)+'">'+esc(allergens)+'</div>';
-    h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:#636e7b"':'')+'>'+esc((c.severity||'unknown').toUpperCase())+'</div>';
+    h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||'Table').split(' ')[0])+'</div>';
+    h+='<div class="r-guest"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc(guestLabel(c))+'</div>';
+    h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
+    h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:var(--t3)"':'')+'>'+esc((c.severity||'unknown').toUpperCase())+'</div>';
     if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">XC</div>';
-    h+='<div class="r-tm"'+(isSrv?' style="color:#636e7b"':'')+' id="timer-'+esc(id)+'">'+(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</div>';
+    h+='<div class="r-tm"'+(isSrv?' style="color:var(--t3)"':'')+' id="timer-'+esc(id)+'">'+(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</div>';
     h+='<div class="stages">'+d1+l1+d2+l2+d3+l3+d4+'</div>';
     h+='</div>';
 
@@ -384,7 +384,7 @@ function updateSummary(){
   p.push('<span class="w">'+alCount+' Allerg'+(alCount!==1?'ies':'y')+'</span>');
   if(anCount)p.push('<span class="rd">'+anCount+' Anaphylaxis</span>');
   if(unack)p.push('<span class="rd">'+unack+' Need Action</span>');
-  else if(ids.length)p.push('<span style="color:#10b981">All Confirmed</span>');
+  else if(ids.length)p.push('<span style="color:var(--ok)">All Confirmed</span>');
   document.getElementById('summaryBar').innerHTML=p.join(' · ');
 }
 
@@ -459,16 +459,16 @@ function showLockout(id){
   // apply here — the lockout only fires on anaphylaxis, so every block is full weight.
   (c.allergens||[]).forEach(function(a){
     var d=getAllergenDef(a);
-    if(d)avoidHtml+='<div style="border-left:3px solid #ef4444;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:4px">Avoid all — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:#e2e8f0;line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
-    else avoidHtml+='<div style="border-left:3px solid #94a3b8;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px">No derivative list — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:#94a3b8;line-height:1.5">Not in the reference list. Confirm ingredients with the guest.</div></div>';
+    if(d)avoidHtml+='<div style="border-left:3px solid var(--danger);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--danger);text-transform:uppercase;margin-bottom:4px">Avoid all — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t1);line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
+    else avoidHtml+='<div style="border-left:3px solid var(--t2);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">No derivative list — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t2);line-height:1.5">Not in the reference list. Confirm ingredients with the guest.</div></div>';
   });
-  lc.innerHTML='<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:#e2e8f0;margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:#ef4444;margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#ef4444">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
+  lc.innerHTML='<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
   lk.classList.add('on');
 }
 
 function showLockoutProtocol(id){
   var lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
-  lc.innerHTML='<div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid #10b981;display:flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="lockout-title" style="color:#10b981">ALLERGY RECEIVED</div><div class="lockout-sub">Confirm prep area, utensils, and surfaces are separated</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" onclick="confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
+  lc.innerHTML='<div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid var(--ok);display:flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="stroke:var(--ok)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="lockout-title" style="color:var(--ok)">ALLERGY RECEIVED</div><div class="lockout-sub">Confirm prep area, utensils, and surfaces are separated</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" onclick="confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
   lk.classList.add('on');
 }
 
