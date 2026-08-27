@@ -157,6 +157,11 @@ var venueId=params.get('venue');
 var deviceName=params.get('device')||'Kitchen Display';
 var cards={},ghosted={},muted=false,volume=0.6,audioReady=false,ctx=null,online=true,dimTimer=null;
 var ACK_TIMEOUT=90000,ACK_TIMEOUT_ANAPH=30000;
+// Ceiling for a READ. Reads have no side effect, so a timeout here is always safe to
+// treat as a plain failure. 10s is "slow venue AP but working" territory; past it the
+// board is silently wrong and a resync is the recovery, not a longer wait.
+// WRITES ARE DELIBERATELY NOT BOUNDED — see boundRead().
+var READ_TIMEOUT_MS=10000;
 var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Sour cream','Buttermilk'],milk:['Whole milk','Skim milk','Cream','Butter','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Ice cream'],eggs:['Whole eggs','Egg whites','Egg yolks','Mayonnaise','Meringue','Albumin','Lysozyme','Aioli'],peanuts:['Peanut oil','Peanut butter','Peanut flour','Ground nuts','Mixed nuts','Satay','Arachis oil'],'tree nuts':['Almonds','Cashews','Walnuts','Pecans','Pistachios','Macadamia','Hazelnuts','Brazil nuts','Pine nuts','Marzipan','Praline','Nougat'],fish:['Cod','Salmon','Tuna','Bass','Anchovy','Sardine','Fish sauce','Worcestershire','Caesar dressing','Fish stock','Surimi'],shellfish:['Shrimp','Crab','Lobster','Crawfish','Mussels','Clams','Oysters','Scallops','Squid','Calamari'],wheat:['Flour','Bread','Pasta','Breadcrumbs','Couscous','Semolina','Durum','Spelt','Farro','Seitan','Soy sauce','Roux'],soy:['Soy sauce','Tofu','Tempeh','Edamame','Miso','Soy lecithin','Soybean oil','Soy protein','Tamari'],sesame:['Sesame oil','Sesame seeds','Tahini','Hummus','Halva','Sesame paste','Gomashio'],gluten:['Wheat flour','Barley','Rye','Bread','Pasta','Beer','Soy sauce','Breadcrumbs','Couscous','Malt','Seitan'],mustard:['Yellow mustard','Dijon','Whole grain mustard','Mustard powder','Mustard seed','Mustard oil'],celery:['Celery stalks','Celery salt','Celery seed','Celeriac','Celery powder','Soup stock'],lupin:['Lupin flour','Lupin seeds','Lupin beans','Some breads','Some pastries'],mollusks:['Clams','Mussels','Oysters','Scallops','Snails','Squid','Octopus','Calamari'],'sulfur dioxide':['Wine','Dried fruit','Pickled foods','Vinegar','Some juices','Molasses']};
 function getAllergenDef(n){return ALLERGEN_DEFS[(n||'').toLowerCase()]||null}
 
@@ -401,13 +406,27 @@ function endHold(id){if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);del
 // the local state is reverted to the prior valid state so the operator never
 // sees an indeterminate mixed state. Chime + cache fire ONLY after the DB
 // confirms — the chime now means "the database accepted the transition."
+// IN-FLIGHT GUARD (_writing) — on all five write paths below.
+// Without it a stalled write plus a repeating operator accumulates hung requests without
+// bound: the hold gesture stays reachable (or the modal button does), each repeat fires
+// another optimistic mutation and another request that never returns.
+// Contract: UI-ephemeral. Never written to the database. Never cached — see cacheCards().
+// It is cleared immediately after the await, BEFORE the error branch, so a failure cannot
+// leave a card permanently locked.
+// ⚠ On a HANG the await never returns, so the flag is never cleared and that card stays
+// blocked until a page reload. That is the intended trade — a locked card beats unbounded
+// hung requests — but it is a real consequence and nothing on screen announces it.
+// Surfacing it belongs to the write-path session along with indeterminate state.
 async function doAck(id){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var c=cards[id];if(!c)return;
+  if(c._writing)return;
+  c._writing=true;
   var prev={kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:c.status};
   c.kitchen_ack_at=new Date().toISOString();c.kitchen_ack_by=deviceName;c.status='acknowledged';
   renderCards();
   var {error}=await sb.from('allergen_declarations').update({kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:'acknowledged'}).eq('id',id);
+  delete c._writing;
   if(error){console.error('[kitchen] acknowledge failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't acknowledge — try again");return}
   delete c._error;
   chimeAck();
@@ -417,10 +436,13 @@ async function doAck(id){
 
 async function confirmProtocol(id){
   var c=cards[id];if(!c)return;
+  if(c._writing)return;
+  c._writing=true;
   var prev={protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by};
   c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
   renderCards();
   var {error}=await sb.from('allergen_declarations').update({protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by}).eq('id',id);
+  delete c._writing;
   if(error){console.error('[kitchen] protocol confirm failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't confirm prep area — try again");return}
   delete c._error;
   chimeAck();
@@ -429,10 +451,13 @@ async function confirmProtocol(id){
 
 async function verifyDish(id){
   var c=cards[id];if(!c)return;
+  if(c._writing)return;
+  c._writing=true;
   var prev={verified_at:c.verified_at,verified_by:c.verified_by};
   c.verified_at=new Date().toISOString();c.verified_by=deviceName;
   renderCards();
   var {error}=await sb.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
+  delete c._writing;
   if(error){console.error('[kitchen] verify failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
   delete c._error;
   chimeAck();
@@ -441,10 +466,13 @@ async function verifyDish(id){
 
 async function markServed(id){
   var c=cards[id];if(!c)return;
+  if(c._writing)return;
+  c._writing=true;
   var prev={served_at:c.served_at,status:c.status};
   c.served_at=new Date().toISOString();c.status='resolved';
   renderCards();
   var {error}=await sb.from('allergen_declarations').update({served_at:c.served_at,status:'resolved'}).eq('id',id);
+  delete c._writing;
   if(error){console.error('[kitchen] mark served failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't mark served — try again");return}
   delete c._error;
   chimeAck();
@@ -480,8 +508,11 @@ function closeLockout(){document.getElementById('lockout').classList.remove('on'
 // the error so the divergence isn't silent.
 async function minimizeCard(id){
   if(!cards[id]||!cards[id].kitchen_ack_at)return;
+  if(cards[id]._writing)return;
+  cards[id]._writing=true;
   ghosted[id]=true;renderCards();
   var {error}=await sb.from('allergen_declarations').update({minimized_at:new Date().toISOString()}).eq('id',id);
+  delete cards[id]._writing;
   if(error){console.error('[kitchen] minimize bookkeeping failed:',error);showRowError(id,"Hidden locally, but couldn't sync — try again");return}
   delete cards[id]._error;
   cacheCards();
@@ -514,16 +545,58 @@ document.addEventListener('touchstart',resetDim);document.addEventListener('mous
 // Changing the key is the only eviction path that exists. The removeItem calls clear
 // the old keys so a stale payload does not sit in storage indefinitely.
 var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
-function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
+// _writing is stripped on the way out. It is an in-flight guard, not state, and it is
+// cleared by the function that set it — but a write that HANGS never reaches its clear,
+// so the flag can still be set when some OTHER card's write succeeds and calls this.
+// Persisting it there would restore a permanently locked card on the next load, which is
+// precisely the failure the guard's clear-before-error-branch exists to avoid.
+// Stripped by name rather than by a general underscore strip: that broader change is
+// refactor decision 5 on kitchen-shared-ingest and is deliberately not taken here.
+function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return k==='_writing'?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
 function loadCache(){try{
   localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
   var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(c)cards=JSON.parse(c);if(g)ghosted=JSON.parse(g)}catch(e){}}
 function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
 
+// Bounds a READ at READ_TIMEOUT_MS. `fetch` has no default timeout and supabase-js sets
+// none, so without this a half-open connection stalls the request forever — the await
+// never returns, no error is raised, and nothing on screen changes. That is strictly
+// worse than an error, because every error path in this file is already handled.
+//
+// An abort RESOLVES as {data:null,error:{name:'AbortError',…}} rather than rejecting, so
+// a timeout arrives at each call site in the shape its existing error handling already
+// expects. That is what makes this a bounded change instead of a restructure.
+//
+// AbortController + setTimeout, NOT AbortSignal.timeout() — the latter needs Safari/iOS
+// 16+ and the tablet's version is unverified. AbortController is universal.
+//
+// .retry(false) is FEATURE-DETECTED, not called blind. The client is loaded from
+// jsdelivr at a floating `@supabase/supabase-js@2`, so the bundle on the tablet is
+// whatever that resolved to; `.retry()` is recent and calling it unconditionally on an
+// older v2 would throw TypeError and take the whole board down. Not load-bearing either
+// way — the signal is passed to both the fetch and the retry backoff sleep, so the
+// abort already bounds the whole operation including any retries. Disabling them only
+// avoids spending the budget on attempts we would not wait for.
+//
+// ⚠ WRITES ARE NOT ROUTED THROUGH THIS. A write that times out may still have COMMITTED
+// server-side — the abort cancels this client's wait, not the server's transaction — so
+// the existing revert-on-error would assert "not acknowledged" about a row the database
+// may show as acknowledged. That needs indeterminate-state handling, not a timeout.
+function boundRead(q){
+  var ac=new AbortController();
+  var timer=setTimeout(function(){ac.abort()},READ_TIMEOUT_MS);
+  if(typeof q.retry==='function')q=q.retry(false);
+  function done(res){clearTimeout(timer);return res}
+  return q.abortSignal(ac.signal).then(done,function(e){clearTimeout(timer);throw e});
+}
+
 async function loadExisting(){
   if(!venueId)return;
   var today=new Date();today.setHours(0,0,0,0);
-  var {data}=await sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false});
+  var {data,error}=await boundRead(sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false}));
+  // `error` was not previously destructured at all, so a failed load was indistinguishable
+  // from an empty one. A timeout has nothing to surface without this.
+  if(error){console.error('[kitchen] load failed:',error);return}
   if(data){data.forEach(function(d){d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');cards[d.id]=d});renderCards();cacheCards()}
 }
 
@@ -532,7 +605,12 @@ function subscribe(){
   sb.channel('kitchen-'+venueId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
       var d=payload.new;
-      sb.from('assets').select('label,zone').eq('id',d.asset_id).single().then(function(res){
+      // Bounded because a hang here blocks ingest ENTIRELY — every ingest step
+      // (the cards write, the severity branch, chimeAnaphylaxis, showLockout, the
+      // delivery handshake) sits inside this callback. A timeout converts that into
+      // the already-correct failure case: res.data is null, the label falls back to
+      // 'T?', and ingest proceeds.
+      boundRead(sb.from('assets').select('label,zone').eq('id',d.asset_id).single()).then(function(res){
         d._assetLabel=(res.data?res.data.label:'T?')+(res.data&&res.data.zone?' · '+res.data.zone:'');
         // Merge only a genuine continuation: same guest session AND same table.
         // Both guards are load-bearing.
@@ -584,12 +662,28 @@ function subscribe(){
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
       var d=payload.new;if(cards[d.id]){var ui={_assetLabel:cards[d.id]._assetLabel,_updated:cards[d.id]._updated,_escalated:cards[d.id]._escalated};cards[d.id]=Object.assign(d,ui);if(d.closed_at)delete ghosted[d.id];renderCards();cacheCards()}
     })
-    .subscribe(function(status){if(status==='SUBSCRIBED')setOnline(true);else if(status==='CLOSED'||status==='CHANNEL_ERROR')setOnline(false)});
+    // TIMED_OUT was previously unhandled, so setOnline was never called for it and the
+    // heartbeat kept whatever state it already had. realtime-js emits it on its own 10s
+    // DEFAULT_TIMEOUT. Combined with the markup below that meant a board whose
+    // subscription timed out showed a GREEN heartbeat and no offline banner, having
+    // never received a single realtime message — positive confirmation of a liveness
+    // that was never established.
+    //
+    // ❓ OPEN QUESTION, NOT DECIDED HERE: the heartbeat's initial markup is
+    // `class="hb ok"` (:136) — green from page load, before any subscription is proven.
+    // Arguably it should start unknown/offline and only go green on the first
+    // SUBSCRIBED, since green-before-proven is the same class of unearned claim this
+    // line fixes. Deliberately NOT changed in this pass; recorded so it is decided
+    // rather than inherited.
+    .subscribe(function(status){
+      if(status==='SUBSCRIBED')setOnline(true);
+      else if(status==='CLOSED'||status==='CHANNEL_ERROR'||status==='TIMED_OUT')setOnline(false);
+    });
 }
 
 async function loadVenue(){
   if(!venueId)return;
-  var {data}=await sb.from('venues').select('name').eq('id',venueId).single();
+  var {data}=await boundRead(sb.from('venues').select('name').eq('id',venueId).single());
   if(data){document.getElementById('venueName').textContent=data.name+' · Kitchen';document.getElementById('venueLogo').textContent=data.name.charAt(0)}
 }
 
