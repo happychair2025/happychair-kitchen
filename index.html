@@ -96,7 +96,8 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .avoid.low{padding:6px 10px;margin:6px 0}
 .avoid.low .avoid-t{font-size:11px}
 .avoid.low .avoid-l{font-size:14px}
-.al-notes{font-size:16px;color:var(--t2);font-weight:500;margin:6px 0}
+.al-notes-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--t3);margin:10px 0 2px;padding-top:10px;border-top:1px solid var(--b)}
+.al-notes{font-size:16px;color:var(--t2);font-weight:500;margin:0 0 6px}
 .hold-btn{position:relative;overflow:hidden;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;cursor:pointer;border:none;width:100%;user-select:none;-webkit-user-select:none;touch-action:none;margin-top:10px}
 .hold-btn.red{background:var(--danger);color:#fff}
 .hold-btn.amber{background:var(--warn);color:var(--bg)}
@@ -336,7 +337,21 @@ function renderCards(){
     // that produced severity flattening. `severity` is a separate structured field, so
     // "severe reaction to …" may legitimately CONTRADICT it — and that contradiction is
     // exactly what a cook needs to see, not what we should quietly resolve by deletion.
-    if(c.notes&&!isSrv)h+='<div class="al-notes">'+esc(c.notes)+'</div>';
+    // Attributed and separated. Unlabelled, this sat in operator-instruction position
+    // directly under the AVOID ALL blocks — plain text following strongly-styled system
+    // guidance reads as a continuation of it, so guest-authored words looked like the
+    // system's own. Escaping made it safe; it did not make it attributed.
+    //
+    // BELOW the AVOID ALL blocks, not above: the derivative lists are the curated
+    // instruction and lead; guest notes are context for them. Promoting guest free text
+    // above the curated safety data would rank the less-verified source higher.
+    //
+    // A rule and a label, no container — this is read at a glance from across a kitchen
+    // and a boxed panel costs more attention than the attribution buys. The label reuses
+    // the .avoid-t idiom (uppercase, 13px, .3px tracking) so it adds no new visual
+    // language, in --t3 so it reads as a caption and never competes with the allergen
+    // headings above it.
+    if(c.notes&&!isSrv)h+='<div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div>';
 
     // Action buttons
     if(!acked){
