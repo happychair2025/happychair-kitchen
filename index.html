@@ -205,11 +205,6 @@ function maxSeverity(cur,inc){
   if(rc===undefined)return inc;
   return ri>rc?inc:cur;
 }
-// NOT SANITISATION. Strips three English phrases and trims, so the note reads as a
-// fragment on the card. It does NOT escape HTML — every caller must wrap the result in
-// esc(). It has already been mistaken for a sanitiser once.
-function stripNotes(n){if(!n)return'';return n.replace(/carries /gi,'').replace(/severe reaction to /gi,'').replace(/if exposed to /gi,'').trim()}
-
 // Escape EVERY value interpolated into innerHTML. This file builds every surface by
 // string concatenation, and `allergens` / `notes` are guest-controlled free text that
 // arrives through an UNAUTHENTICATED insert — anyone holding the publishable key can
@@ -330,7 +325,18 @@ function renderCards(){
         else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">No derivative list — '+esc(a)+'</div><div class="avoid-l">Not in the reference list. Confirm ingredients with the guest.</div></div>';
       });
     }
-    if(c.notes&&!isSrv)h+='<div class="al-notes">'+esc(stripNotes(c.notes))+'</div>';
+    // ⚠ MUST STAY WRAPPED IN esc(). `notes` is guest-authored free text arriving through
+    // an UNAUTHENTICATED insert — anyone holding the publishable key can write it, for any
+    // venue. This warning previously lived on a stripNotes() helper; the helper is gone,
+    // the requirement is not.
+    //
+    // Rendered VERBATIM. stripNotes() used to delete "carries ", "severe reaction to " and
+    // "if exposed to " so the note read as a fragment. Removed: deleting a guest's own
+    // severity qualifier from a safety declaration to save a few words is the same instinct
+    // that produced severity flattening. `severity` is a separate structured field, so
+    // "severe reaction to …" may legitimately CONTRADICT it — and that contradiction is
+    // exactly what a cook needs to see, not what we should quietly resolve by deletion.
+    if(c.notes&&!isSrv)h+='<div class="al-notes">'+esc(c.notes)+'</div>';
 
     // Action buttons
     if(!acked){
