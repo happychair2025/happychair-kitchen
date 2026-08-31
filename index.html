@@ -164,7 +164,18 @@ var ACK_TIMEOUT=90000,ACK_TIMEOUT_ANAPH=30000;
 // WRITES ARE DELIBERATELY NOT BOUNDED — see boundRead().
 var READ_TIMEOUT_MS=10000;
 var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Sour cream','Buttermilk'],milk:['Whole milk','Skim milk','Cream','Butter','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Ice cream'],eggs:['Whole eggs','Egg whites','Egg yolks','Mayonnaise','Meringue','Albumin','Lysozyme','Aioli'],peanuts:['Peanut oil','Peanut butter','Peanut flour','Ground nuts','Mixed nuts','Satay','Arachis oil'],'tree nuts':['Almonds','Cashews','Walnuts','Pecans','Pistachios','Macadamia','Hazelnuts','Brazil nuts','Pine nuts','Marzipan','Praline','Nougat'],fish:['Cod','Salmon','Tuna','Bass','Anchovy','Sardine','Fish sauce','Worcestershire','Caesar dressing','Fish stock','Surimi'],shellfish:['Shrimp','Crab','Lobster','Crawfish','Mussels','Clams','Oysters','Scallops','Squid','Calamari'],wheat:['Flour','Bread','Pasta','Breadcrumbs','Couscous','Semolina','Durum','Spelt','Farro','Seitan','Soy sauce','Roux'],soy:['Soy sauce','Tofu','Tempeh','Edamame','Miso','Soy lecithin','Soybean oil','Soy protein','Tamari'],sesame:['Sesame oil','Sesame seeds','Tahini','Hummus','Halva','Sesame paste','Gomashio'],gluten:['Wheat flour','Barley','Rye','Bread','Pasta','Beer','Soy sauce','Breadcrumbs','Couscous','Malt','Seitan'],mustard:['Yellow mustard','Dijon','Whole grain mustard','Mustard powder','Mustard seed','Mustard oil'],celery:['Celery stalks','Celery salt','Celery seed','Celeriac','Celery powder','Soup stock'],lupin:['Lupin flour','Lupin seeds','Lupin beans','Some breads','Some pastries'],mollusks:['Clams','Mussels','Oysters','Scallops','Snails','Squid','Octopus','Calamari'],'sulfur dioxide':['Wine','Dried fruit','Pickled foods','Vinegar','Some juices','Molasses']};
-function getAllergenDef(n){return ALLERGEN_DEFS[(n||'').toLowerCase()]||null}
+// .trim() is PREVENTATIVE, not a fix for observed data — no live row carries whitespace
+// in `allergens`. It defends against a confirmed WRITE-side defect in tableside, where
+// the custom-allergen path guards on allergenSearch.trim() (App.tsx :765) but then
+// compares and stores the UNTRIMMED string (:766, :768). " lactose" is stored with its
+// leading space — and since " ".toUpperCase() is " ", the capitalisation step silently
+// no-ops too. A stored " lactose" would miss this lookup and render NO DERIVATIVE LIST
+// for an allergen that has one.
+//
+// Lookup normalisation ONLY — trim and case. Deliberately no synonym or plural matching:
+// resolving Lactose → dairy is the system guessing at a safety instruction, and that
+// belongs in the curated reference table where it can be reviewed, not in a lookup.
+function getAllergenDef(n){return ALLERGEN_DEFS[(n||'').trim().toLowerCase()]||null}
 
 function activateAudio(){ctx=new(window.AudioContext||window.webkitAudioContext)();ctx.resume();audioReady=true;document.getElementById('audioPrompt').style.display='none';playChime(440,.1)}
 function playChime(f,d,v){if(!audioReady||!ctx)return;var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime((v||.3)*volume,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.start();o.stop(ctx.currentTime+d)}
