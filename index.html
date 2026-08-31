@@ -191,7 +191,40 @@ function toggleContrast(){document.body.classList.toggle('hc-mode');document.get
 // are reachable and auto-clears after 8s if no retry happens.
 function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;renderCards();setTimeout(function(){var ex=document.getElementById('ex-'+id);if(ex)ex.style.display=''},0);setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;renderCards()}},8000)}
 
-function fmtTimer(ts){if(!ts)return'0:00:00';var sec=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(sec<0||isNaN(sec))sec=0;var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+// Under 24h this stays h:mm:ss and keeps ticking every second. At/over 24h it rolls to
+// admin's day-scale form ("3d 23h", src/utils/formatTime.ts formatElapsed, added in
+// 9ca92bf for exactly this defect shape).
+//
+// It does NOT adopt formatElapsed wholesale, and the difference is deliberate. That
+// helper has MINUTE resolution — it renders "Just now" for the first minute. This timer
+// is a live clock on a surface where checkEscalations uses a 30-SECOND anaphylaxis ack
+// window, so a display that cannot express 30s would make the escalation it sits next to
+// unreadable. What 9ca92bf actually contributed was the day scale, and that is what is
+// matched here; second resolution is load-bearing below 24h and is kept.
+//
+// Why a ceiling is needed at all: the load query is .gte('created_at', today), so a board
+// left open across midnight accrues indefinitely on any declaration that never reaches
+// served_at/closed_at. Live cards have been observed at 264:26:45 and 189:43:21. That is
+// also a layout problem — .r-tm is min-width:80px inside a .row with overflow:hidden, and
+// a 9-character timer squeezes its neighbours; "11d" is shorter than what it replaces.
+//
+// DISPLAY ONLY. Age is deliberately NOT a signal. checkEscalations answers "nobody
+// acknowledged this within 30/90s" — actor the cook, remedy acknowledge. Age answers
+// "this was never closed" — no actor, and no action a cook can take. Making it a second
+// escalation would put two escalation concepts on a surface that has one, and the new one
+// would have no remedy attached. sSort is unchanged for the same reason: re-ranking a
+// stale card hides it rather than resolving it.
+function fmtTimer(ts){
+  if(!ts)return'0:00:00';
+  var sec=Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if(sec<0||isNaN(sec))sec=0;
+  if(sec>=86400){
+    var d=Math.floor(sec/86400),dh=Math.floor((sec%86400)/3600);
+    return dh===0?d+'d':d+'d '+dh+'h';
+  }
+  var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;
+  return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
 function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
 // Ascending risk order. SEV_RANK is derived from SEV_ORDER so the list and the
