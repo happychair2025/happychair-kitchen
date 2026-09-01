@@ -134,7 +134,9 @@ body.dimmed .summary{opacity:.3}
 <div class="hdr-venue" id="venueName">HC Kitchen</div>
 <div class="hdr-clock" id="headerClock"></div>
 <div class="hdr-right">
-<div class="hb ok" id="heartbeat"></div>
+<!-- Starts DEGRADED. At page load nothing has been read, so healthy would be a claim the
+     board has not earned. reconcile() promotes it on the first successful read. -->
+<div class="hb off" id="heartbeat"></div>
 <div class="vol-ctrl" id="volCtrl">
 <div class="vol-icon" onclick="toggleMute()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path class="vw1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/><path class="vw2" d="M17 7a7 7 0 0 1 0 10"/><path class="vw3" d="M19.5 4.5a10.5 10.5 0 0 1 0 15"/></svg></div>
 <input type="range" class="vol-range" id="volSlider" min="0" max="100" value="60" oninput="setVolume(this.value)">
@@ -156,13 +158,24 @@ var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 var params=new URLSearchParams(window.location.search);
 var venueId=params.get('venue');
 var deviceName=params.get('device')||'Kitchen Display';
-var cards={},ghosted={},muted=false,volume=0.6,audioReady=false,ctx=null,online=true,dimTimer=null;
+var cards={},ghosted={},muted=false,volume=0.6,audioReady=false,ctx=null,online=false,dimTimer=null;
 var ACK_TIMEOUT=90000,ACK_TIMEOUT_ANAPH=30000;
 // Ceiling for a READ. Reads have no side effect, so a timeout here is always safe to
 // treat as a plain failure. 10s is "slow venue AP but working" territory; past it the
 // board is silently wrong and a resync is the recovery, not a longer wait.
 // WRITES ARE DELIBERATELY NOT BOUNDED — see boundRead().
 var READ_TIMEOUT_MS=10000;
+// Reconciliation. The board must not depend on a realtime channel-drop event to discover
+// missed declarations: a socket can stay "connected" and silently stop delivering. Polled
+// at 5s so the approved 10s bound holds with margin (worst case = interval + read time).
+// STALE_AFTER_MS is the watchdog for the case where a reconcile neither succeeds nor fails
+// because its request hangs — nothing else would ever mark the board degraded.
+var RECONCILE_MS=5000,STALE_AFTER_MS=15000;
+var reconcileInFlight=false,lastReconcileOk=0,reconcileTimer=null;
+// Continuation rows merged into another card by the realtime INSERT branch. That branch
+// mutates cards[host] and never creates cards[d.id], so without this registry a
+// reconciliation read would return the merged row and render it AGAIN as its own card.
+var mergedInto={};
 var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Sour cream','Buttermilk'],milk:['Whole milk','Skim milk','Cream','Butter','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Ice cream'],eggs:['Whole eggs','Egg whites','Egg yolks','Mayonnaise','Meringue','Albumin','Lysozyme','Aioli'],peanuts:['Peanut oil','Peanut butter','Peanut flour','Ground nuts','Mixed nuts','Satay','Arachis oil'],'tree nuts':['Almonds','Cashews','Walnuts','Pecans','Pistachios','Macadamia','Hazelnuts','Brazil nuts','Pine nuts','Marzipan','Praline','Nougat'],fish:['Cod','Salmon','Tuna','Bass','Anchovy','Sardine','Fish sauce','Worcestershire','Caesar dressing','Fish stock','Surimi'],shellfish:['Shrimp','Crab','Lobster','Crawfish','Mussels','Clams','Oysters','Scallops','Squid','Calamari'],wheat:['Flour','Bread','Pasta','Breadcrumbs','Couscous','Semolina','Durum','Spelt','Farro','Seitan','Soy sauce','Roux'],soy:['Soy sauce','Tofu','Tempeh','Edamame','Miso','Soy lecithin','Soybean oil','Soy protein','Tamari'],sesame:['Sesame oil','Sesame seeds','Tahini','Hummus','Halva','Sesame paste','Gomashio'],gluten:['Wheat flour','Barley','Rye','Bread','Pasta','Beer','Soy sauce','Breadcrumbs','Couscous','Malt','Seitan'],mustard:['Yellow mustard','Dijon','Whole grain mustard','Mustard powder','Mustard seed','Mustard oil'],celery:['Celery stalks','Celery salt','Celery seed','Celeriac','Celery powder','Soup stock'],lupin:['Lupin flour','Lupin seeds','Lupin beans','Some breads','Some pastries'],mollusks:['Clams','Mussels','Oysters','Scallops','Snails','Squid','Octopus','Calamari'],'sulfur dioxide':['Wine','Dried fruit','Pickled foods','Vinegar','Some juices','Molasses']};
 // .trim() is PREVENTATIVE, not a fix for observed data — no live row carries whitespace
 // in `allergens`. It defends against a confirmed WRITE-side defect in tableside, where
@@ -284,6 +297,56 @@ function guestLabel(c){
   var gn='Guest';
   if(c.guest_name){var p=c.guest_name.split(' ');gn=p[0].toUpperCase();if(p.length>1&&p[1])gn+=' '+p[1].charAt(0).toUpperCase()+'.';}
   return gn;
+}
+
+// Lifecycle timestamps are set-once-forward in this lifecycle — none of them legitimately
+// returns to null. A reconciliation read that carried a null over an already-set local
+// value would erase acknowledged / protocol-confirmed / verified / served state, so a set
+// local value is never unset by a fold.
+var LIFECYCLE_TS=['delivered_to_kitchen_at','kitchen_ack_at','protocol_confirmed_at','verified_at','served_at','closed_at','minimized_at'];
+var STATUS_RANK={pending:0,acknowledged:1,escalated:1,resolved:2};
+function statusMax(a,b){var ra=STATUS_RANK[a],rb=STATUS_RANK[b];if(ra===undefined)return b;if(rb===undefined)return a;return rb>ra?b:a}
+
+// Union, order-preserving, case-insensitive. Required, not cosmetic: the fold is monotonic,
+// so without dedupe every 5s reconcile would concatenate a row's allergens onto themselves.
+function unionAllergens(a,b){
+  var out=[],seen={};
+  (a||[]).concat(b||[]).forEach(function(x){
+    var k=String(x==null?'':x).trim().toLowerCase();
+    if(!k||seen[k])return;seen[k]=true;out.push(x);
+  });
+  return out;
+}
+
+// Fold an authoritative database row over a card already held.
+// Reconciliation may ADD newly discovered truth; it must not regress, duplicate,
+// misattribute or erase established safety truth. Concretely:
+//  - underscore UI fields are never copied from `d` and never dropped from `cur`
+//  - allergens union / severity maxSeverity / cross_contact OR, so a locally merged-up
+//    card can never be pulled back down to its own row's lower values (MAX severity holds)
+//  - lifecycle timestamps never unset (see LIFECYCLE_TS above)
+//  - status never regresses (rank max)
+//  - _reackRequired re-applies the merge's forced re-acknowledgement, which the database
+//    row does not know about and would otherwise silently restore
+function foldDeclaration(cur,d){
+  var keep={};LIFECYCLE_TS.forEach(function(k){if(cur[k])keep[k]=cur[k]});
+  var allergens=unionAllergens(cur.allergens,d.allergens);
+  var severity=maxSeverity(cur.severity,d.severity);
+  var xc=!!(cur.cross_contact||d.cross_contact);
+  var status=statusMax(cur.status,d.status);
+  Object.keys(d).forEach(function(k){if(k.charAt(0)!=='_')cur[k]=d[k]});
+  Object.keys(keep).forEach(function(k){cur[k]=keep[k]});
+  cur.allergens=allergens;cur.severity=severity;cur.cross_contact=xc;cur.status=status;
+  if(cur._reackRequired)cur.kitchen_ack_at=null;
+  return cur;
+}
+
+// A merged-in continuation contributes CONTENT to its host and nothing else — it has no
+// card and no lifecycle of its own on this board.
+function foldMergedContent(host,d){
+  host.allergens=unionAllergens(host.allergens,d.allergens);
+  host.severity=maxSeverity(host.severity,d.severity);
+  host.cross_contact=!!(host.cross_contact||d.cross_contact);
 }
 
 function renderCards(){
@@ -494,6 +557,9 @@ async function doAck(id){
   delete c._writing;
   if(error){console.error('[kitchen] acknowledge failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't acknowledge — try again");return}
   delete c._error;
+  // Re-acknowledgement satisfied; the database row now carries the fresh timestamp, so the
+  // fold must stop re-nulling it.
+  delete c._reackRequired;
   chimeAck();
   if(isAnaph(c.severity)){showLockoutProtocol(id)}else{closeLockout()}
   renderCards();cacheCards();
@@ -599,6 +665,9 @@ setInterval(function(){
   Object.keys(cards).forEach(function(id){if(cards[id].closed_at||cards[id].served_at)return;
     var el=document.getElementById('timer-'+id);if(el)el.textContent=fmtTimer(cards[id].created_at)});
   checkEscalations();
+  // Covers the reconcile that neither succeeds nor fails because its request hangs: no
+  // callback runs, so nothing else would ever mark the board degraded.
+  if(online&&lastReconcileOk&&Date.now()-lastReconcileOk>STALE_AFTER_MS)setOnline(false);
   var hc=document.getElementById('headerClock');if(hc){var now=new Date();hc.textContent=now.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'})+' · '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 },1000);
 
@@ -665,6 +734,50 @@ async function loadExisting(){
   if(data){data.forEach(function(d){d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');cards[d.id]=d});renderCards();cacheCards()}
 }
 
+// The single reconciliation read. Also the initial load — one code path, so a declaration
+// discovered at startup, on reconnect, on tab wake, or by the poll is folded identically.
+//
+// HEALTH IS SET HERE AND ONLY HERE. A socket event may DEGRADE the board but can never
+// promote it: a re-SUBSCRIBED channel proves a socket reconnected, not that this board
+// holds current data. Only a completed read proves that.
+async function reconcile(){
+  if(!venueId)return false;
+  if(reconcileInFlight)return false;
+  reconcileInFlight=true;
+  try{
+    var today=new Date();today.setHours(0,0,0,0);
+    var res=await boundRead(sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false}));
+    if(res.error||!res.data){console.error('[kitchen] reconcile failed:',res.error);setOnline(false);return false}
+    // Oldest-first so any escalation surfaces the longest-waiting case first.
+    res.data.slice().reverse().forEach(function(d){
+      var label=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');
+      delete d.assets;
+      var host=mergedInto[d.id];
+      if(host&&cards[host]){foldMergedContent(cards[host],d);return}   // never a second card
+      var cur=cards[d.id];
+      if(cur){
+        // A card with a write outstanding is left entirely alone. Folding mid-write would
+        // race the optimistic value against a database row that does not have it yet.
+        if(cur._writing)return;
+        foldDeclaration(cur,d);
+        cur._assetLabel=label;
+      }else{
+        var seed={};Object.keys(d).forEach(function(k){if(k.charAt(0)!=='_')seed[k]=d[k]});
+        seed._assetLabel=label;cards[d.id]=seed;
+      }
+    });
+    lastReconcileOk=Date.now();
+    setOnline(true);
+    renderCards();cacheCards();resetDim();
+    return true;
+  }finally{reconcileInFlight=false}
+}
+
+function startReconcileLoop(){
+  if(reconcileTimer)return;
+  reconcileTimer=setInterval(function(){reconcile()},RECONCILE_MS);
+}
+
 function subscribe(){
   if(!venueId)return;
   sb.channel('kitchen-'+venueId)
@@ -718,6 +831,13 @@ function subscribe(){
           // severity fix and been invisible: severity correct on the card, escalation
           // still slow. Not redundant — do not remove.
           if(upgraded)delete cur._escalated;
+          // This row has no card of its own — it lives inside `existing`. Recorded so a
+          // reconciliation read folds it into the host instead of rendering it again.
+          mergedInto[d.id]=existing;
+          // The merge nulls kitchen_ack_at locally to force re-acknowledgement, but the
+          // database row still holds the old ack. Without this flag the next reconcile
+          // would restore it and silently drop the re-ack requirement.
+          cur._reackRequired=true;
           if(isAnaph(merged)){chimeAnaphylaxis();showLockout(existing)}else{chimeStandard()}
         }
         else{cards[d.id]=d;sb.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}}
@@ -741,7 +861,11 @@ function subscribe(){
     // line fixes. Deliberately NOT changed in this pass; recorded so it is decided
     // rather than inherited.
     .subscribe(function(status){
-      if(status==='SUBSCRIBED')setOnline(true);
+      // A re-SUBSCRIBED channel does NOT make the board healthy. postgres_changes does not
+      // replay, so anything inserted during the gap was never delivered here; the socket
+      // being back proves the socket is back and nothing about the data. reconcile() is
+      // what promotes, once a read actually completes.
+      if(status==='SUBSCRIBED')reconcile();
       else if(status==='CLOSED'||status==='CHANNEL_ERROR'||status==='TIMED_OUT')setOnline(false);
     });
 }
@@ -753,7 +877,10 @@ async function loadVenue(){
 }
 
 loadCache();if(Object.keys(cards).length>0)renderCards();
-loadVenue();loadExisting();subscribe();
+loadVenue();reconcile();subscribe();startReconcileLoop();
+// Tablet wake / tab restore. A socket can die without emitting CLOSED, so resubscribe
+// alone is not sufficient coverage.
+document.addEventListener('visibilitychange',function(){if(!document.hidden)reconcile()});
 </script>
 </body>
 </html>
