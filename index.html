@@ -303,6 +303,30 @@ function guestLabel(c){
 // returns to null. A reconciliation read that carried a null over an already-set local
 // value would erase acknowledged / protocol-confirmed / verified / served state, so a set
 // local value is never unset by a fold.
+// ACKNOWLEDGEMENT TRUTH vs UI RESPONSIVENESS — the contract this file now holds.
+//
+// `kitchen_ack_at` is DATABASE-CONFIRMED ACKNOWLEDGEMENT ONLY. It is written locally in
+// exactly three places, all of which carry database provenance: the success branch of
+// doAck (the write was accepted), foldDeclaration (a reconciliation read), and the
+// realtime UPDATE handler. It is NEVER set optimistically.
+//
+// `_ackPending` is the transient client-side "attempt in progress" marker. It gives the
+// operator immediate feedback and is deliberately NOT database truth: it never gates
+// escalation, and it is stripped from the cache so a reload cannot launder it into a
+// confirmed acknowledgement.
+//
+// Why this shape rather than a guard on the escalation check: checkEscalations skips any
+// card with kitchen_ack_at set, so an optimistic write made that field a false-safety
+// switch — an acknowledgement whose PATCH hung suppressed the alarm permanently, and
+// after 81aa9ea the fold's set-once-forward rule preserved it across reconciliation too.
+// Keeping the field database-only removes the failure mode instead of guarding it, so a
+// future reader cannot reintroduce it by forgetting the guard.
+//
+// isAcked() is the UI predicate — confirmed OR attempt-in-progress — so the card still
+// advances the instant the operator finishes the hold. Safety code must use
+// kitchen_ack_at directly and must NOT use isAcked().
+function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
+
 var LIFECYCLE_TS=['delivered_to_kitchen_at','kitchen_ack_at','protocol_confirmed_at','verified_at','served_at','closed_at','minimized_at'];
 var STATUS_RANK={pending:0,acknowledged:1,escalated:1,resolved:2};
 function statusMax(a,b){var ra=STATUS_RANK[a],rb=STATUS_RANK[b];if(ra===undefined)return b;if(rb===undefined)return a;return rb>ra?b:a}
@@ -338,6 +362,10 @@ function foldDeclaration(cur,d){
   Object.keys(keep).forEach(function(k){cur[k]=keep[k]});
   cur.allergens=allergens;cur.severity=severity;cur.cross_contact=xc;cur.status=status;
   if(cur._reackRequired)cur.kitchen_ack_at=null;
+  // Database provenance. If the row carries an acknowledgement, the attempt is settled —
+  // whether it was this board's write landing after its response was lost, or another
+  // board acknowledging first.
+  if(cur.kitchen_ack_at)delete cur._ackPending;
   return cur;
 }
 
@@ -355,8 +383,8 @@ function renderCards(){
   var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at});
   var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at});
 
-  var needs=visible.filter(function(id){return !cards[id].kitchen_ack_at});
-  var working=visible.filter(function(id){return cards[id].kitchen_ack_at&&!cards[id].served_at});
+  var needs=visible.filter(function(id){return !isAcked(cards[id])});
+  var working=visible.filter(function(id){return isAcked(cards[id])&&!cards[id].served_at});
   var served=visible.filter(function(id){return !!cards[id].served_at});
 
   function sSort(a,b){var ca=cards[a],cb=cards[b];if(isAnaph(ca.severity)&&!isAnaph(cb.severity))return -1;if(!isAnaph(ca.severity)&&isAnaph(cb.severity))return 1;return new Date(ca.created_at)-new Date(cb.created_at)}
@@ -370,7 +398,7 @@ function renderCards(){
   var h='';
   function buildCard(id){
     var c=cards[id],an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
-    var acked=!!c.kitchen_ack_at,proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
+    var acked=isAcked(c),proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
     var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
     var accCol=isSrv?'var(--t3)':verified?'var(--ok)':sevCol;
     var rowCls=isSrv?'row closed served':(!acked?(an?'row pulse-r':'row pulse-a'):(verified?'row closed safe':'row working'));
@@ -511,7 +539,7 @@ function renderGhosts(gIds){
 function updateSummary(){
   var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at});
   var tables=new Set(),alCount=0,anCount=0,unack=0;
-  ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!c.kitchen_ack_at)unack++});
+  ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!isAcked(c))unack++});
   var p=[];
   p.push('<span class="w">'+tables.size+' Table'+(tables.size!==1?'s':'')+'</span>');
   p.push('<span class="w">'+alCount+' Allerg'+(alCount!==1?'ies':'y')+'</span>');
@@ -550,12 +578,20 @@ async function doAck(id){
   var c=cards[id];if(!c)return;
   if(c._writing)return;
   c._writing=true;
-  var prev={kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:c.status};
-  c.kitchen_ack_at=new Date().toISOString();c.kitchen_ack_by=deviceName;c.status='acknowledged';
+  // Optimistic UI only. kitchen_ack_at is NOT written here — a PATCH that hangs would
+  // otherwise suppress escalation indefinitely on a card the database still shows
+  // unacknowledged, and nothing would ever correct it.
+  var ackAt=new Date().toISOString(),ackBy=deviceName;
+  c._ackPending=ackAt;
   renderCards();
-  var {error}=await sb.from('allergen_declarations').update({kitchen_ack_at:c.kitchen_ack_at,kitchen_ack_by:c.kitchen_ack_by,status:'acknowledged'}).eq('id',id);
+  var {error}=await sb.from('allergen_declarations').update({kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] acknowledge failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't acknowledge — try again");return}
+  // Rejection clears the attempt and nothing needs reverting — no safety field was ever
+  // mutated. Escalation resumes on the next 1s tick with no manual intervention.
+  if(error){console.error('[kitchen] acknowledge failed:',error);delete c._ackPending;renderCards();showRowError(id,"Couldn't acknowledge — try again");return}
+  // Accepted. Only now is this confirmed truth.
+  c.kitchen_ack_at=ackAt;c.kitchen_ack_by=ackBy;c.status='acknowledged';
+  delete c._ackPending;
   delete c._error;
   // Re-acknowledgement satisfied; the database row now carries the fresh timestamp, so the
   // fold must stop re-nulling it.
@@ -655,6 +691,10 @@ document.addEventListener('touchstart',function(e){var card=e.target.closest('.r
 document.addEventListener('touchend',function(e){if(!touchCardId)return;var dx=e.changedTouches[0].clientX-touchStartX;touchCardId=null});
 
 function checkEscalations(){
+  // Reads kitchen_ack_at DIRECTLY and must continue to. That field is database-confirmed
+  // acknowledgement only (see the contract above), so an in-flight or failed attempt does
+  // not appear here and cannot suppress a required escalation. Do NOT substitute isAcked()
+  // — that predicate includes _ackPending and would restore the false-safety defect.
   Object.keys(cards).forEach(function(id){var c=cards[id];if(c.kitchen_ack_at||c.closed_at||c.served_at)return;
     var elapsed=Date.now()-new Date(c.created_at).getTime();var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
     if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity))chimeAnaphylaxis();else chimeStandard()}
@@ -686,7 +726,7 @@ var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
 // precisely the failure the guard's clear-before-error-branch exists to avoid.
 // Stripped by name rather than by a general underscore strip: that broader change is
 // refactor decision 5 on kitchen-shared-ingest and is deliberately not taken here.
-function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return k==='_writing'?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
+function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return (k==='_writing'||k==='_ackPending')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
 function loadCache(){try{
   localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
   var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(c)cards=JSON.parse(c);if(g)ghosted=JSON.parse(g)}catch(e){}}
@@ -845,7 +885,14 @@ function subscribe(){
       });
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
-      var d=payload.new;if(cards[d.id]){var ui={_assetLabel:cards[d.id]._assetLabel,_updated:cards[d.id]._updated,_escalated:cards[d.id]._escalated};cards[d.id]=Object.assign(d,ui);if(d.closed_at)delete ghosted[d.id];renderCards();cacheCards()}
+      // _writing / _ackPending / _reackRequired / _error are carried across. Dropping
+      // _writing here would defeat the reconciliation in-flight guard, and dropping
+      // _ackPending would silently discard an attempt still outstanding.
+      var d=payload.new;if(cards[d.id]){var p=cards[d.id];var ui={_assetLabel:p._assetLabel,_updated:p._updated,_escalated:p._escalated,_writing:p._writing,_ackPending:p._ackPending,_reackRequired:p._reackRequired,_error:p._error};cards[d.id]=Object.assign(d,ui);
+      // Database provenance settles a pending attempt.
+      if(cards[d.id].kitchen_ack_at)delete cards[d.id]._ackPending;
+      Object.keys(cards[d.id]).forEach(function(k){if(cards[d.id][k]===undefined)delete cards[d.id][k]});
+      if(d.closed_at)delete ghosted[d.id];renderCards();cacheCards()}
     })
     // TIMED_OUT was previously unhandled, so setOnline was never called for it and the
     // heartbeat kept whatever state it already had. realtime-js emits it on its own 10s
