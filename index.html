@@ -60,6 +60,7 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .r-sev.r{background:rgba(239,68,68,.2);color:var(--danger)}
 .r-sev.a{background:rgba(245,158,11,.15);color:var(--warn)}
 .r-xc{padding:3px 8px;border-radius:6px;font-size:13px;font-weight:700}
+.r-upd{padding:3px 8px;border-radius:6px;font-size:13px;font-weight:700;background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
 .r-xc.r{background:rgba(239,68,68,.15);color:var(--danger)}
 .r-xc.a{background:rgba(245,158,11,.08);color:var(--warn)}
 .r-tm{font-size:18px;font-weight:600;color:#fff;min-width:80px;text-align:right;font-variant-numeric:tabular-nums}
@@ -327,6 +328,24 @@ function guestLabel(c){
 // kitchen_ack_at directly and must NOT use isAcked().
 function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
 
+// DECLARATION SUPERSESSION.
+// A guest correction does not edit a declaration — it inserts a new one carrying
+// supersedes_id and marks the prior row superseded_at. The prior row keeps its own
+// allergens, severity and every timestamp it earned as historical fact; it simply stops
+// being current, and its acknowledgement/protocol/verification can no longer establish
+// anything about the corrected declaration.
+//
+// Two independent signals, because the guest writes them as two statements and only the
+// first is safety-critical. If the second never lands, `superseded_at` is null on a row
+// that has genuinely been replaced — so a row is ALSO treated as superseded when another
+// declaration on this board names it. Either signal alone is sufficient.
+function isSupersededRow(c){
+  if(!c)return false;
+  if(c.superseded_at)return true;
+  var id=c.id;
+  return Object.keys(cards).some(function(k){return cards[k].supersedes_id===id});
+}
+
 var LIFECYCLE_TS=['delivered_to_kitchen_at','kitchen_ack_at','protocol_confirmed_at','verified_at','served_at','closed_at','minimized_at'];
 var STATUS_RANK={pending:0,acknowledged:1,escalated:1,resolved:2};
 function statusMax(a,b){var ra=STATUS_RANK[a],rb=STATUS_RANK[b];if(ra===undefined)return b;if(rb===undefined)return a;return rb>ra?b:a}
@@ -424,6 +443,9 @@ function renderCards(){
     h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
     h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:var(--t3)"':'')+'>'+esc((c.severity||'unknown').toUpperCase())+'</div>';
     if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">XC</div>';
+    // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
+    // declaration must still read as a correction after a reload or a reconciliation read.
+    if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">UPDATED</div>';
     h+='<div class="r-tm"'+(isSrv?' style="color:var(--t3)"':'')+' id="timer-'+esc(id)+'">'+(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</div>';
     h+='<div class="stages">'+d1+l1+d2+l2+d3+l3+d4+'</div>';
     h+='</div>';
@@ -794,6 +816,10 @@ async function reconcile(){
       delete d.assets;
       var host=mergedInto[d.id];
       if(host&&cards[host]){foldMergedContent(cards[host],d);return}   // never a second card
+      // A superseded declaration is history, not an active card. Dropped rather than
+      // rendered so a corrected-away allergen or a lowered severity cannot sit on the board
+      // next to the current declaration.
+      if(d.superseded_at){ if(cards[d.id])delete cards[d.id]; return }
       var cur=cards[d.id];
       if(cur){
         // A card with a write outstanding is left entirely alone. Folding mid-write would
@@ -839,6 +865,18 @@ function subscribe(){
         //    two guests sharing one would concatenate across tables. A cook would
         //    read allergens nobody at that table declared, and the guest who did
         //    declare them would have no card at all.
+        // A correction never merges into its predecessor: it REPLACES it. The monotonic
+        // merge below (union allergens, MAX severity) is correct for a guest adding a
+        // second declaration, and exactly wrong for a correction, which may legitimately
+        // remove an allergen or lower a severity.
+        if(d.supersedes_id){
+          var prior=cards[d.supersedes_id];
+          if(prior){ prior.superseded_at=prior.superseded_at||new Date().toISOString(); delete cards[d.supersedes_id]; }
+          cards[d.id]=d; d._updated=true;
+          if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}
+          renderCards();cacheCards();resetDim();
+          return;
+        }
         var existing=d.guest_session_id&&Object.keys(cards).find(function(id){
           return cards[id].guest_session_id===d.guest_session_id&&cards[id].asset_id===d.asset_id&&!cards[id].closed_at
         });
