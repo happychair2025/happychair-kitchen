@@ -125,7 +125,16 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .lockout-sub{font-size:20px;color:var(--t2);margin-bottom:32px;text-align:center}
 body.dimmed .main{opacity:.3;transition:opacity 1s}
 body.dimmed .summary{opacity:.3}
-</style>
+
+    /* Rehearsal marking. Deliberately not red, amber or cyan — this board reserves those
+       for how dangerous an allergy is, and practice is not a severity. */
+    .r-reh{font-size:11px;font-weight:800;letter-spacing:.09em;color:#c9adff;
+      border:1px solid rgba(168,130,255,.55);border-radius:4px;padding:2px 7px;
+      align-self:center;white-space:nowrap}
+    .lockout-reh{font-size:20px;font-weight:800;letter-spacing:.1em;color:#c9adff;
+      border:2px solid rgba(168,130,255,.6);border-radius:8px;padding:8px 18px;
+      margin-bottom:18px;display:inline-block}
+  </style>
 </head>
 <body>
 <div id="app">
@@ -294,6 +303,31 @@ function esc(v){
 
 var CK='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
+// The restaurant is practising. The card is real and was written through the real path —
+// there is simply nobody sitting at that table. A cook must be able to tell those apart
+// before they read a severity, so this is the first thing on the card.
+var rehearsalIds={};
+
+// Refreshed alongside every reconciliation read, so a card that arrives over the socket
+// during a rehearsal is marked the moment it lands rather than at the next read. Returns
+// nothing but opaque ids — the board learns which services are practice, not the schedule.
+async function refreshRehearsalIds(){
+  if(!venueId)return;
+  // Never throws. boundRead rejects on timeout, and this rides along inside the load and
+  // reconcile paths — a stalled lookup for a cosmetic label must not take down the read
+  // that actually puts allergy cards on the board. On failure the previous answer stands.
+  try{
+    var res=await boundRead(sb.rpc('rehearsal_instance_ids',{p_venue_id:venueId}));
+    if(res&&!res.error&&Array.isArray(res.data)){
+      var m={};res.data.forEach(function(id){m[id]=1});rehearsalIds=m;
+    }
+  }catch(e){console.error('[kitchen] rehearsal lookup failed:',e)}
+}
+
+function isRehearsal(c){
+  return !!(c&&c.service_instance_id&&rehearsalIds[c.service_instance_id]);
+}
+
 function guestLabel(c){
   var gn='Guest';
   if(c.guest_name){var p=c.guest_name.split(' ');gn=p[0].toUpperCase();if(p.length>1&&p[1])gn+=' '+p[1].charAt(0).toUpperCase()+'.';}
@@ -438,6 +472,7 @@ function renderCards(){
 
     h+='<div class="'+rowCls+'" onclick="toggleCard(\''+esc(id)+'\')">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
+    if(isRehearsal(c))h+='<div class="r-reh">REHEARSAL</div>';
     h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||'Table').split(' ')[0])+'</div>';
     h+='<div class="r-guest"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc(guestLabel(c))+'</div>';
     h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
@@ -679,7 +714,9 @@ function showLockout(id){
     if(d)avoidHtml+='<div style="border-left:3px solid var(--danger);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--danger);text-transform:uppercase;margin-bottom:4px">Avoid all — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t1);line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
     else avoidHtml+='<div style="border-left:3px solid var(--t2);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">No derivative list — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t2);line-height:1.5">Not in the reference list. Confirm ingredients with the guest.</div></div>';
   });
-  lc.innerHTML='<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
+  // The blocking modal is the single most urgent thing this board ever shows. If it is a
+  // rehearsal, that has to be the first line read — above the table, above the allergens.
+  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
   lk.classList.add('on');
 }
 
@@ -793,6 +830,7 @@ async function loadExisting(){
   // `error` was not previously destructured at all, so a failed load was indistinguishable
   // from an empty one. A timeout has nothing to surface without this.
   if(error){console.error('[kitchen] load failed:',error);return}
+  await refreshRehearsalIds();
   if(data){data.forEach(function(d){d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');cards[d.id]=d});renderCards();cacheCards()}
 }
 
@@ -810,6 +848,7 @@ async function reconcile(){
     var today=new Date();today.setHours(0,0,0,0);
     var res=await boundRead(sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false}));
     if(res.error||!res.data){console.error('[kitchen] reconcile failed:',res.error);setOnline(false);return false}
+    await refreshRehearsalIds();
     // Oldest-first so any escalation surfaces the longest-waiting case first.
     res.data.slice().reverse().forEach(function(d){
       var label=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');
