@@ -27,3 +27,11 @@ element allowed to give way. It then presses a hold, samples the fill at 60ms an
 releases early to prove the reset and that no write fires.
 
 114 checks; results in `board-ux.results.txt`.
+
+## Anaphylaxis lockout (`lockout.*`)
+
+The blocking modal is rendered from the offline fixture (`?fixture=1&lockout=1`) and asserted
+directly. It exists because the first pass of the XC rename missed this surface entirely —
+the row was changed and the lockout was not — and a "no XC on the page" check passed anyway
+because the modal had never rendered. The probe now asserts the modal IS up before it asserts
+anything about its contents.

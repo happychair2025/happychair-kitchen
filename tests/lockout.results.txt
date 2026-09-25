@@ -1,0 +1,9 @@
+PASS  lockout modal rendered
+PASS  XC shorthand gone from the lockout
+PASS  cross-contact spelled out in the lockout
+PASS  lockout hold is a real button   → BUTTON
+PASS  lockout hold has a progress fill
+PASS  lockout hold wired to startHold
+PASS  no XC anywhere on the page
+
+ALL 7 CHECKS PASS
