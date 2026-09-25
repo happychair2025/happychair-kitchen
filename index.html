@@ -43,7 +43,28 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .sec-ct.amber{background:rgba(245,158,11,.12);color:var(--warn)}
 .sec-ct.gray{background:rgba(148,163,184,.08);color:var(--t2)}
 .sec-ln{flex:1;height:1px;background:var(--b)}
-.row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--s1);border-radius:10px 10px 0 0;cursor:pointer;position:relative;overflow:hidden;border:1px solid transparent;border-bottom:none}
+/* The one action on the row. Sized for a hand in a kitchen, and it never competes with the
+   allergen text: it is the only filled element on the row. */
+.hdr-logo-img{width:100%;height:100%;object-fit:contain;border-radius:inherit;display:block}
+.hdr-logo.has-logo{background:#fff;padding:4px}
+/* Reuses .hold-btn so the press-and-hold treatment is identical to the expanded panel — but
+   .hold-btn is a full-width block button for that panel, and inheriting width:100% made this
+   1114px wide and pushed it onto a line of its own — measured, not guessed. Scoped to .row so
+   it outranks .hold-btn, which is declared later in this sheet and would otherwise win on
+   source order at equal specificity. */
+.row .r-act{margin-left:auto;flex:0 0 auto;width:auto;min-width:150px;padding:0 20px;height:52px;margin-top:0}
+.row .r-act--srv{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
+/* Same table, more than one open submission. A statement of fact, not a merge. */
+.r-multi{font-size:11px;font-weight:800;letter-spacing:.06em;color:#c9adff;
+  border:1px solid rgba(168,130,255,.55);border-radius:5px;padding:3px 8px;white-space:nowrap}
+/* EARLIER — present, preserved, and quiet. */
+.exp-elapsed{font-size:14px;color:var(--t2);margin-bottom:12px;font-variant-numeric:tabular-nums}
+.earlier-l{opacity:.55}
+.earlier-tg{background:none;border:1px solid var(--b2);color:var(--t2);font:inherit;font-size:12px;
+  padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
+.earlier-note{font-size:13px;color:var(--t3);margin:-4px 0 10px 2px}
+.earlier-wrap{opacity:.62}
+.row{display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;padding:14px 16px;background:var(--s1);border-radius:10px 10px 0 0;cursor:pointer;position:relative;border:1px solid transparent;border-bottom:none}
 .row.closed{border-radius:10px;border-bottom:1px solid transparent;margin-bottom:6px}
 .row.pulse-r{animation:rp 1.2s ease infinite}
 .row.pulse-a{animation:ap 2s ease infinite}
@@ -55,7 +76,9 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .row .ac{position:absolute;left:0;top:0;bottom:0;width:4px}
 .r-tbl{font-size:22px;font-weight:700;color:#fff;min-width:40px}
 .r-guest{font-size:17px;font-weight:600;color:var(--t1);min-width:80px}
-.r-al{font-size:22px;font-weight:700;flex:1}
+/* The allergens are the point of the row: they take the slack, and never wrap mid-list
+   into a narrow column while a button hogs the width. */
+.r-al{font-size:22px;font-weight:700;flex:1 1 200px;min-width:0}
 .r-sev{padding:4px 10px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase}
 .r-sev.r{background:rgba(239,68,68,.2);color:var(--danger)}
 .r-sev.a{background:rgba(245,158,11,.15);color:var(--warn)}
@@ -64,16 +87,7 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .r-xc.r{background:rgba(239,68,68,.15);color:var(--danger)}
 .r-xc.a{background:rgba(245,158,11,.08);color:var(--warn)}
 .r-tm{font-size:18px;font-weight:600;color:#fff;min-width:80px;text-align:right;font-variant-numeric:tabular-nums}
-.stages{display:flex;align-items:center;gap:0;min-width:100px}
-.stg{width:16px;height:16px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.stg.da{border-color:var(--warn);background:var(--warn)}
-.stg.dv{border-color:var(--ok);background:var(--ok)}
-.stg.dg{border-color:var(--t3);background:var(--t3)}
 .stg svg{width:9px;height:9px}
-.sln{width:12px;height:2px;background:var(--b);flex-shrink:0}
-.sln.da{background:var(--warn)}
-.sln.dv{background:var(--ok)}
-.sln.dg{background:var(--t3)}
 .exp{background:var(--s1);border:1px solid var(--b);border-top:none;border-radius:0 0 10px 10px;padding:4px 18px 16px;margin-bottom:6px}
 .row-err{padding:10px 14px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:var(--danger);font-size:14px;font-weight:600;margin:8px 0;text-align:center}
 .prog{display:flex;align-items:center;padding:10px 0}
@@ -307,6 +321,15 @@ var CK='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" 
 // there is simply nobody sitting at that table. A cook must be able to tell those apart
 // before they read a severity, so this is the first thing on the card.
 var rehearsalIds={};
+var earlierOpen=false;
+// Ids of the declarations the SERVER says are current service work, from
+// allergyshield_is_current_work — the predicate the staff RLS, the Shift Record and the
+// backlog count all use. The board used to decide this from the tablet's own clock
+// ("created after local midnight"), which knows nothing about service instances and which
+// returns NOTHING at all the morning after an evening service. `null` until the first
+// successful read: unknown is not the same as empty, and an unknown answer must never be
+// allowed to empty the board.
+var currentIds=null;
 
 // Refreshed alongside every reconciliation read, so a card that arrives over the socket
 // during a rehearsal is marked the moment it lands rather than at the next read. Returns
@@ -323,6 +346,40 @@ async function refreshRehearsalIds(){
     }
   }catch(e){console.error('[kitchen] rehearsal lookup failed:',e)}
 }
+
+async function refreshCurrentIds(){
+  if(!venueId)return;
+  // Same never-throws contract as refreshRehearsalIds: this rides inside the reconcile read,
+  // and a stalled classification lookup must not take down the read that puts allergy cards
+  // on the board. On failure the previous answer stands.
+  try{
+    var res=await boundRead(sb.rpc('allergyshield_current_service_declarations',{p_venue_id:venueId}));
+    if(res&&!res.error&&Array.isArray(res.data)){
+      var m={};res.data.forEach(function(r){if(r&&r.declaration_id)m[r.declaration_id]=!!r.is_open});
+      currentIds=m;
+    }
+  }catch(e){console.error('[kitchen] current-service lookup failed:',e)}
+}
+
+// Does this record belong to the service running NOW? Answered by the server via
+// is_current_service_record — never by the tablet's clock.
+//
+// Before the first successful lookup every readable card is treated as current: the board
+// opens showing work rather than hiding it, and tightens as soon as the answer arrives.
+// Unknown is not the same as empty.
+function inCurrentService(c){
+  if(!c)return false;
+  if(currentIds===null)return true;
+  return Object.prototype.hasOwnProperty.call(currentIds,c.id);
+}
+
+// Still outstanding — nothing has completed it. Read from the row's own stamps so it stays
+// correct between reconciles and immediately after an optimistic local write.
+function isOpenWork(c){
+  return !!c&&!c.superseded_at&&!c.served_at&&!c.closed_at;
+}
+
+function toggleEarlier(){earlierOpen=!earlierOpen;renderCards()}
 
 function isRehearsal(c){
   return !!(c&&c.service_instance_id&&rehearsalIds[c.service_instance_id]);
@@ -436,14 +493,28 @@ function renderCards(){
   var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at});
   var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at});
 
-  var needs=visible.filter(function(id){return !isAcked(cards[id])});
-  var working=visible.filter(function(id){return isAcked(cards[id])&&!cards[id].served_at});
-  var served=visible.filter(function(id){return !!cards[id].served_at});
+  // Four bands, and the question the board exists to answer is the first one.
+  // Membership in the current service comes from the server; openness from the row's own
+  // stamps. A record from an earlier service is never deleted and never hidden — it drops to
+  // EARLIER, where it cannot compete with live work.
+  var cur=visible.filter(function(id){return inCurrentService(cards[id])});
+  var earlier=visible.filter(function(id){return !inCurrentService(cards[id])});
+  var needs=cur.filter(function(id){return isOpenWork(cards[id])&&!isAcked(cards[id])});
+  var working=cur.filter(function(id){return isOpenWork(cards[id])&&isAcked(cards[id])});
+  var served=cur.filter(function(id){return !isOpenWork(cards[id])});
+
+  // Same table, more than one open submission in this service. Counted here so every card in
+  // the group can say so. NOT a merge: the declarations stay separate rows, separately
+  // acknowledged — see the marker in buildCard.
+  var openByAsset={};
+  needs.concat(working).forEach(function(id){
+    var k=cards[id].asset_id;if(!k)return;(openByAsset[k]=openByAsset[k]||[]).push(id);
+  });
 
   function sSort(a,b){var ca=cards[a],cb=cards[b];if(isAnaph(ca.severity)&&!isAnaph(cb.severity))return -1;if(!isAnaph(ca.severity)&&isAnaph(cb.severity))return 1;return new Date(ca.created_at)-new Date(cb.created_at)}
-  needs.sort(sSort);working.sort(sSort);served.sort(sSort);
+  needs.sort(sSort);working.sort(sSort);served.sort(sSort);earlier.sort(sSort);
 
-  if(!needs.length&&!working.length&&!served.length&&!ghostIds.length){
+  if(!needs.length&&!working.length&&!served.length&&!earlier.length&&!ghostIds.length){
     area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div>';
     updateSummary();resetDim();return;
   }
@@ -459,16 +530,32 @@ function renderCards(){
     var exId='ex-'+id;
     var isOpen=document.getElementById(exId)&&document.getElementById(exId).style.display!=='none';
 
-    // Stage dots for compact row
-    var d1='<div class="stg '+(isSrv?'dg':'da')+'">'+CK+'</div>';
-    var d2=acked?'<div class="stg '+(isSrv?'dg':'da')+'">'+CK+'</div>':'<div class="stg"></div>';
-    var d3=verified?'<div class="stg '+(isSrv?'dg':'dv')+'">'+CK+'</div>':'<div class="stg"></div>';
-    var d4=isSrv?'<div class="stg dg">'+CK+'</div>':'<div class="stg"></div>';
-    var l1='<div class="sln'+(acked?(isSrv?' dg':' da'):'')+'"></div>';
-    var l2='<div class="sln'+(verified?(isSrv?' dg':' dv'):'')+'"></div>';
-    var l3='<div class="sln'+(isSrv?' dg':'')+'"></div>';
+    // The four unlabelled stage dots used to live here. A new cook could not read them —
+    // and the product already proves it, because the EXPANDED panel labels the very same
+    // stages (Received · Confirmed · Verified · Served) while the collapsed row kept only the
+    // geometry, which is the half that carries no meaning. The row now shows the one thing to
+    // do next; the labelled rail below is unchanged.
 
     if(!isSrv&&!isOpen)rowCls=rowCls.replace('row ','row closed ');
+
+    // THE SINGLE NEXT REQUIRED ACTION. Same functions, same order, same press-and-hold on the
+    // acknowledgement as the expanded panel — this is a second entry point to the identical
+    // workflow, never a second workflow. stopPropagation so acting never also toggles the card.
+    var act='';
+    if(!isSrv){
+      if(!acked){
+        act='<div class="r-act hold-btn '+(an?'red':'amber')+'" onclick="event.stopPropagation()"'
+          +' ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')"'
+          +' onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')"'
+          +' onmouseleave="endHold(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Received</span></div>';
+      } else if(!proto&&an){
+        act='<div class="r-act hold-btn red" onclick="event.stopPropagation();confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area</span></div>';
+      } else if(!verified){
+        act='<div class="r-act hold-btn green" onclick="event.stopPropagation();verifyDish(\''+esc(id)+'\')"><span class="hold-lbl">Verify</span></div>';
+      } else {
+        act='<div class="r-act hold-btn r-act--srv" onclick="event.stopPropagation();markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark Served</span></div>';
+      }
+    }
 
     h+='<div class="'+rowCls+'" onclick="toggleCard(\''+esc(id)+'\')">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
@@ -481,8 +568,21 @@ function renderCards(){
     // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
     // declaration must still read as a correction after a reload or a reconciliation read.
     if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">UPDATED</div>';
-    h+='<div class="r-tm"'+(isSrv?' style="color:var(--t3)"':'')+' id="timer-'+esc(id)+'">'+(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</div>';
-    h+='<div class="stages">'+d1+l1+d2+l2+d3+l3+d4+'</div>';
+    // Two or more OPEN submissions from the same table in this service. Shown on every card
+    // in the group so neither can be actioned in ignorance of the other.
+    //
+    // Deliberately NOT a merge and NOT an ordering claim: nothing in the data says whether a
+    // later submission adds to the earlier one or replaces it — both carry supersedes_id null
+    // and different guest sessions — so the board must not imply which is current. Each row
+    // stays separate, immutable and separately acknowledged.
+    var grp=openByAsset[c.asset_id];
+    if(grp&&grp.length>1&&!isSrv&&isOpenWork(c))
+      h+='<div class="r-multi" title="Separate submissions — review both">'+grp.length+' SUBMISSIONS · REVIEW BOTH</div>';
+    // The elapsed timer moved into the expanded panel. It is not one of the six things a cook
+    // needs to recognise and act on, and at 39 days it was pure noise competing with the
+    // allergen text. The ticking element keeps its id there, so the per-second tick and the
+    // escalation checks are unchanged.
+    h+=act;
     h+='</div>';
 
     // Expanded details
@@ -491,6 +591,9 @@ function renderCards(){
     // Row-level error (surfaced when a write fails — reverted local state +
     // visible message so the operator knows the action didn't take effect).
     if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
+
+    h+='<div class="exp-elapsed">'+(isSrv?'Served at ':'Waiting ')+'<span id="timer-'+esc(id)+'">'
+      +(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</span></div>';
 
     // Horizontal progress rail
     h+='<div class="prog">';
@@ -567,16 +670,25 @@ function renderCards(){
   }
 
   if(needs.length){
-    h+='<div class="sec-l">Needs Action <span class="sec-ct red">'+needs.length+'</span><div class="sec-ln"></div></div>';
+    h+='<div class="sec-l">Needs You <span class="sec-ct red">'+needs.length+'</span><div class="sec-ln"></div></div>';
     needs.forEach(function(id){buildCard(id)});
   }
   if(working.length){
-    h+='<div class="sec-l">Working <span class="sec-ct amber">'+working.length+'</span><div class="sec-ln"></div></div>';
+    h+='<div class="sec-l">In Progress <span class="sec-ct amber">'+working.length+'</span><div class="sec-ln"></div></div>';
     working.forEach(function(id){buildCard(id)});
   }
   if(served.length){
-    h+='<div class="sec-l">Served Today <span class="sec-ct gray">'+served.length+'</span><div class="sec-ln"></div></div>';
+    h+='<div class="sec-l">Done This Service <span class="sec-ct gray">'+served.length+'</span><div class="sec-ln"></div></div>';
     served.forEach(function(id){buildCard(id)});
+  }
+  // EARLIER — preserved, never deleted, and deliberately quiet. Collapsed to a count so a
+  // prior service cannot compete with the one running now. Says plainly that this is only
+  // what the board can see; the complete record lives in the Shift Record.
+  if(earlier.length){
+    h+='<div class="sec-l earlier-l">Earlier <span class="sec-ct gray">'+earlier.length+'</span><div class="sec-ln"></div>'
+      +'<button class="earlier-tg" onclick="toggleEarlier()">'+(earlierOpen?'Hide':'Show')+'</button></div>';
+    h+='<div class="earlier-note">Not part of the service running now. Review in the Shift Record.</div>';
+    if(earlierOpen){h+='<div class="earlier-wrap">';earlier.forEach(function(id){buildCard(id)});h+='</div>'}
   }
 
   area.innerHTML=h;
@@ -823,16 +935,10 @@ function boundRead(q){
   return q.abortSignal(ac.signal).then(done,function(e){clearTimeout(timer);throw e});
 }
 
-async function loadExisting(){
-  if(!venueId)return;
-  var today=new Date();today.setHours(0,0,0,0);
-  var {data,error}=await boundRead(sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false}));
-  // `error` was not previously destructured at all, so a failed load was indistinguishable
-  // from an empty one. A timeout has nothing to surface without this.
-  if(error){console.error('[kitchen] load failed:',error);return}
-  await refreshRehearsalIds();
-  if(data){data.forEach(function(d){d._assetLabel=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');cards[d.id]=d});renderCards();cacheCards()}
-}
+// loadExisting() lived here: a second ingest path with its own query, its own date window
+// and no supersede handling, left unreferenced when reconcile() became the single read.
+// Deleted rather than left dormant — an orphan ingest path is how a future edit quietly
+// reintroduces a divergent board.
 
 // The single reconciliation read. Also the initial load — one code path, so a declaration
 // discovered at startup, on reconnect, on tab wake, or by the poll is folded identically.
@@ -845,10 +951,16 @@ async function reconcile(){
   if(reconcileInFlight)return false;
   reconcileInFlight=true;
   try{
-    var today=new Date();today.setHours(0,0,0,0);
-    var res=await boundRead(sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',today.toISOString()).order('created_at',{ascending:false}));
+    // Everything this board is permitted to read, not "since the tablet's midnight". The old
+    // window silently excluded the whole of the previous evening's service the moment the
+    // clock rolled over — on 25 Sep it matched ZERO rows while real work was outstanding, so
+    // every card on screen had come from localStorage. 36h mirrors the anon read policy: ask
+    // for what is readable and let the server classify it.
+    var since=new Date(Date.now()-36*60*60*1000).toISOString();
+    var res=await boundRead(sb.from('allergen_declarations').select('*, assets(label,zone)').eq('venue_id',venueId).gte('created_at',since).order('created_at',{ascending:false}));
     if(res.error||!res.data){console.error('[kitchen] reconcile failed:',res.error);setOnline(false);return false}
     await refreshRehearsalIds();
+    await refreshCurrentIds();
     // Oldest-first so any escalation surfaces the longest-waiting case first.
     res.data.slice().reverse().forEach(function(d){
       var label=(d.assets?d.assets.label:'T?')+(d.assets&&d.assets.zone?' · '+d.assets.zone:'');
@@ -871,6 +983,22 @@ async function reconcile(){
         seed._assetLabel=label;cards[d.id]=seed;
       }
     });
+    // THE SERVER RESULT IS THE BOARD. Reconcile used to be additive only — it folded and
+    // created, and removed a card solely when the row came back superseded. Anything ever
+    // cached on this tablet therefore stayed on screen for ever, which is how a board ends up
+    // showing records weeks old, and an escaping test that no longer exists in any venue.
+    //
+    // Now a completed read prunes to itself. One exception: a card with a write outstanding
+    // (_writing) is never dropped mid-flight. A pruned card's ghost state goes with it — a
+    // minimised marker for a card that is no longer on the board means nothing.
+    // The cache is what it should have been all along: an offline redraw buffer. It is
+    // authoritative only while no successful read has happened.
+    var seen={};res.data.forEach(function(d){seen[d.id]=1});
+    Object.keys(cards).forEach(function(id){
+      if(seen[id]||cards[id]._writing)return;
+      delete cards[id];delete ghosted[id];delete mergedInto[id];
+    });
+
     lastReconcileOk=Date.now();
     setOnline(true);
     renderCards();cacheCards();resetDim();
@@ -998,6 +1126,21 @@ async function loadVenue(){
   if(!venueId)return;
   var {data}=await boundRead(sb.from('venues').select('name').eq('id',venueId).single());
   if(data){document.getElementById('venueName').textContent=data.name+' · Kitchen';document.getElementById('venueLogo').textContent=data.name.charAt(0)}
+  // The venue's own mark, from the same authoritative venues.logo_url that Admin renders —
+  // no second branding configuration. Presentation only: venue_branding_logo returns the logo
+  // and nothing else, anon's column grant on `venues` is untouched at (id, name), and this
+  // widens allergy-data access by exactly nothing. Silent on failure; the initial stands.
+  try{
+    var b=await boundRead(sb.rpc('venue_branding_logo',{p_venue_id:venueId}));
+    var row=b&&!b.error&&Array.isArray(b.data)?b.data[0]:null;
+    var url=row&&row.logo_url;
+    if(url&&typeof url==='string'&&url.trim()){
+      var el=document.getElementById('venueLogo');
+      var im=new Image();
+      im.onload=function(){el.textContent='';el.appendChild(im);el.classList.add('has-logo')};
+      im.alt='';im.className='hdr-logo-img';im.src=url.trim();
+    }
+  }catch(e){console.error('[kitchen] branding lookup failed:',e)}
 }
 
 loadCache();if(Object.keys(cards).length>0)renderCards();

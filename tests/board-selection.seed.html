@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><body><pre id=o>seeding…</pre><script>
+// Poison the cache exactly as a real tablet accumulated it: rows that are old, rows from a
+// venue this board is not viewing, and the escaping test that exists in no venue at all.
+var old=function(d){return new Date(Date.now()-d*864e5).toISOString()};
+var cards={
+ "stale-esc":{id:"stale-esc",venue_id:"593de041-c609-46fe-bbc7-7268ab6ca462",asset_id:"a1",
+   allergens:["<b>ESC-TEST</b>"],severity:"anaphylaxis",status:"pending",created_at:old(39),
+   guest_name:"<b>ESC-TEST</b>",notes:"<b>ESC-TEST</b>",_assetLabel:"T9 · Main Hall"},
+ "stale-4d":{id:"stale-4d",venue_id:"593de041-c609-46fe-bbc7-7268ab6ca462",asset_id:"a2",
+   allergens:["Peanuts"],severity:"anaphylaxis",status:"pending",created_at:old(4),_assetLabel:"SP20 · Terrace"},
+ "stale-other-venue":{id:"stale-other-venue",venue_id:"00000000-0000-0000-0000-0000000000ff",asset_id:"a3",
+   allergens:["Sesame"],severity:"severe",status:"pending",created_at:old(2),_assetLabel:"X1 · Elsewhere"}
+};
+localStorage.setItem("hc_k_cards_v2",JSON.stringify(cards));
+var keys=Object.keys(localStorage);
+document.getElementById('o').textContent="seeded "+Object.keys(cards).length+" stale cards; keys="+keys.join(",");
+fetch('/__results',{method:'POST',body:"SEEDED "+Object.keys(cards).length+" stale cards into "+keys.join(",")});
+</script></body>
