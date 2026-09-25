@@ -1,6 +1,6 @@
 SEEDED 3 stale cards into hc_k_cards_v2
       cache at load: stale-esc, stale-4d, stale-other-venue
-      sections: Needs You 2
+      sections: In Progress 2
       cache now holds: 56a859b5-da20-4c14-8ec8-b2a2e8f81355, 7784ff89-0b0e-47cc-9d58-a4997c9a9bd0
 PASS  ESC-TEST cache residue gone from the board
 PASS  39-day-old stale card gone
@@ -9,11 +9,14 @@ PASS  other-venue cache card gone
 PASS  stale rows pruned from the cache itself
 PASS  live rehearsal work IS on the board
 PASS  both current declarations render   → 2 rows
-PASS  NEEDS YOU leads the board
+PASS  a current-service band leads the board   → In Progress 2
+PASS  no earlier/stale band competes above it   → In Progress 2
 PASS  four unlabelled dots gone
 PASS  one next action per row
-PASS  action is held, not tapped
-PASS  multi-submission marker on both   → 2 SUBMISSIONS · REVIEW BOTH
+PASS  every action is a real button   → Second Check | Second Check
+PASS  acknowledgement actions are holds with a progress fill   → 0 hold actions
+PASS  post-ack actions are the deliberate later steps   → Second Check | Second Check
+PASS  multi-record marker on both   → 2 ALLERGY RECORDS · CHECK BOTH
 PASS  no ordering/supersession implied
 PASS  no union — submissions stay separate   → Fish | Fish, Tree Nuts
 PASS  rehearsal distinction preserved
@@ -24,4 +27,4 @@ PASS  action never clipped by the card   → 0 clipped
 PASS  action sits on the row, not a second line   → 0 wrapped
 PASS  allergens render on one line   → 26px, 26px
 
-ALL 21 CHECKS PASS
+ALL 24 CHECKS PASS

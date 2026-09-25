@@ -1,0 +1,128 @@
+
+──── board width 1280px ────
+PASS  allergens fully inside the card · 1280 · P4   → "Fish"
+PASS  severity fully inside the card · 1280 · P4
+PASS  cross-contact inside the card · 1280 · P4
+PASS  action fully inside the card · 1280 · P4   → 1062–1247 in 16–1264
+PASS  action keeps a real tap target · 1280 · P4
+PASS  long guest name truncates, never overflows · 1280 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 1280 · P4   → "Fish, Tree Nuts"
+PASS  severity fully inside the card · 1280 · P4
+PASS  cross-contact inside the card · 1280 · P4
+PASS  action fully inside the card · 1280 · P4   → 1062–1247 in 16–1264
+PASS  action keeps a real tap target · 1280 · P4
+PASS  long guest name truncates, never overflows · 1280 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 1280 · SP24   → "Peanuts, Tree Nuts, Shellfish, Ses"
+PASS  severity fully inside the card · 1280 · SP24
+PASS  cross-contact inside the card · 1280 · SP24
+PASS  action fully inside the card · 1280 · SP24   → 1062–1247 in 16–1264
+PASS  action keeps a real tap target · 1280 · SP24
+PASS  long guest name truncates, never overflows · 1280 · SP24   → 150px "BARTHOLOMEW F."
+PASS  allergens fully inside the card · 1280 · T12   → "Gluten"
+PASS  severity fully inside the card · 1280 · T12
+PASS  cross-contact inside the card · 1280 · T12
+PASS  action fully inside the card · 1280 · T12   → 1062–1247 in 16–1264
+PASS  action keeps a real tap target · 1280 · T12
+PASS  long guest name truncates, never overflows · 1280 · T12   → 122px "MAXIMILIAN A."
+
+──── board width 1024px ────
+PASS  allergens fully inside the card · 1024 · P4   → "Fish"
+PASS  severity fully inside the card · 1024 · P4
+PASS  cross-contact inside the card · 1024 · P4
+PASS  action fully inside the card · 1024 · P4   → 806–991 in 16–1008
+PASS  action keeps a real tap target · 1024 · P4
+PASS  long guest name truncates, never overflows · 1024 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 1024 · P4   → "Fish, Tree Nuts"
+PASS  severity fully inside the card · 1024 · P4
+PASS  cross-contact inside the card · 1024 · P4
+PASS  action fully inside the card · 1024 · P4   → 806–991 in 16–1008
+PASS  action keeps a real tap target · 1024 · P4
+PASS  long guest name truncates, never overflows · 1024 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 1024 · SP24   → "Peanuts, Tree Nuts, Shellfish, Ses"
+PASS  severity fully inside the card · 1024 · SP24
+PASS  cross-contact inside the card · 1024 · SP24
+PASS  action fully inside the card · 1024 · SP24   → 806–991 in 16–1008
+PASS  action keeps a real tap target · 1024 · SP24
+PASS  long guest name truncates, never overflows · 1024 · SP24   → 150px "BARTHOLOMEW F."
+PASS  allergens fully inside the card · 1024 · T12   → "Gluten"
+PASS  severity fully inside the card · 1024 · T12
+PASS  cross-contact inside the card · 1024 · T12
+PASS  action fully inside the card · 1024 · T12   → 806–991 in 16–1008
+PASS  action keeps a real tap target · 1024 · T12
+PASS  long guest name truncates, never overflows · 1024 · T12   → 122px "MAXIMILIAN A."
+
+──── board width 860px ────
+PASS  allergens fully inside the card · 860 · P4   → "Fish"
+PASS  severity fully inside the card · 860 · P4
+PASS  cross-contact inside the card · 860 · P4
+PASS  action fully inside the card · 860 · P4   → 642–827 in 16–844
+PASS  action keeps a real tap target · 860 · P4
+PASS  long guest name truncates, never overflows · 860 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 860 · P4   → "Fish, Tree Nuts"
+PASS  severity fully inside the card · 860 · P4
+PASS  cross-contact inside the card · 860 · P4
+PASS  action fully inside the card · 860 · P4   → 642–827 in 16–844
+PASS  action keeps a real tap target · 860 · P4
+PASS  long guest name truncates, never overflows · 860 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 860 · SP24   → "Peanuts, Tree Nuts, Shellfish, Ses"
+PASS  severity fully inside the card · 860 · SP24
+PASS  cross-contact inside the card · 860 · SP24
+PASS  action fully inside the card · 860 · SP24   → 642–827 in 16–844
+PASS  action keeps a real tap target · 860 · SP24
+PASS  long guest name truncates, never overflows · 860 · SP24   → 150px "BARTHOLOMEW F."
+PASS  allergens fully inside the card · 860 · T12   → "Gluten"
+PASS  severity fully inside the card · 860 · T12
+PASS  cross-contact inside the card · 860 · T12
+PASS  action fully inside the card · 860 · T12   → 642–827 in 16–844
+PASS  action keeps a real tap target · 860 · T12
+PASS  long guest name truncates, never overflows · 860 · T12   → 122px "MAXIMILIAN A."
+
+──── board width 720px ────
+PASS  allergens fully inside the card · 720 · P4   → "Fish"
+PASS  severity fully inside the card · 720 · P4
+PASS  cross-contact inside the card · 720 · P4
+PASS  action fully inside the card · 720 · P4   → 502–687 in 16–704
+PASS  action keeps a real tap target · 720 · P4
+PASS  long guest name truncates, never overflows · 720 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 720 · P4   → "Fish, Tree Nuts"
+PASS  severity fully inside the card · 720 · P4
+PASS  cross-contact inside the card · 720 · P4
+PASS  action fully inside the card · 720 · P4   → 502–687 in 16–704
+PASS  action keeps a real tap target · 720 · P4
+PASS  long guest name truncates, never overflows · 720 · P4   → 38px "TOM"
+PASS  allergens fully inside the card · 720 · SP24   → "Peanuts, Tree Nuts, Shellfish, Ses"
+PASS  severity fully inside the card · 720 · SP24
+PASS  cross-contact inside the card · 720 · SP24
+PASS  action fully inside the card · 720 · SP24   → 502–687 in 16–704
+PASS  action keeps a real tap target · 720 · SP24
+PASS  long guest name truncates, never overflows · 720 · SP24   → 150px "BARTHOLOMEW F."
+PASS  allergens fully inside the card · 720 · T12   → "Gluten"
+PASS  severity fully inside the card · 720 · T12
+PASS  cross-contact inside the card · 720 · T12
+PASS  action fully inside the card · 720 · T12   → 502–687 in 16–704
+PASS  action keeps a real tap target · 720 · T12
+PASS  long guest name truncates, never overflows · 720 · T12   → 122px "MAXIMILIAN A."
+
+──── copy ────
+PASS  XC shorthand is gone
+PASS  cross-contact spelled out on the row   → CROSS-CONTACT
+PASS  duplicate marker reads as kitchen language   → 2 ALLERGY RECORDS · CHECK BOTH
+PASS  no system/database wording left
+PASS  no food-safety claim in visible copy
+PASS  expanded shows the FULL guest name
+PASS  expanded explains cross-contact in words
+PASS  expanded rail no longer claims "Safe"
+
+──── hold ────
+PASS  row action carries a progress fill
+PASS  hold buttons are real buttons (focusable, keyboard)   → BUTTON,BUTTON,BUTTON,BUTTON,BUTTON,BUTTON,BUTTON,BUTTON
+PASS  no duplicate fill ids
+PASS  hold duration is 1.0–1.25s   → 1100ms
+PASS  feedback begins immediately   → 16px within 60ms
+PASS  button shows a held state
+PASS  fill progresses left-to-right while held   → 16px → 64px
+PASS  releasing early resets the fill   → 0px
+PASS  releasing early performs NO write   → no ack fired
+PASS  held state cleared on release
+
+ALL 114 CHECKS PASS

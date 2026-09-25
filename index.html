@@ -58,6 +58,9 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .r-multi{font-size:11px;font-weight:800;letter-spacing:.06em;color:#c9adff;
   border:1px solid rgba(168,130,255,.55);border-radius:5px;padding:3px 8px;white-space:nowrap}
 /* EARLIER — present, preserved, and quiet. */
+.exp-guest{font-size:16px;color:var(--t1);margin-bottom:6px}
+.exp-guest-l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-right:8px}
+.exp-xc{font-size:15px;color:var(--warn);margin-bottom:10px;font-weight:600}
 .exp-elapsed{font-size:14px;color:var(--t2);margin-bottom:12px;font-variant-numeric:tabular-nums}
 .earlier-l{opacity:.55}
 .earlier-tg{background:none;border:1px solid var(--b2);color:var(--t2);font:inherit;font-size:12px;
@@ -74,11 +77,17 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 @keyframes rp{0%,100%{border-color:rgba(239,68,68,.8)}50%{border-color:rgba(239,68,68,.2)}}
 @keyframes ap{0%,100%{border-color:rgba(245,158,11,.5)}50%{border-color:rgba(245,158,11,.1)}}
 .row .ac{position:absolute;left:0;top:0;bottom:0;width:4px}
-.r-tbl{font-size:22px;font-weight:700;color:#fff;min-width:40px}
-.r-guest{font-size:17px;font-weight:600;color:var(--t1);min-width:80px}
+.r-tbl{font-size:22px;font-weight:700;color:#fff;min-width:40px;flex:0 0 auto}
+/* Lowest-priority element on the row, and the only one allowed to give way. The order that
+   must survive is service point → allergens → severity → action; the name truncates cleanly
+   before any of them move. Full name is always in the expanded detail. */
+.r-guest{font-size:17px;font-weight:600;color:var(--t1);min-width:0;max-width:150px;flex:0 1 auto;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* The allergens are the point of the row: they take the slack, and never wrap mid-list
    into a narrow column while a button hogs the width. */
 .r-al{font-size:22px;font-weight:700;flex:1 1 200px;min-width:0}
+/* Neither the severity nor the safety condition may be squeezed by a long name. */
+.r-sev,.r-xc,.r-multi{flex:0 0 auto}
 .r-sev{padding:4px 10px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase}
 .r-sev.r{background:rgba(239,68,68,.2);color:var(--danger)}
 .r-sev.a{background:rgba(245,158,11,.15);color:var(--warn)}
@@ -544,16 +553,21 @@ function renderCards(){
     var act='';
     if(!isSrv){
       if(!acked){
-        act='<div class="r-act hold-btn '+(an?'red':'amber')+'" onclick="event.stopPropagation()"'
-          +' ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')"'
-          +' onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')"'
-          +' onmouseleave="endHold(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Received</span></div>';
+        // The fill was missing here entirely, so the row hold showed no progress at all —
+        // the whole of finding 1. A real <button> so it is focusable and keyboard-operable.
+        act='<button type="button" class="r-act hold-btn '+(an?'red':'amber')+'" aria-label="Hold to confirm allergy received" onclick="event.stopPropagation()" '
+          +HOLD_ATTRS(id)
+          +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Received</span></button>';
       } else if(!proto&&an){
-        act='<div class="r-act hold-btn red" onclick="event.stopPropagation();confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area</span></div>';
+        act='<button type="button" class="r-act hold-btn red" onclick="event.stopPropagation();confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area</span></button>';
       } else if(!verified){
-        act='<div class="r-act hold-btn green" onclick="event.stopPropagation();verifyDish(\''+esc(id)+'\')"><span class="hold-lbl">Verify</span></div>';
+        // "Second Check" names the STEP — a second look before the dish leaves — without
+        // claiming a different person performed it. Kitchen identity comes from a ?device=
+        // string on an anon page and is not proven, so any wording implying an independent
+        // verifier would be a claim the data cannot support.
+        act='<button type="button" class="r-act hold-btn green" onclick="event.stopPropagation();verifyDish(\''+esc(id)+'\')"><span class="hold-lbl">Second Check</span></button>';
       } else {
-        act='<div class="r-act hold-btn r-act--srv" onclick="event.stopPropagation();markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark Served</span></div>';
+        act='<button type="button" class="r-act hold-btn r-act--srv" onclick="event.stopPropagation();markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark Served</span></button>';
       }
     }
 
@@ -564,7 +578,9 @@ function renderCards(){
     h+='<div class="r-guest"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc(guestLabel(c))+'</div>';
     h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
     h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:var(--t3)"':'')+'>'+esc((c.severity||'unknown').toUpperCase())+'</div>';
-    if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">XC</div>';
+    // "XC" was internal shorthand on a surface read under time pressure by people who never saw
+    // the schema. The stored boolean and its meaning are unchanged — only the word is.
+    if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">CROSS-CONTACT</div>';
     // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
     // declaration must still read as a correction after a reload or a reconciliation read.
     if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">UPDATED</div>';
@@ -577,7 +593,7 @@ function renderCards(){
     // stays separate, immutable and separately acknowledged.
     var grp=openByAsset[c.asset_id];
     if(grp&&grp.length>1&&!isSrv&&isOpenWork(c))
-      h+='<div class="r-multi" title="Separate submissions — review both">'+grp.length+' SUBMISSIONS · REVIEW BOTH</div>';
+      h+='<div class="r-multi" title="Separate allergy records for this table — check both">'+grp.length+' ALLERGY RECORDS &middot; CHECK BOTH</div>';
     // The elapsed timer moved into the expanded panel. It is not one of the six things a cook
     // needs to recognise and act on, and at 39 days it was pure noise competing with the
     // allergen text. The ticking element keeps its id there, so the per-second tick and the
@@ -592,6 +608,11 @@ function renderCards(){
     // visible message so the operator knows the action didn't take effect).
     if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
 
+    // The row abbreviates and may truncate; the detail never does.
+    if(c.guest_name&&String(c.guest_name).trim())
+      h+='<div class="exp-guest"><span class="exp-guest-l">Guest</span>'+esc(String(c.guest_name).trim())+'</div>';
+    if(c.cross_contact)
+      h+='<div class="exp-xc">The guest asked for cross-contact precautions.</div>';
     h+='<div class="exp-elapsed">'+(isSrv?'Served at ':'Waiting ')+'<span id="timer-'+esc(id)+'">'
       +(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</span></div>';
 
@@ -601,7 +622,7 @@ function renderCards(){
     h+='<div class="pln '+(acked?(isSrv?'g':'a'):'')+'"></div>';
     h+='<div class="ps"><div class="pd '+(acked?(isSrv?'dg':'da'):'')+'">'+(!acked?'':CK)+'</div><div class="plbl '+(acked?(isSrv?'g':'a'):'')+'">Confirmed</div>'+(acked?'<div class="ptm">'+fmtTime(c.kitchen_ack_at)+'</div>':'')+'</div>';
     h+='<div class="pln '+(verified?(isSrv?'g':'v'):'')+'"></div>';
-    h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Safe</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
+    h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Second Check</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
     h+='<div class="pln '+(isSrv?'g':'')+'"></div>';
     h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
     h+='</div>';
@@ -650,13 +671,15 @@ function renderCards(){
 
     // Action buttons
     if(!acked){
-      h+='<div class="hold-btn '+(an?'red':'amber')+'" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
+      h+='<button type="button" class="hold-btn '+(an?'red':'amber')+'" aria-label="Hold to confirm allergy received" '
+        +HOLD_ATTRS(id)
+        +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>';
     }
     if(acked&&!proto&&an){
       h+='<div class="hold-btn red" onclick="confirmProtocol(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
     }
     if(acked&&(!an||proto)&&!verified&&!isSrv){
-      h+='<div class="hold-btn green" onclick="verifyDish(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Verify Safe to Serve</span></div>';
+      h+='<div class="hold-btn green" onclick="verifyDish(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Second Check</span></div>';
     }
     if(verified&&!isSrv){
       h+='<div class="hold-btn" style="margin-top:8px;background:var(--s2);border:1px solid var(--b2);color:var(--t1)" onclick="markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark as Served</span></div>';
@@ -719,12 +742,65 @@ function updateSummary(){
 }
 
 var holdTimers={};
-function startHold(id){
-  var start=Date.now();var fill=document.getElementById('fill-'+id);var label=document.getElementById('holdLabel-'+id);
-  function tick(){var p=Math.min((Date.now()-start)/1500,1);if(fill)fill.style.width=(p*100)+'%';if(p>=1){doAck(id);return}holdTimers[id]=requestAnimationFrame(tick)}
+// Hold duration. Was 1500ms, which read as unresponsive on the floor. 1100ms still cannot be
+// produced by a stray tap or a sleeve brush, so the gesture stays deliberate — this shortens
+// a hold, it does not turn a safety action into an ordinary tap.
+var HOLD_MS=1100;
+
+// One place that wires a hold gesture, so the three hold buttons cannot drift apart in which
+// events they listen for. touchcancel/mouseleave/blur all end the hold: a gesture that leaves
+// the button must not keep counting toward a safety acknowledgement.
+function HOLD_ATTRS(id){
+  var q=esc(id);
+  return 'ontouchstart="startHold(\''+q+'\',this)" ontouchend="endHold(\''+q+'\',this)" '
+       + 'ontouchcancel="endHold(\''+q+'\',this)" onmousedown="startHold(\''+q+'\',this)" '
+       + 'onmouseup="endHold(\''+q+'\',this)" onmouseleave="endHold(\''+q+'\',this)" '
+       + 'onblur="endHold(\''+q+'\',this)" onkeydown="holdKeyDown(event,\''+q+'\',this)" '
+       + 'onkeyup="holdKeyUp(event,\''+q+'\',this)"';
+}
+
+// The button is passed in rather than looked up by id. Two buttons now exist for the same
+// declaration at once — the collapsed row and the expanded panel — so getElementById('fill-'+id)
+// matched whichever came first in the document and could animate the wrong one, or nothing.
+function holdParts(el){
+  if(!el)return {};
+  var btn=el.closest?el.closest('.hold-btn'):el;
+  return {btn:btn, fill:btn?btn.querySelector('.hold-fill'):null};
+}
+function startHold(id,el){
+  var pr=holdParts(el);
+  if(pr.btn)pr.btn.classList.add('holding');           // instant, before the first frame
+  if(pr.fill){pr.fill.style.transition='none';pr.fill.style.width='4%'}
+  var start=Date.now();
+  function tick(){
+    var p=Math.min((Date.now()-start)/HOLD_MS,1);
+    if(pr.fill)pr.fill.style.width=(4+p*96)+'%';
+    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');doAck(id);return}
+    holdTimers[id]=requestAnimationFrame(tick);
+  }
   holdTimers[id]=requestAnimationFrame(tick);
 }
-function endHold(id){if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}var fill=document.getElementById('fill-'+id);if(fill)fill.style.width='0'}
+function endHold(id,el){
+  if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
+  var pr=holdParts(el);
+  if(pr.btn)pr.btn.classList.remove('holding');
+  // Released early: back to nothing. A partly-filled bar left on screen would suggest the
+  // acknowledgement is partly done, and it is not — it either happened or it did not.
+  if(pr.fill){pr.fill.style.transition='width .12s ease-out';pr.fill.style.width='0'}
+}
+// Space/Enter hold the same way a finger does, so the gesture is reachable from a keyboard
+// instead of being mouse/touch-only. Repeat keydown events are ignored so the hold measures
+// real elapsed time rather than restarting on every auto-repeat.
+function holdKeyDown(e,id,el){
+  if(e.key!==' '&&e.key!=='Enter')return;
+  e.preventDefault();
+  if(e.repeat)return;
+  startHold(id,el);
+}
+function holdKeyUp(e,id,el){
+  if(e.key!==' '&&e.key!=='Enter')return;
+  e.preventDefault();endHold(id,el);
+}
 
 // Optimistic-with-revert pattern: local state updates immediately so the UI
 // responds to the 1.5s hold completing, then the DB write follows. On failure
@@ -828,7 +904,7 @@ function showLockout(id){
   });
   // The blocking modal is the single most urgent thing this board ever shows. If it is a
   // rehearsal, that has to be the first line read — above the table, above the allergens.
-  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><div class="hold-btn red" style="max-width:500px;width:100%;height:60px" ontouchstart="startHold(\''+esc(id)+'\')" ontouchend="endHold(\''+esc(id)+'\')" onmousedown="startHold(\''+esc(id)+'\')" onmouseup="endHold(\''+esc(id)+'\')" onmouseleave="endHold(\''+esc(id)+'\')"><div class="hold-fill" id="fill-'+esc(id)+'"></div><span class="hold-lbl" id="holdLabel-'+esc(id)+'">Hold to Confirm Allergy Received</span></div>';
+  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">XC</div>':'')+'</div>'+avoidHtml+'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm allergy received" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>';
   lk.classList.add('on');
 }
 

@@ -12,3 +12,18 @@ cache, that the two genuinely current declarations render, and the presentation 
 
 Run: serve this directory, load `seed.html` then `index.html?venue=<uuid>` in the SAME browser
 profile so the poisoned cache is actually present at boot.
+
+## Board UX regression (`board-ux.*`)
+
+`board-ux.probe.js` runs against an OFFLINE fixture (`?fixture=1`, no venue id, no network,
+no realtime) so hold gestures can be pressed and released without any possibility of touching
+live rehearsal records. Four fixture cards cover long guest names
+("Bartholomew Fitzwilliam-Harrington"), a six-allergen list, cross-contact, and the two-record
+ambiguous case.
+
+It measures real boxes at board widths 1280 / 1024 / 860 / 720 and asserts the priority order
+survives — service point → allergens → severity → action — with the guest name the only
+element allowed to give way. It then presses a hold, samples the fill at 60ms and 360ms, and
+releases early to prove the reset and that no write fires.
+
+114 checks; results in `board-ux.results.txt`.

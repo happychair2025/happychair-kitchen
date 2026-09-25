@@ -18,11 +18,23 @@ const all=s=>[...document.querySelectorAll(s)];
  ok('stale rows pruned from the cache itself', !/stale-/.test(localStorage.getItem('hc_k_cards_v2')||''));
  ok('live rehearsal work IS on the board', /P4/.test(txt()));
  ok('both current declarations render', rows.length===2, rows.length+' rows');
- ok('NEEDS YOU leads the board', /Needs You/i.test((all('.sec-l')[0]||{}).textContent||''));
+ // State-aware: which band leads depends on whether the kitchen has acknowledged yet. Both
+ // are current-service work either way — that is what this asserts.
+ const lead=((all('.sec-l')[0]||{}).textContent||'').trim();
+ ok('a current-service band leads the board', /Needs You|In Progress/i.test(lead), lead);
+ ok('no earlier/stale band competes above it', !/Earlier/i.test(lead), lead);
  ok('four unlabelled dots gone', all('.stages').length===0&&all('.stg').length===0);
  ok('one next action per row', all('.row .r-act').length===rows.length);
- ok('action is held, not tapped', all('.row .r-act').every(e=>/startHold/.test(e.getAttribute('ontouchstart')||'')));
- ok('multi-submission marker on both', all('.r-multi').length===2, all('.r-multi')[0]?.textContent);
+ // The un-acknowledged action is a HOLD; the later steps are deliberate clicks. Assert the
+ // right one for the state each row is actually in rather than assuming all are holds.
+ const held=all('.row .r-act').filter(e=>/startHold/.test(e.getAttribute('ontouchstart')||''));
+ const lbl=all('.row .r-act').map(e=>e.textContent.trim());
+ ok('every action is a real button', all('.row .r-act').every(e=>e.tagName==='BUTTON'), lbl.join(' | '));
+ ok('acknowledgement actions are holds with a progress fill',
+    held.every(e=>!!e.querySelector('.hold-fill')), held.length+' hold actions');
+ ok('post-ack actions are the deliberate later steps',
+    lbl.every(t=>/Confirm Received|Confirm Prep Area|Second Check|Mark Served/.test(t)), lbl.join(' | '));
+ ok('multi-record marker on both', all('.r-multi').length===2 && /ALLERGY RECORDS · CHECK BOTH/.test(all('.r-multi')[0].textContent), all('.r-multi')[0]?.textContent);
  ok('no ordering/supersession implied', !/supersed|replaces|newer|current version/i.test(txt()));
  ok('no union — submissions stay separate',
     all('.r-al').map(e=>e.textContent.trim()).sort().join(' | ')==='Fish | Fish, Tree Nuts',
