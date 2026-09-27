@@ -52,6 +52,39 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
    1114px wide and pushed it onto a line of its own — measured, not guessed. Scoped to .row so
    it outranks .hold-btn, which is declared later in this sheet and would otherwise win on
    source order at equal specificity. */
+/* The independent-check review. Same overlay weight as the lockout because it is a
+   full-attention screen, but deliberately its own element: the lockout is the anaphylaxis
+   block and must not be reused for anything else. */
+.vfy{position:fixed;inset:0;z-index:95;background:rgba(5,9,14,.93);display:none;
+  align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.vfy.on{display:flex}
+.vfy-card{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:22px 24px;
+  width:100%;max-width:560px;max-height:100%;overflow-y:auto}
+.vfy-hd{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.vfy-t{font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--t1);flex:1}
+.vfy-x{background:none;border:none;color:var(--t2);font-size:30px;line-height:1;cursor:pointer;
+  min-width:44px;min-height:44px;font-family:inherit}
+.vfy-tbl{font-size:30px;font-weight:800;color:#fff;line-height:1.1}
+.vfy-guest{font-size:17px;font-weight:600;color:var(--t2);margin-top:2px}
+.vfy-al{font-size:26px;font-weight:800;color:var(--t1);margin-top:10px;line-height:1.25}
+.vfy-al.an{color:var(--danger)}
+.vfy-marks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.vfy-sev,.vfy-xc{font-size:12px;font-weight:800;letter-spacing:.07em;padding:5px 10px;border-radius:6px;
+  background:rgba(245,158,11,.16);color:var(--warn)}
+.vfy-sev.an{background:rgba(239,68,68,.18);color:var(--danger)}
+.vfy-xc{background:rgba(148,163,184,.14);color:var(--t1)}
+.vfy-note{margin-top:10px;font-size:15px;font-weight:600;color:var(--warn)}
+.vfy-sec{margin-top:20px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.vfy-rec{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.vfy-rec div{display:flex;justify-content:space-between;gap:14px;font-size:15px;color:var(--t2)}
+.vfy-rec b{color:var(--t1);font-variant-numeric:tabular-nums}
+.vfy-body{margin-top:8px;font-size:16px;line-height:1.5;color:var(--t1)}
+.vfy-honest{margin-top:14px;font-size:14px;line-height:1.5;color:var(--t2)}
+.vfy-go{margin-top:20px}
+/* Navigation, not a safety write — so it must not wear the filled press-and-hold styling. */
+.row .r-act--nav{background:var(--s2);border:1px solid var(--b2);color:var(--t1);
+  display:flex;align-items:center;justify-content:center;border-radius:10px;
+  font-size:17px;font-weight:700;cursor:pointer;font-family:inherit}
 .row .r-act{margin-left:auto;flex:0 0 auto;width:auto;min-width:150px;padding:0 20px;height:52px;margin-top:0}
 .row .r-act--srv{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
 /* Same table, more than one open submission. A statement of fact, not a merge. */
@@ -179,6 +212,7 @@ body.dimmed .summary{opacity:.3}
 </div>
 <div class="offline-banner" id="offlineBanner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
 <div class="lockout" id="lockout"><div class="lockout-card" id="lockoutContent"></div></div>
+<div class="vfy" id="verify"><div class="vfy-card" id="verifyContent"></div></div>
 <div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div></div>
 <div class="ghost-tabs" id="ghostTabs"></div>
 <div class="summary" id="summaryBar"><span class="w">0 Tables</span> · <span class="w">0 Allergies</span></div>
@@ -559,15 +593,22 @@ function renderCards(){
           +HOLD_ATTRS(id)
           +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Received</span></button>';
       } else if(!proto&&an){
-        act='<button type="button" class="r-act hold-btn red" onclick="event.stopPropagation();confirmProtocol(\''+esc(id)+'\')"><span class="hold-lbl">Confirm Prep Area</span></button>';
+        act='<button type="button" class="r-act hold-btn red" aria-label="Hold to confirm prep area cleared" '
+          +HOLD_ATTRS(id,'prep')
+          +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Prep Area</span></button>';
       } else if(!verified){
         // "Second Check" names the STEP — a second look before the dish leaves — without
         // claiming a different person performed it. Kitchen identity comes from a ?device=
         // string on an anon page and is not proven, so any wording implying an independent
         // verifier would be a claim the data cannot support.
-        act='<button type="button" class="r-act hold-btn green" onclick="event.stopPropagation();verifyDish(\''+esc(id)+'\')"><span class="hold-lbl">Second Check</span></button>';
+        // NAVIGATION ONLY — this writes nothing. It used to call verifyDish() straight from
+        // the row, so a single tap recorded a verification milestone with no review and no
+        // deliberate gesture. Opening the check must never be the check.
+        act='<button type="button" class="r-act r-act--nav" aria-label="Open the independent check" onclick="event.stopPropagation();openVerify(\''+esc(id)+'\')"><span class="hold-lbl">Second Check →</span></button>';
       } else {
-        act='<button type="button" class="r-act hold-btn r-act--srv" onclick="event.stopPropagation();markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark Served</span></button>';
+        act='<button type="button" class="r-act hold-btn r-act--srv" aria-label="Hold to mark served" '
+          +HOLD_ATTRS(id,'serve')
+          +'><div class="hold-fill"></div><span class="hold-lbl">Mark Served</span></button>';
       }
     }
 
@@ -676,13 +717,17 @@ function renderCards(){
         +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>';
     }
     if(acked&&!proto&&an){
-      h+='<div class="hold-btn red" onclick="confirmProtocol(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl">Confirm Prep Area Cleared</span></div>';
+      h+='<button type="button" class="hold-btn red" style="margin-top:8px" aria-label="Hold to confirm prep area cleared" '
+        +HOLD_ATTRS(id,'prep')
+        +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Prep Area Cleared</span></button>';
     }
     if(acked&&(!an||proto)&&!verified&&!isSrv){
-      h+='<div class="hold-btn green" onclick="verifyDish(\''+esc(id)+'\')" style="margin-top:8px"><span class="hold-lbl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Second Check</span></div>';
+      h+='<button type="button" class="hold-btn green" style="margin-top:8px" aria-label="Open the independent check" onclick="openVerify(\''+esc(id)+'\')"><span class="hold-lbl">Second Check &rarr;</span></button>';
     }
     if(verified&&!isSrv){
-      h+='<div class="hold-btn" style="margin-top:8px;background:var(--s2);border:1px solid var(--b2);color:var(--t1)" onclick="markServed(\''+esc(id)+'\')"><span class="hold-lbl">Mark as Served</span></div>';
+      h+='<button type="button" class="hold-btn" style="margin-top:8px;background:var(--s2);border:1px solid var(--b2);color:var(--t1)" aria-label="Hold to mark served" '
+        +HOLD_ATTRS(id,'serve')
+        +'><div class="hold-fill"></div><span class="hold-lbl">Mark as Served</span></button>';
     }
 
     // POS disabled
@@ -750,14 +795,21 @@ var HOLD_MS=1100;
 // One place that wires a hold gesture, so the three hold buttons cannot drift apart in which
 // events they listen for. touchcancel/mouseleave/blur all end the hold: a gesture that leaves
 // the button must not keep counting toward a safety acknowledgement.
-function HOLD_ATTRS(id){
-  var q=esc(id);
-  return 'ontouchstart="startHold(\''+q+'\',this)" ontouchend="endHold(\''+q+'\',this)" '
-       + 'ontouchcancel="endHold(\''+q+'\',this)" onmousedown="startHold(\''+q+'\',this)" '
+function HOLD_ATTRS(id,action){
+  var q=esc(id), a=esc(action||'ack');
+  return 'ontouchstart="startHold(\''+q+'\',this,\''+a+'\')" ontouchend="endHold(\''+q+'\',this)" '
+       + 'ontouchcancel="endHold(\''+q+'\',this)" onmousedown="startHold(\''+q+'\',this,\''+a+'\')" '
        + 'onmouseup="endHold(\''+q+'\',this)" onmouseleave="endHold(\''+q+'\',this)" '
-       + 'onblur="endHold(\''+q+'\',this)" onkeydown="holdKeyDown(event,\''+q+'\',this)" '
+       + 'onblur="endHold(\''+q+'\',this)" onkeydown="holdKeyDown(event,\''+q+'\',this,\''+a+'\')" '
        + 'onkeyup="holdKeyUp(event,\''+q+'\',this)"';
 }
+
+// Every milestone that writes a safety field completes through the SAME gesture. Previously
+// only the acknowledgement was a hold while Confirm Prep Area, Second Check and Mark Served
+// were ordinary clicks — all four wearing the .hold-btn style, so three controls that fired
+// on a single tap looked exactly like the one that did not. A safety write must not be
+// reachable by the same gesture as scrolling past it.
+var HOLD_ACTIONS={ack:doAck, prep:confirmProtocol, verify:verifyDish, serve:markServed};
 
 // The button is passed in rather than looked up by id. Two buttons now exist for the same
 // declaration at once — the collapsed row and the expanded panel — so getElementById('fill-'+id)
@@ -767,7 +819,7 @@ function holdParts(el){
   var btn=el.closest?el.closest('.hold-btn'):el;
   return {btn:btn, fill:btn?btn.querySelector('.hold-fill'):null};
 }
-function startHold(id,el){
+function startHold(id,el,action){
   var pr=holdParts(el);
   if(pr.btn)pr.btn.classList.add('holding');           // instant, before the first frame
   if(pr.fill){pr.fill.style.transition='none';pr.fill.style.width='4%'}
@@ -775,7 +827,8 @@ function startHold(id,el){
   function tick(){
     var p=Math.min((Date.now()-start)/HOLD_MS,1);
     if(pr.fill)pr.fill.style.width=(4+p*96)+'%';
-    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');doAck(id);return}
+    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');
+      var fn=HOLD_ACTIONS[action||'ack']||doAck;fn(id);return}
     holdTimers[id]=requestAnimationFrame(tick);
   }
   holdTimers[id]=requestAnimationFrame(tick);
@@ -791,11 +844,11 @@ function endHold(id,el){
 // Space/Enter hold the same way a finger does, so the gesture is reachable from a keyboard
 // instead of being mouse/touch-only. Repeat keydown events are ignored so the hold measures
 // real elapsed time rather than restarting on every auto-repeat.
-function holdKeyDown(e,id,el){
+function holdKeyDown(e,id,el,action){
   if(e.key!==' '&&e.key!=='Enter')return;
   e.preventDefault();
   if(e.repeat)return;
-  startHold(id,el);
+  startHold(id,el,action);
 }
 function holdKeyUp(e,id,el){
   if(e.key!==' '&&e.key!=='Enter')return;
@@ -873,6 +926,7 @@ async function verifyDish(id){
   if(error){console.error('[kitchen] verify failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
   delete c._error;
   chimeAck();
+  closeVerify();
   renderCards();cacheCards();
 }
 
@@ -890,6 +944,61 @@ async function markServed(id){
   chimeAck();
   renderCards();cacheCards();
 }
+
+/**
+ * The independent check, as a review screen. Opening it writes NOTHING.
+ *
+ * It exists because the collapsed row used to call verifyDish() directly: one tap recorded a
+ * verification milestone with no review of what was being verified and no deliberate gesture.
+ * Now the tap opens this, and the only way to record anything is the press-and-hold at the
+ * bottom — the same gesture, duration and cancel behaviour as the acknowledgement.
+ *
+ * WHAT THIS SCREEN MAY AND MAY NOT SAY. Kitchen is anonymous and unpaired: `verified_by`
+ * comes from a ?device= query string, and on every row in the database it equals
+ * `protocol_confirmed_by`. So this screen asks a person to do something — "another team
+ * member should check" — and never reports that Happy Chair established one did. The
+ * substrate agrees: allergyshield_shift_record returns kitchen_identity_verified = false
+ * unconditionally, and the rehearsal step is named "Kitchen verification step recorded
+ * (identity unverified)".
+ */
+function openVerify(id){
+  var c=cards[id];if(!c)return;
+  var lk=document.getElementById('verify'),lc=document.getElementById('verifyContent');
+  var an=isAnaph(c.severity);
+  var h='';
+  h+='<div class="vfy-hd">'+(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
+    +'<div class="vfy-t">Independent Check</div>'
+    +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeVerify()">&times;</button></div>';
+
+  // What is being checked — the same facts the card carries, restated here so the person
+  // holding the button is looking at them while they decide.
+  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
+  if(c.guest_name)h+='<div class="vfy-guest">'+esc(guestLabel(c))+'</div>';
+  h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
+  h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
+    +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
+  if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
+
+  // What has already been recorded, with times — so a second person can see what they are
+  // checking on top of rather than taking it on trust.
+  h+='<div class="vfy-sec">Already recorded</div><div class="vfy-rec">';
+  h+='<div><span>Kitchen received</span><b>'+(c.kitchen_ack_at?esc(fmtTime(c.kitchen_ack_at)):'not recorded')+'</b></div>';
+  h+='<div><span>Prep area confirmed</span><b>'+(c.protocol_confirmed_at?esc(fmtTime(c.protocol_confirmed_at)):'not recorded')+'</b></div>';
+  h+='</div>';
+
+  h+='<div class="vfy-sec">What this check is for</div>';
+  h+='<div class="vfy-body">Another team member should check the allergy preparation before it '
+    +'leaves the kitchen.</div>';
+  // The honesty line. Not a footnote elsewhere — next to the button that does the recording.
+  h+='<div class="vfy-honest">This records that a second check happened. It does not prove who '
+    +'carried it out — this board is shared and not signed in.</div>';
+
+  h+='<button type="button" class="hold-btn green vfy-go" aria-label="Hold to record the second check" '
+    +HOLD_ATTRS(id,'verify')
+    +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Record Second Check</span></button>';
+  lc.innerHTML=h;lk.classList.add('on');
+}
+function closeVerify(){var lk=document.getElementById('verify');if(lk)lk.classList.remove('on')}
 
 function showLockout(id){
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');

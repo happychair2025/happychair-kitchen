@@ -35,3 +35,18 @@ directly. It exists because the first pass of the XC rename missed this surface 
 the row was changed and the lockout was not — and a "no XC on the page" check passed anyway
 because the modal had never rendered. The probe now asserts the modal IS up before it asserts
 anything about its contents.
+
+## Verification contract (`verification-contract.*`)
+
+Runs the real board against an OFFLINE fixture (`?fixture=1`) with a stubbed `sb` that records
+every write, so the live rehearsal records cannot be reached. Three write modes —
+`writemode=ok|err|hang` — cover a successful write, a refused one, and one that never settles.
+
+Asserts: opening Second Check writes NOTHING; the review shows service point, guest,
+allergens, severity, cross-contact and what is already recorded; no independence claim appears
+anywhere; the recording control is a press-and-hold that writes only on completion and writes
+only `verified_at`/`verified_by`; early release writes nothing and resets; and — the Block D
+regression — no no-write interaction can remove a card, including with `_writing` latched and
+under a failed or hung write.
+
+100 checks across the three modes.

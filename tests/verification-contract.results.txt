@@ -1,0 +1,139 @@
+════ write mode: ok ════
+PASS  two cards on the board   → 2 rows
+
+──── BLOCK A · Second Check is navigation, not a write ────
+PASS  the row action is a navigation control   → r-act r-act--nav
+PASS  it is NOT styled as a press-and-hold
+PASS  it carries no hold handlers
+PASS  it reads as navigation
+PASS  OPENING THE CHECK WROTE NOTHING   → 0 writes
+PASS  the review screen opened
+
+──── the review shows what is being checked ────
+PASS  service point
+PASS  guest name
+PASS  allergens
+PASS  stated severity
+PASS  cross-contact requirement
+PASS  what is already recorded — kitchen receipt
+PASS  what is already recorded — prep
+PASS  what the check is for
+
+──── BLOCK C · no unsubstantiated independence claim ────
+PASS  never claims: independently verified
+PASS  never claims: verified by another employee
+PASS  never claims: second employee confirmed
+PASS  never claims: confirmed by a different
+PASS  states plainly that identity is not proven   → honesty line present
+
+──── BLOCK B · the write needs a deliberate hold ────
+PASS  the recording control is a press-and-hold
+PASS  it carries a progress fill
+PASS  progress starts immediately   → 49px @70ms
+PASS  RELEASING EARLY WRITES NOTHING   → 0 writes
+PASS  early release resets the fill
+PASS  COMPLETING THE HOLD RECORDS THE SECOND CHECK   → 1 write: {"verified_at":"2026-09-27T18:35:31.641Z","verified_by":"Fixture Board"}
+PASS  it writes verified_at and verified_by only   → verified_at,verified_by
+PASS  recording closes the review
+PASS  the card stays on the board after recording   → 2 rows
+PASS  next action becomes Mark Served
+
+──── BLOCK D · a no-write click can never remove a card ────
+PASS  closing the review keeps both cards
+PASS  repeated open/close never removes a card   → 2 rows
+PASS  repeated navigation still writes nothing   → 0 writes from 3 open/close cycles
+PASS  a card with _writing latched stays on the board   → v1 present
+PASS  verifyDish on a latched card is a no-op that removes nothing
+
+ALL 35 CHECKS PASS
+════ write mode: err ════
+PASS  two cards on the board   → 2 rows
+
+──── BLOCK A · Second Check is navigation, not a write ────
+PASS  the row action is a navigation control   → r-act r-act--nav
+PASS  it is NOT styled as a press-and-hold
+PASS  it carries no hold handlers
+PASS  it reads as navigation
+PASS  OPENING THE CHECK WROTE NOTHING   → 0 writes
+PASS  the review screen opened
+
+──── the review shows what is being checked ────
+PASS  service point
+PASS  guest name
+PASS  allergens
+PASS  stated severity
+PASS  cross-contact requirement
+PASS  what is already recorded — kitchen receipt
+PASS  what is already recorded — prep
+PASS  what the check is for
+
+──── BLOCK C · no unsubstantiated independence claim ────
+PASS  never claims: independently verified
+PASS  never claims: verified by another employee
+PASS  never claims: second employee confirmed
+PASS  never claims: confirmed by a different
+PASS  states plainly that identity is not proven   → honesty line present
+
+──── BLOCK B · the write needs a deliberate hold ────
+PASS  the recording control is a press-and-hold
+PASS  it carries a progress fill
+PASS  progress starts immediately   → 49px @70ms
+PASS  RELEASING EARLY WRITES NOTHING   → 0 writes
+PASS  early release resets the fill
+
+──── BLOCK D · a no-write click can never remove a card ────
+PASS  closing the review keeps both cards
+PASS  repeated open/close never removes a card   → 2 rows
+PASS  repeated navigation still writes nothing   → 0 writes from 3 open/close cycles
+PASS  a card with _writing latched stays on the board   → v1 present
+PASS  verifyDish on a latched card is a no-op that removes nothing
+PASS  a FAILED verify keeps the card on the board   → v2 present
+PASS  a failed verify reverts verified_at
+PASS  a failed verify surfaces an error
+
+ALL 33 CHECKS PASS
+════ write mode: hang ════
+PASS  two cards on the board   → 2 rows
+
+──── BLOCK A · Second Check is navigation, not a write ────
+PASS  the row action is a navigation control   → r-act r-act--nav
+PASS  it is NOT styled as a press-and-hold
+PASS  it carries no hold handlers
+PASS  it reads as navigation
+PASS  OPENING THE CHECK WROTE NOTHING   → 0 writes
+PASS  the review screen opened
+
+──── the review shows what is being checked ────
+PASS  service point
+PASS  guest name
+PASS  allergens
+PASS  stated severity
+PASS  cross-contact requirement
+PASS  what is already recorded — kitchen receipt
+PASS  what is already recorded — prep
+PASS  what the check is for
+
+──── BLOCK C · no unsubstantiated independence claim ────
+PASS  never claims: independently verified
+PASS  never claims: verified by another employee
+PASS  never claims: second employee confirmed
+PASS  never claims: confirmed by a different
+PASS  states plainly that identity is not proven   → honesty line present
+
+──── BLOCK B · the write needs a deliberate hold ────
+PASS  the recording control is a press-and-hold
+PASS  it carries a progress fill
+PASS  progress starts immediately   → 49px @70ms
+PASS  RELEASING EARLY WRITES NOTHING   → 0 writes
+PASS  early release resets the fill
+
+──── BLOCK D · a no-write click can never remove a card ────
+PASS  closing the review keeps both cards
+PASS  repeated open/close never removes a card   → 2 rows
+PASS  repeated navigation still writes nothing   → 0 writes from 3 open/close cycles
+PASS  a card with _writing latched stays on the board   → v1 present
+PASS  verifyDish on a latched card is a no-op that removes nothing
+PASS  a HUNG verify keeps the card on the board   → v2 present
+PASS  the hung card shows optimistic state, not absence
+
+ALL 32 CHECKS PASS
