@@ -55,6 +55,12 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 /* The independent-check review. Same overlay weight as the lockout because it is a
    full-attention screen, but deliberately its own element: the lockout is the anaphylaxis
    block and must not be reused for anything else. */
+/* Kitchen had NO focus styling of any kind. That was tolerable while every control was a
+   div; it stopped being tolerable when the hold buttons became real keyboard-operable
+   <button>s — a safety control you can focus but cannot see focused. One rule, all of them. */
+.hold-btn:focus,.r-act:focus,.hdr-btn:focus,.vfy-x:focus,.vd-st:focus,.earlier-tg:focus{outline:none}
+.hold-btn:focus-visible,.r-act:focus-visible,.hdr-btn:focus-visible,.vfy-x:focus-visible,
+.vd-st:focus-visible,.earlier-tg:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 .vd-st{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;padding:6px 10px;
   border-radius:7px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);cursor:pointer;
   min-height:32px;white-space:nowrap}
@@ -1036,8 +1042,8 @@ function openPair(){
   var lk=document.getElementById('pair'),lc=document.getElementById('pairContent');
   lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">Pair this display</div>'
     +'<button type="button" class="vfy-x" aria-label="Close" onclick="closePair()">&times;</button></div>'
-    +'<div class="vfy-body">In Happy Chair, open <b>Set Up &rarr; Devices &rarr; Add Kitchen Display</b> '
-    +'and enter the 6-digit code shown there.</div>'
+    +'<div class="vfy-body">In Happy Chair, open <b>Set Up &rarr; Kitchen Displays</b> '
+    +'and tap <b>Add Kitchen Display</b>, then enter the 6-digit code it shows.</div>'
     +'<input id="pairCode" class="pair-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">'
     +'<div id="pairErr" class="vfy-honest"></div>'
     +'<button type="button" class="hold-btn green vfy-go" onclick="submitPair()"><span class="hold-lbl">Pair Display</span></button>';
