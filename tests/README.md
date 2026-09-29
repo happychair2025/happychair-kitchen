@@ -64,3 +64,19 @@ Unpaired: no allergy data loads at all, the pairing sheet opens, and no anonymou
 used — an unpaired board has no authority and does not borrow any.
 
 The database side is proven separately in SQL against the REAL paired device's claims.
+
+## Second Check persistence (`second-check-persistence.*`)
+
+The review must stay open through everything the board does on its own, and close only when
+the operator closes it or completes the hold.
+
+Covers: opening writes nothing; survives six reconcile cycles, a real 5-second polling tick,
+a paired-token refresh, and an unrelated card updating underneath; a rebuild is suppressed
+while a hold is running and the review survives a poll DURING the hold; early release keeps it
+open with zero writes; Close returns to the board with zero writes; completing the hold writes
+EXACTLY once, only verified_at/verified_by, for the intended declaration; the sibling record is
+untouched and nothing anywhere is served/closed/superseded/minimized.
+
+`repro-attempt.txt` records that the original failure could NOT be reproduced in the harness
+(18s of real 5s polling, zero writes, stayed open) — the fix is architectural, not a patch to
+an identified trigger.

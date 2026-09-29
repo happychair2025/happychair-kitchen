@@ -1,0 +1,7 @@
+════ REPRODUCTION · real 5s interval, real timing ════
+      RECONCILE_MS = 5000
+PASS  opens
+PASS  review stays open across ~18s of real polling   → survived
+      writes during the whole observation: 0
+
+ALL 2 CHECKS PASS

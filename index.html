@@ -735,6 +735,10 @@ function renderCards(){
   }
 
   area.innerHTML=h;
+  // The board and the review are independent surfaces. Re-asserting here means no reconcile,
+  // poll, realtime event or re-render can leave the operator somewhere they did not ask to
+  // be — and the panel refreshes with the record's current state while it stays open.
+  renderVerify();
   renderGhosts(ghostIds);
   updateSummary();
   resetDim();
@@ -796,19 +800,23 @@ function holdParts(el){
 }
 function startHold(id,el,action){
   var pr=holdParts(el);
+  // Tell the review not to rebuild while this gesture runs: a rebuild would replace the very
+  // button being held and silently cancel a deliberate safety action mid-press.
+  if(pr.btn&&pr.btn.classList.contains('vfy-go'))verifyHolding=true;
   if(pr.btn)pr.btn.classList.add('holding');           // instant, before the first frame
   if(pr.fill){pr.fill.style.transition='none';pr.fill.style.width='4%'}
   var start=Date.now();
   function tick(){
     var p=Math.min((Date.now()-start)/HOLD_MS,1);
     if(pr.fill)pr.fill.style.width=(4+p*96)+'%';
-    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');
+    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');verifyHolding=false;
       var fn=HOLD_ACTIONS[action||'ack']||doAck;fn(id);return}
     holdTimers[id]=requestAnimationFrame(tick);
   }
   holdTimers[id]=requestAnimationFrame(tick);
 }
 function endHold(id,el){
+  verifyHolding=false;
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var pr=holdParts(el);
   if(pr.btn)pr.btn.classList.remove('holding');
@@ -1065,44 +1073,94 @@ async function submitPair(){
   }catch(e){err.textContent='Could not reach Happy Chair.'}
 }
 
+// WHICH declaration's independent check is open. This is application state, deliberately:
+// the review used to exist ONLY as innerHTML on a detached overlay, so anything that
+// re-rendered or re-entered the board could leave it inconsistent, and nothing could put it
+// back. The board now re-asserts it from this id after every render.
+var verifyOpenId=null;
+// Signature of what was last drawn, so a 5-second poll does not rebuild an unchanged panel
+// underneath the operator.
+var verifySig=null;
+// True while a hold is in progress on the review's button. A rebuild mid-hold would destroy
+// the gesture and the progress fill, so it is never rebuilt while one is running.
+var verifyHolding=false;
+
 function openVerify(id){
-  var c=cards[id];if(!c)return;
+  if(!cards[id])return;
+  verifyOpenId=id;
+  verifySig=null;
+  renderVerify();
+}
+
+function closeVerify(){
+  verifyOpenId=null;verifySig=null;verifyHolding=false;
+  var lk=document.getElementById('verify');if(lk)lk.classList.remove('on');
+}
+
+// Draws (or re-asserts) the review from state. Called by openVerify AND at the end of every
+// renderCards(), so a board refresh can never leave the operator somewhere they did not ask
+// to be.
+function renderVerify(){
+  if(!verifyOpenId)return;
   var lk=document.getElementById('verify'),lc=document.getElementById('verifyContent');
+  if(!lk||!lc)return;
+  lk.classList.add('on');            // always re-assert: cheap, idempotent, and the fix
+  if(verifyHolding)return;           // never rebuild under a running gesture
+
+  var c=cards[verifyOpenId];
+  if(!c){
+    // The declaration left the board while the review was open — resolved elsewhere, another
+    // display served it, or the service closed. Say so explicitly instead of silently
+    // dropping the operator back to the board with no idea why.
+    if(verifySig==='gone')return;
+    verifySig='gone';
+    lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">No longer on the board</div>'
+      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeVerify()">&times;</button></div>'
+      +'<div class="vfy-body">This allergy is no longer current work for this kitchen. It may '
+      +'have been served, closed, or handled on another display. Nothing was recorded here.</div>'
+      +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
+      +'onclick="closeVerify()"><span class="hold-lbl">Back to the board</span></button>';
+    return;
+  }
+
   var an=isAnaph(c.severity);
+  var sig=[c.id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.kitchen_ack_at,
+           c.protocol_confirmed_at,c.verified_at,c.served_at,c._error||''].join('|');
+  if(sig===verifySig)return;         // unchanged — leave the panel exactly as it is
+  verifySig=sig;
+
+  var id=c.id;
   var h='';
   h+='<div class="vfy-hd">'+(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
     +'<div class="vfy-t">Independent Check</div>'
     +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeVerify()">&times;</button></div>';
-
-  // What is being checked — the same facts the card carries, restated here so the person
-  // holding the button is looking at them while they decide.
   h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
   if(c.guest_name)h+='<div class="vfy-guest">'+esc(guestLabel(c))+'</div>';
   h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
   h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
     +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
   if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
-
-  // What has already been recorded, with times — so a second person can see what they are
-  // checking on top of rather than taking it on trust.
   h+='<div class="vfy-sec">Already recorded</div><div class="vfy-rec">';
   h+='<div><span>Kitchen received</span><b>'+(c.kitchen_ack_at?esc(fmtTime(c.kitchen_ack_at)):'not recorded')+'</b></div>';
   h+='<div><span>Prep area confirmed</span><b>'+(c.protocol_confirmed_at?esc(fmtTime(c.protocol_confirmed_at)):'not recorded')+'</b></div>';
   h+='</div>';
-
   h+='<div class="vfy-sec">What this check is for</div>';
   h+='<div class="vfy-body">Another team member should check the allergy preparation before it '
     +'leaves the kitchen.</div>';
-  // The honesty line. Not a footnote elsewhere — next to the button that does the recording.
   h+='<div class="vfy-honest">This records that a second check happened. It does not prove who '
     +'carried it out — this board is shared and not signed in.</div>';
-
-  h+='<button type="button" class="hold-btn green vfy-go" aria-label="Hold to record the second check" '
-    +HOLD_ATTRS(id,'verify')
-    +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Record Second Check</span></button>';
-  lc.innerHTML=h;lk.classList.add('on');
+  if(c.verified_at){
+    h+='<div class="vfy-note">Already recorded at '+esc(fmtTime(c.verified_at))+'.</div>'
+      +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
+      +'onclick="closeVerify()"><span class="hold-lbl">Back to the board</span></button>';
+  }else{
+    h+='<button type="button" class="hold-btn green vfy-go" aria-label="Hold to record the second check" '
+      +HOLD_ATTRS(id,'verify')
+      +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Record Second Check</span></button>';
+  }
+  lc.innerHTML=h;
 }
-function closeVerify(){var lk=document.getElementById('verify');if(lk)lk.classList.remove('on')}
+
 
 function showLockout(id){
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');

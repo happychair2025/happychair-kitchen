@@ -1,0 +1,23 @@
+════ Second Check review must persist ════
+PASS  1 · opens
+PASS  1 · opening wrote nothing   → 0 writes
+      open for declaration: 7784ff89
+PASS  2 · survives 6 reconcile cycles
+PASS  2 · survives the real 5s polling interval
+PASS  3 · survives a paired-token refresh
+PASS  4 · survives an unrelated card update
+PASS  4 · board kept refreshing behind it
+PASS  4 · review still shows ITS declaration   → ×
+PASS  5 · a rebuild is suppressed mid-hold
+PASS  5 · review survives a poll DURING the hold
+PASS  6 · early release: still open
+PASS  6 · early release: zero writes   → 0 writes
+PASS  7 · Close returns to the board
+PASS  7 · Close wrote nothing
+PASS  8 · completing the hold records EXACTLY one write   → [{"verified_at":"2026-09-29T17:01:45.996Z","verified_by":"Kitchen Display"}]
+PASS  8 · it wrote only verified_at/verified_by   → verified_at,verified_by
+PASS  8 · for the intended declaration   → target 56a859b5
+PASS  9 · the sibling record is untouched
+PASS  9 · nothing served/closed/superseded/minimized anywhere
+
+ALL 19 CHECKS PASS
