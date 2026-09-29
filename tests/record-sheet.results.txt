@@ -1,0 +1,109 @@
+════════ 0 · THE THREE RECORDS ════════
+PASS  all three on the board   → 3 rows
+  DOM order: A Closure | B Fish | C Fish+TreeNuts
+  A Closure → "Confirm Received"
+  B Fish → "Second Check →"
+  C Fish+TreeNuts → "Second Check →"
+
+──── 1 · NO INVENTED RELATIONSHIP (finding 5) ────
+PASS  no "CHECK BOTH" anywhere
+PASS  no "ALLERGY RECORDS" count marker
+PASS  no UPDATED claim (no supersedes_id in the data)
+PASS  no LATEST claim
+PASS  no relationship marker on A Closure
+PASS  no relationship marker on B Fish
+PASS  no relationship marker on C Fish+TreeNuts
+PASS  A never mentioned on B or C
+
+──── 2 · ONE SECOND CHECK PER DECLARATION ────
+PASS  exactly 2 Second Check controls on the board (one per eligible record)   → 2
+PASS  B has exactly one   → 1
+PASS  C has exactly one   → 1
+PASS  no inline expansion / marker / POS element remains   → 0 found
+PASS  nothing calls toggleCard
+
+──── 3 · TAPPING THE ROW OPENS THAT RECORD, AND STAYS ────
+PASS  B1 · one tap on C opens the sheet
+PASS  it is C   → C Fish+TreeNuts
+PASS  shows Fish + Tree Nuts, never Fish-only
+PASS  B2 · opening wrote nothing   → 0
+PASS  B4 · still open across two real 5s polls   → 2 renders
+PASS  B3 · never blinked shut   → 280 samples, 0 closed
+PASS  B6 · nothing called closeRecord
+PASS  B7 · board kept polling behind it   → 2
+PASS  still wrote nothing
+
+──── 4 · THE SHEET CARRIES THE SAFETY INFORMATION ────
+PASS  sheet shows service point
+PASS  sheet shows guest
+PASS  sheet shows allergens
+PASS  sheet shows stated severity
+PASS  sheet shows cross-contact request
+PASS  sheet shows cross-contact sentence
+PASS  sheet shows elapsed time
+PASS  sheet shows Received stage
+PASS  sheet shows Confirmed stage \(prep\)
+PASS  sheet shows Second Check stage
+PASS  sheet shows Served stage
+PASS  sheet shows Avoid all block
+PASS  sheet shows what the check is for
+PASS  sheet shows unproven-identity honesty line
+PASS  rehearsal stated
+PASS  no food-safety claim   → 
+
+──── 5 · NO CROSS-SELECTION, ALTERNATING ────
+PASS  C4 · Close returns to the board
+PASS  C5 · Close wrote nothing
+PASS  4 alternating opens, zero cross-selection   → C Fish+TreeNuts:Fish, Tree Nuts | B Fish:Fish | C Fish+TreeNuts:Fish, Tree Nuts | B Fish:Fish
+PASS  alternating opens wrote nothing   → 0
+PASS  B shows Fish only
+PASS  guest notes labelled and verbatim on B
+
+──── 6 · ZERO CHURN WHILE HOVERING (keyed render preserved) ────
+PASS  A1 · Second Check node never replaced   → 3 polls, 0 replacements
+PASS  A2 · row node never replaced   → 0
+PASS  A3 · card wrapper never replaced   → 0
+PASS  sig no longer reads the DOM   → record-only
+
+──── 7 · a card whose data CHANGES still updates in place ────
+PASS  same node kept
+PASS  content updated
+PASS  next action advanced to Mark Served
+PASS  its Second Check control is gone   → 0
+PASS  reverts when the data reverts
+
+──── 8 · THE HOLD (fixture record only) ────
+  HOLD_MS=1100
+PASS  the sheet action is a press-and-hold
+PASS  it is the only action in the sheet
+PASS  progress starts immediately   → 14.56%
+PASS  C1 · a poll mid-hold leaves the sheet open
+PASS  C1b · and does NOT replace the button being held
+PASS  C1c · wrote nothing so far   → 0
+PASS  C2 · early release keeps it open
+PASS  C3 · early release wrote nothing   → 0
+PASS  the fill reset
+PASS  C6 · completed hold wrote exactly once   → [{"verified_at":"2026-09-29T20:45:12.685Z","verified_by":"Kitchen Display","__target":"7784ff89-bbbb"}]
+PASS  C7 · only verified_at / verified_by   → verified_at,verified_by
+PASS  written to the SELECTED declaration   → 7784ff89-bbbb
+PASS  recording returned to the board
+PASS  C8 · sibling B untouched
+PASS  A untouched
+PASS  C9 · nothing served/closed/superseded/minimized
+PASS  C stays on the board after recording
+PASS  C now offers Mark Served
+
+──── 9 · TOKEN REFRESH, AND THE SHEET AT EVERY STAGE ────
+PASS  sheet open before the refresh
+PASS  B5 · open across a token refresh   → 13 samples, 0 closed
+PASS  token refresh wrote nothing   → 0 new
+PASS  A opens its own record   → A Closure
+PASS  A shows Sesame + Peanut
+PASS  A shows the Avoid all lists while still unacknowledged
+PASS  A offers Confirm Received as the one hold
+PASS  A does NOT offer a second check yet
+PASS  A shows no second-check rationale yet
+PASS  opening A wrote nothing   → 0 new
+PASS  board intact after all of it   → 3
+
+ALL 83 CHECKS PASS

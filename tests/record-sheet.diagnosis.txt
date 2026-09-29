@@ -1,0 +1,42 @@
+════════ DIAGNOSTIC · three records, all at P4 ════════
+DOM order of cards: A Closure | B Fish | C Fish+TreeNuts
+  A Closure → next action "Confirm Received"
+  B Fish → next action "Second Check →"
+  C Fish+TreeNuts → next action "Second Check →"
+
+──── 1 · the duplicate marker ────
+  A Closure → "3 ALLERGY RECORDS · CHECK BOTH"
+  B Fish → "3 ALLERGY RECORDS · CHECK BOTH"
+  C Fish+TreeNuts → "3 ALLERGY RECORDS · CHECK BOTH"
+
+──── 2 · Second Check controls per declaration (collapsed) ────
+  total on page: 4
+  B Fish: 2
+  C Fish+TreeNuts: 2
+
+──── 3 · tap the ROW of C ────
+  expanded → C:true  B:false  A:false
+  Second Check controls now: 4   C has 2
+  C data-sig tail: ...3|0
+
+──── 4 · does the expansion survive a poll? ────
+  renders during wait: 1
+  C still expanded? false
+  C data-sig tail now: ...3|1  (was ...3|0)
+
+──── 5 · expanded-panel Second Check ────
+  C: 1 on the row, 1 in the expanded panel
+  review opened: C Fish+TreeNuts
+  review allergens: "Fish, Tree Nuts"
+
+──── 6 · alternate row Second Check: C then B, ×3 ────
+  1) clicked C → C Fish+TreeNuts  allergens "Fish, Tree Nuts"
+  1) clicked B → B Fish  allergens "Fish"
+  2) clicked C → C Fish+TreeNuts  allergens "Fish, Tree Nuts"
+  2) clicked B → B Fish  allergens "Fish"
+  3) clicked C → C Fish+TreeNuts  allergens "Fish, Tree Nuts"
+  3) clicked B → B Fish  allergens "Fish"
+
+──── 7 · writes from the whole diagnostic ────
+  []
+DIAG COMPLETE

@@ -94,3 +94,16 @@ Mark Served and reverts).
 Also covers the full Second Check lifecycle under the real 5s cadence: one click opens, no
 open/close flash, stays open across polls, token refresh and a poll mid-hold, background
 polling continues, early release and Close write nothing, a completed hold writes exactly once.
+
+## Record sheet (`record-sheet.*`)
+
+Fixture is Tom's exact three records, **all at P4** (the earlier fixture put Closure Test on
+another table, which is why no test ever exercised the group and the marker defect survived):
+
+| | guest | allergens | state |
+|---|---|---|---|
+| A | Closure Test | Sesame + Peanut | unacknowledged, own guest session |
+| B | Tom `56a859b5…` | Fish | acked + prep, own guest session |
+| C | Tom `7784ff89…` | Fish + Tree Nuts | acked + prep, **different** guest session, no supersession |
+
+`diagnosis.txt` is the measured state before the change. `results.txt` is after — 83 checks.

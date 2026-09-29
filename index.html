@@ -87,12 +87,12 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .vfy-xc{background:rgba(148,163,184,.14);color:var(--t1)}
 .vfy-note{margin-top:10px;font-size:15px;font-weight:600;color:var(--warn)}
 .vfy-sec{margin-top:20px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
-.vfy-rec{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-.vfy-rec div{display:flex;justify-content:space-between;gap:14px;font-size:15px;color:var(--t2)}
-.vfy-rec b{color:var(--t1);font-variant-numeric:tabular-nums}
 .vfy-body{margin-top:8px;font-size:16px;line-height:1.5;color:var(--t1)}
 .vfy-honest{margin-top:14px;font-size:14px;line-height:1.5;color:var(--t2)}
 .vfy-go{margin-top:20px}
+/* The record sheet absorbed the elapsed time and the stage rail from the inline panel that
+   used to expand under the row. Same .prog markup, so the rail is one implementation. */
+.vfy-el{margin-top:12px;font-size:14px;color:var(--t2);font-variant-numeric:tabular-nums}
 /* Navigation, not a safety write — so it must not wear the filled press-and-hold styling. */
 .row .r-act--nav{background:var(--s2);border:1px solid var(--b2);color:var(--t1);
   display:flex;align-items:center;justify-content:center;border-radius:10px;
@@ -100,13 +100,8 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .row .r-act{margin-left:auto;flex:0 0 auto;width:auto;min-width:150px;padding:0 20px;height:52px;margin-top:0}
 .row .r-act--srv{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
 /* Same table, more than one open submission. A statement of fact, not a merge. */
-.r-multi{font-size:11px;font-weight:800;letter-spacing:.06em;color:#c9adff;
-  border:1px solid rgba(168,130,255,.55);border-radius:5px;padding:3px 8px;white-space:nowrap}
+.r-el{font-size:12px;color:var(--t3);font-variant-numeric:tabular-nums;margin-left:auto;padding-right:4px}
 /* EARLIER — present, preserved, and quiet. */
-.exp-guest{font-size:16px;color:var(--t1);margin-bottom:6px}
-.exp-guest-l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-right:8px}
-.exp-xc{font-size:15px;color:var(--warn);margin-bottom:10px;font-weight:600}
-.exp-elapsed{font-size:14px;color:var(--t2);margin-bottom:12px;font-variant-numeric:tabular-nums}
 .earlier-l{opacity:.55}
 .earlier-tg{background:none;border:1px solid var(--b2);color:var(--t2);font:inherit;font-size:12px;
   padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
@@ -132,7 +127,7 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
    into a narrow column while a button hogs the width. */
 .r-al{font-size:22px;font-weight:700;flex:1 1 200px;min-width:0}
 /* Neither the severity nor the safety condition may be squeezed by a long name. */
-.r-sev,.r-xc,.r-multi{flex:0 0 auto}
+.r-sev,.r-xc{flex:0 0 auto}
 .r-sev{padding:4px 10px;border-radius:6px;font-size:14px;font-weight:700;text-transform:uppercase}
 .r-sev.r{background:rgba(239,68,68,.2);color:var(--danger)}
 .r-sev.a{background:rgba(245,158,11,.15);color:var(--warn)}
@@ -142,7 +137,6 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .r-xc.a{background:rgba(245,158,11,.08);color:var(--warn)}
 .r-tm{font-size:18px;font-weight:600;color:#fff;min-width:80px;text-align:right;font-variant-numeric:tabular-nums}
 .stg svg{width:9px;height:9px}
-.exp{background:var(--s1);border:1px solid var(--b);border-top:none;border-radius:0 0 10px 10px;padding:4px 18px 16px;margin-bottom:6px}
 .row-err{padding:10px 14px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:var(--danger);font-size:14px;font-weight:600;margin:8px 0;text-align:center}
 .prog{display:flex;align-items:center;padding:10px 0}
 .ps{display:flex;flex-direction:column;align-items:center;flex:1}
@@ -173,8 +167,6 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .hold-btn.green{background:var(--ok);color:#fff}
 .hold-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,0,0,.25);border-radius:10px}
 .hold-lbl{position:relative;z-index:1;display:flex;align-items:center;gap:6px}
-.pos-d{margin-top:10px;padding-top:10px;border-top:1px solid var(--b-soft);display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t4);font-weight:600}
-.pos-tag{padding:2px 8px;border-radius:4px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.12);font-size:11px;color:var(--t3);font-weight:600;margin-left:4px}
 .ghost-tabs{position:fixed;right:0;top:52px;bottom:40px;width:36px;display:flex;flex-direction:column;gap:4px;padding:8px 0;z-index:50}
 .ghost-tab{width:36px;min-height:80px;border-radius:8px 0 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;writing-mode:vertical-lr;text-orientation:mixed}
 .ghost-tab.amber{background:rgba(245,158,11,.6)}
@@ -286,7 +278,10 @@ function toggleContrast(){document.body.classList.toggle('hc-mode');document.get
 
 // Surfaces a row-level error visibly. Force-expands the card so retry buttons
 // are reachable and auto-clears after 8s if no retry happens.
-function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;renderCards();setTimeout(function(){var ex=document.getElementById('ex-'+id);if(ex)ex.style.display=''},0);setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;renderCards()}},8000)}
+// The error is drawn by whichever surface is showing the record — the row carries it, and the
+// sheet carries it while open. This used to also force the inline panel open so the message
+// could be seen; there is no inline panel now.
+function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;renderCards();renderRecord();setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;renderCards();renderRecord()}},8000)}
 
 // Under 24h this stays h:mm:ss and keeps ticking every second. At/over 24h it rolls to
 // admin's day-scale form ("3d 23h", src/utils/formatTime.ts formatElapsed, added in
@@ -521,13 +516,18 @@ function renderCards(){
   var working=cur.filter(function(id){return isOpenWork(cards[id])&&isAcked(cards[id])});
   var served=cur.filter(function(id){return !isOpenWork(cards[id])});
 
-  // Same table, more than one open submission in this service. Counted here so every card in
-  // the group can say so. NOT a merge: the declarations stay separate rows, separately
-  // acknowledged — see the marker in buildCard.
-  var openByAsset={};
-  needs.concat(working).forEach(function(id){
-    var k=cards[id].asset_id;if(!k)return;(openByAsset[k]=openByAsset[k]||[]).push(id);
-  });
+  // NO GROUPING BY TABLE. There used to be a "N ALLERGY RECORDS · CHECK BOTH" marker built
+  // from asset_id alone. It was wrong in two ways at once: it read "3 … CHECK BOTH", and it
+  // pulled an unrelated guest's record into a relationship with two others purely because
+  // they sat at the same service point.
+  //
+  // The board may only assert a relationship it can prove. The one it can is supersedes_id —
+  // a declaration that explicitly revises another — and that is already rendered as UPDATED.
+  // Same guest name is not proof (two guests share a name), and same table is not proof at
+  // all. kitchen_board() does not return guest_session_id, so a same-visit claim is not
+  // available here even if it were wanted; the two live Tom records carry DIFFERENT sessions
+  // and no supersession, so nothing in the data says one replaces or extends the other.
+  // Two independent records, presented independently, is the honest rendering.
 
   function sSort(a,b){var ca=cards[a],cb=cards[b];if(isAnaph(ca.severity)&&!isAnaph(cb.severity))return -1;if(!isAnaph(ca.severity)&&isAnaph(cb.severity))return 1;return new Date(ca.created_at)-new Date(cb.created_at)}
   needs.sort(sSort);working.sort(sSort);served.sort(sSort);earlier.sort(sSort);
@@ -548,8 +548,6 @@ function renderCards(){
     var accCol=isSrv?'var(--t3)':verified?'var(--ok)':sevCol;
     var rowCls=isSrv?'row closed served':(!acked?(an?'row pulse-r':'row pulse-a'):(verified?'row closed safe':'row working'));
     var allergens=(c.allergens||[]).join(', ');
-    var exId='ex-'+id;
-    var isOpen=document.getElementById(exId)&&document.getElementById(exId).style.display!=='none';
 
     // The four unlabelled stage dots used to live here. A new cook could not read them —
     // and the product already proves it, because the EXPANDED panel labels the very same
@@ -557,22 +555,26 @@ function renderCards(){
     // geometry, which is the half that carries no meaning. The row now shows the one thing to
     // do next; the labelled rail below is unchanged.
 
-    if(!isSrv&&!isOpen)rowCls=rowCls.replace('row ','row closed ');
+    // Always the collapsed geometry now — a row has no expanded form to open into.
+    if(!isSrv)rowCls=rowCls.replace('row ','row closed ');
 
-    // THE SINGLE NEXT REQUIRED ACTION. Same functions, same order, same press-and-hold on the
-    // acknowledgement as the expanded panel — this is a second entry point to the identical
-    // workflow, never a second workflow. stopPropagation so acting never also toggles the card.
+    // THE SINGLE NEXT REQUIRED ACTION on the board — the fast path. The record sheet shows the
+    // same one action for the same record, and because the sheet is a full-screen overlay only
+    // one of the two is ever on screen. One workflow, two places to reach it.
+    //
+    // Every one of these stops the event: the row itself is now a control that opens the sheet,
+    // so without this, holding a row button would open the sheet on top of the gesture.
     var act='';
     if(!isSrv){
       if(!acked){
         // The fill was missing here entirely, so the row hold showed no progress at all —
         // the whole of finding 1. A real <button> so it is focusable and keyboard-operable.
         act='<button type="button" class="r-act hold-btn '+(an?'red':'amber')+'" aria-label="Hold to confirm allergy received" onclick="event.stopPropagation()" '
-          +HOLD_ATTRS(id)
+          +HOLD_ATTRS(id)+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
           +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Received</span></button>';
       } else if(!proto&&an){
-        act='<button type="button" class="r-act hold-btn red" aria-label="Hold to confirm prep area cleared" '
-          +HOLD_ATTRS(id,'prep')
+        act='<button type="button" class="r-act hold-btn red" aria-label="Hold to confirm prep area cleared" onclick="event.stopPropagation()" '
+          +HOLD_ATTRS(id,'prep')+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
           +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Prep Area</span></button>';
       } else if(!verified){
         // "Second Check" names the STEP — a second look before the dish leaves — without
@@ -582,15 +584,19 @@ function renderCards(){
         // NAVIGATION ONLY — this writes nothing. It used to call verifyDish() straight from
         // the row, so a single tap recorded a verification milestone with no review and no
         // deliberate gesture. Opening the check must never be the check.
-        act='<button type="button" class="r-act r-act--nav" aria-label="Open the independent check" onclick="event.stopPropagation();openVerify(\''+esc(id)+'\')"><span class="hold-lbl">Second Check →</span></button>';
+        act='<button type="button" class="r-act r-act--nav" aria-label="Open the independent check" onclick="event.stopPropagation();openRecord(\''+esc(id)+'\')"><span class="hold-lbl">Second Check →</span></button>';
       } else {
-        act='<button type="button" class="r-act hold-btn r-act--srv" aria-label="Hold to mark served" '
-          +HOLD_ATTRS(id,'serve')
+        act='<button type="button" class="r-act hold-btn r-act--srv" aria-label="Hold to mark served" onclick="event.stopPropagation()" '
+          +HOLD_ATTRS(id,'serve')+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
           +'><div class="hold-fill"></div><span class="hold-lbl">Mark Served</span></button>';
       }
     }
 
-    h+='<div class="'+rowCls+'" onclick="toggleCard(\''+esc(id)+'\')">';
+    // ONE WAY IN. The row used to toggle an inline panel that carried a second copy of every
+    // control; it now opens the record sheet, which is the only detail surface there is.
+    h+='<div class="'+rowCls+'" role="button" tabindex="0" aria-label="Open this allergy record"'
+      +' onclick="openRecord(\''+esc(id)+'\')"'
+      +' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openRecord(\''+esc(id)+'\')}">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
     if(isRehearsal(c))h+='<div class="r-reh">REHEARSAL</div>';
     h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||'Table').split(' ')[0])+'</div>';
@@ -603,116 +609,19 @@ function renderCards(){
     // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
     // declaration must still read as a correction after a reload or a reconciliation read.
     if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">UPDATED</div>';
-    // Two or more OPEN submissions from the same table in this service. Shown on every card
-    // in the group so neither can be actioned in ignorance of the other.
-    //
-    // Deliberately NOT a merge and NOT an ordering claim: nothing in the data says whether a
-    // later submission adds to the earlier one or replaces it — both carry supersedes_id null
-    // and different guest sessions — so the board must not imply which is current. Each row
-    // stays separate, immutable and separately acknowledged.
-    var grp=openByAsset[c.asset_id];
-    if(grp&&grp.length>1&&!isSrv&&isOpenWork(c))
-      h+='<div class="r-multi" title="Separate allergy records for this table — check both">'+grp.length+' ALLERGY RECORDS &middot; CHECK BOTH</div>';
-    // The elapsed timer moved into the expanded panel. It is not one of the six things a cook
-    // needs to recognise and act on, and at 39 days it was pure noise competing with the
-    // allergen text. The ticking element keeps its id there, so the per-second tick and the
-    // escalation checks are unchanged.
     h+=act;
     h+='</div>';
 
-    // Expanded details
-    h+='<div class="exp" id="'+esc(exId)+'" style="display:none">';
-
-    // Row-level error (surfaced when a write fails — reverted local state +
-    // visible message so the operator knows the action didn't take effect).
-    if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
-
-    // The row abbreviates and may truncate; the detail never does.
-    if(c.guest_name&&String(c.guest_name).trim())
-      h+='<div class="exp-guest"><span class="exp-guest-l">Guest</span>'+esc(String(c.guest_name).trim())+'</div>';
-    if(c.cross_contact)
-      h+='<div class="exp-xc">The guest asked for cross-contact precautions.</div>';
-    h+='<div class="exp-elapsed">'+(isSrv?'Served at ':'Waiting ')+'<span id="timer-'+esc(id)+'">'
-      +(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</span></div>';
-
-    // Horizontal progress rail
-    h+='<div class="prog">';
-    h+='<div class="ps"><div class="pd '+(isSrv?'dg':'da')+'">'+CK+'</div><div class="plbl '+(isSrv?'g':'a')+'">Received</div><div class="ptm">'+fmtTime(c.created_at)+'</div></div>';
-    h+='<div class="pln '+(acked?(isSrv?'g':'a'):'')+'"></div>';
-    h+='<div class="ps"><div class="pd '+(acked?(isSrv?'dg':'da'):'')+'">'+(!acked?'':CK)+'</div><div class="plbl '+(acked?(isSrv?'g':'a'):'')+'">Confirmed</div>'+(acked?'<div class="ptm">'+fmtTime(c.kitchen_ack_at)+'</div>':'')+'</div>';
-    h+='<div class="pln '+(verified?(isSrv?'g':'v'):'')+'"></div>';
-    h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Second Check</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
-    h+='<div class="pln '+(isSrv?'g':'')+'"></div>';
-    h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
-    h+='</div>';
-
-    // Avoid all — one block per declared allergen, hit or miss. Severity gates
-    // prominence (.low), never existence: an allergen with no derivative list is
-    // the one most likely to be mishandled, so it must never be the one we omit.
-    if(!isSrv){
-      var lowW=(an||sv==='severe')?'':' low';
-      (c.allergens||[]).forEach(function(a){
-        var defs=getAllergenDef(a);
-        // defs.map(esc) not esc(defs.join(…)) — the ' · ' separator is ours and must
-        // stay literal; escaping the joined string would leave it intact but is the
-        // wrong shape and breaks the moment a separator character needs escaping.
-        // Same reasoning for the ' — ' in the heading.
-        if(defs)h+='<div class="avoid'+lowW+'" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all — '+esc(a)+'</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
-        else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">No derivative list — '+esc(a)+'</div><div class="avoid-l">Not in the reference list. Confirm ingredients with the guest.</div></div>';
-      });
-    }
-    // ⚠ MUST STAY WRAPPED IN esc(). `notes` is guest-authored free text arriving through
-    // an UNAUTHENTICATED insert — anyone holding the publishable key can write it, for any
-    // venue. This warning previously lived on a stripNotes() helper; the helper is gone,
-    // the requirement is not.
-    //
-    // Rendered VERBATIM. stripNotes() used to delete "carries ", "severe reaction to " and
-    // "if exposed to " so the note read as a fragment. Removed: deleting a guest's own
-    // severity qualifier from a safety declaration to save a few words is the same instinct
-    // that produced severity flattening. `severity` is a separate structured field, so
-    // "severe reaction to …" may legitimately CONTRADICT it — and that contradiction is
-    // exactly what a cook needs to see, not what we should quietly resolve by deletion.
-    // Attributed and separated. Unlabelled, this sat in operator-instruction position
-    // directly under the AVOID ALL blocks — plain text following strongly-styled system
-    // guidance reads as a continuation of it, so guest-authored words looked like the
-    // system's own. Escaping made it safe; it did not make it attributed.
-    //
-    // BELOW the AVOID ALL blocks, not above: the derivative lists are the curated
-    // instruction and lead; guest notes are context for them. Promoting guest free text
-    // above the curated safety data would rank the less-verified source higher.
-    //
-    // A rule and a label, no container — this is read at a glance from across a kitchen
-    // and a boxed panel costs more attention than the attribution buys. The label reuses
-    // the .avoid-t idiom (uppercase, 13px, .3px tracking) so it adds no new visual
-    // language, in --t3 so it reads as a caption and never competes with the allergen
-    // headings above it.
-    if(c.notes&&!isSrv)h+='<div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div>';
-
-    // Action buttons
-    if(!acked){
-      h+='<button type="button" class="hold-btn '+(an?'red':'amber')+'" aria-label="Hold to confirm allergy received" '
-        +HOLD_ATTRS(id)
-        +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>';
-    }
-    if(acked&&!proto&&an){
-      h+='<button type="button" class="hold-btn red" style="margin-top:8px" aria-label="Hold to confirm prep area cleared" '
-        +HOLD_ATTRS(id,'prep')
-        +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Prep Area Cleared</span></button>';
-    }
-    if(acked&&(!an||proto)&&!verified&&!isSrv){
-      h+='<button type="button" class="hold-btn green" style="margin-top:8px" aria-label="Open the independent check" onclick="openVerify(\''+esc(id)+'\')"><span class="hold-lbl">Second Check &rarr;</span></button>';
-    }
-    if(verified&&!isSrv){
-      h+='<button type="button" class="hold-btn" style="margin-top:8px;background:var(--s2);border:1px solid var(--b2);color:var(--t1)" aria-label="Hold to mark served" '
-        +HOLD_ATTRS(id,'serve')
-        +'><div class="hold-fill"></div><span class="hold-lbl">Mark as Served</span></button>';
-    }
-
-    // POS disabled
-    if(!isSrv){
-      h+='<div class="pos-d"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Order items</span><span class="pos-tag">Coming soon</span></div>';
-    }
-    h+='</div>';
+    // NO EXPANDED PANEL. Everything that lived here — guest, cross-contact sentence, elapsed
+    // time, the four-stage rail, the Avoid all blocks, guest notes — is in the record sheet,
+    // which is reached by tapping the row. It had to go rather than be tidied: buildCard
+    // emitted the panel with a hardcoded style="display:none" while toggleCard flipped that
+    // style directly, and cardSig read the open state back out of the live DOM. So expanding a
+    // card changed its signature without changing its markup, the next 5-second poll rebuilt
+    // the wrapper from markup that says display:none, and the card silently collapsed itself.
+    // Measured: expand, wait one poll, collapsed — which is exactly "it opens and then
+    // retracts". The panel was also a second copy of every control, including a second Second
+    // Check, and two hold buttons for one declaration share one holdTimers[id] slot.
     return h;
   }
 
@@ -729,13 +638,14 @@ function renderCards(){
     seq.push({k:'sec:'+key,sig:label+'|'+n+'|'+(extra||''),cls:'sec-l'+(key==='earlier'?' earlier-l':''),
       html:label+' <span class="sec-ct '+cls+'">'+n+'</span><div class="sec-ln"></div>'+(extra||'')});
   }
+  // Derived from the RECORD ONLY. It used to include the group size and the panel's open state
+  // read back from the live DOM — a signature that could change without the record changing,
+  // which made a card rebuild itself for a reason the data knew nothing about.
   function cardSig(id){
-    var c=cards[id],grp=openByAsset[c.asset_id];
-    var ex=document.getElementById('ex-'+id);
+    var c=cards[id];
     return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,c.supersedes_id,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
-            c.served_at,c.notes,c._error||'',c._ackPending?1:0,grp?grp.length:1,
-            (ex&&ex.style.display!=='none')?1:0].join('|');
+            c.served_at,c._error||'',c._ackPending?1:0].join('|');
   }
   function pushCards(list){list.forEach(function(id){
     seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
@@ -777,13 +687,11 @@ function renderCards(){
   Object.keys(have).forEach(function(k){have[k].remove()});
   want.forEach(function(n,i){ if(area.children[i]!==n)area.insertBefore(n,area.children[i]||null) });
 
-  renderVerify();
+  renderRecord();
   renderGhosts(ghostIds);
   updateSummary();
   resetDim();
 }
-
-function toggleCard(id){var el=document.getElementById('ex-'+id);if(!el)return;el.style.display=el.style.display==='none'?'':'none'}
 
 function renderGhosts(gIds){
   var gt=document.getElementById('ghostTabs');if(!gIds.length){gt.innerHTML='';return}
@@ -841,21 +749,21 @@ function startHold(id,el,action){
   var pr=holdParts(el);
   // Tell the review not to rebuild while this gesture runs: a rebuild would replace the very
   // button being held and silently cancel a deliberate safety action mid-press.
-  if(pr.btn&&pr.btn.classList.contains('vfy-go'))verifyHolding=true;
+  if(pr.btn&&pr.btn.classList.contains('vfy-go'))recordHolding=true;
   if(pr.btn)pr.btn.classList.add('holding');           // instant, before the first frame
   if(pr.fill){pr.fill.style.transition='none';pr.fill.style.width='4%'}
   var start=Date.now();
   function tick(){
     var p=Math.min((Date.now()-start)/HOLD_MS,1);
     if(pr.fill)pr.fill.style.width=(4+p*96)+'%';
-    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');verifyHolding=false;
+    if(p>=1){if(pr.btn)pr.btn.classList.remove('holding');recordHolding=false;
       var fn=HOLD_ACTIONS[action||'ack']||doAck;fn(id);return}
     holdTimers[id]=requestAnimationFrame(tick);
   }
   holdTimers[id]=requestAnimationFrame(tick);
 }
 function endHold(id,el){
-  verifyHolding=false;
+  recordHolding=false;
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var pr=holdParts(el);
   if(pr.btn)pr.btn.classList.remove('holding');
@@ -951,7 +859,7 @@ async function verifyDish(id){
   if(error){console.error('[kitchen] verify failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
   delete c._error;
   chimeAck();
-  closeVerify();
+  closeRecord();
   renderCards();cacheCards();
 }
 
@@ -968,6 +876,7 @@ async function markServed(id){
   if(error){console.error('[kitchen] mark served failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't mark served — try again");return}
   delete c._error;
   chimeAck();
+  closeRecord();
   renderCards();cacheCards();
 }
 
@@ -1101,101 +1010,184 @@ async function submitPair(){
     vdRenderStatus();
     // Newly paired: the board has authority now, so start it.
     loadVenue();reconcile();subscribe();startReconcileLoop();
-    var lc=document.getElementById('verifyContent');
+    // Shown on the PAIRING overlay, which this flow owns. It used to be written into the
+    // record sheet's own surface and that sheet's 'on' class set by hand, so a pairing
+    // confirmation and an open record fought over one container with no state saying which
+    // was up.
+    var lc=document.getElementById('pairContent');
     if(lc){lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">Display paired</div>'
-      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeVerify()">&times;</button></div>'
+      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closePair()">&times;</button></div>'
       +'<div class="vfy-tbl">'+esc((who&&who.venue_name)||'This venue')+'</div>'
       +'<div class="vfy-guest">'+esc((who&&who.display_name)||'Kitchen Display')+'</div>'
       +'<div class="vfy-honest">This display is now authenticated to this venue. It identifies '
       +'the display, not the person using it.</div>';
-      document.getElementById('verify').classList.add('on')}
+      document.getElementById('pair').classList.add('on')}
   }catch(e){err.textContent='Could not reach Happy Chair.'}
 }
 
-// WHICH declaration's independent check is open. This is application state, deliberately:
-// the review used to exist ONLY as innerHTML on a detached overlay, so anything that
-// re-rendered or re-entered the board could leave it inconsistent, and nothing could put it
-// back. The board now re-asserts it from this id after every render.
-var verifyOpenId=null;
-// Signature of what was last drawn, so a 5-second poll does not rebuild an unchanged panel
+// ── THE RECORD SHEET ─────────────────────────────────────────────────────────────────────
+// ONE detail surface for a declaration, and the only one. There used to be two: an inline
+// panel that expanded under the row, and this overlay. Both carried a Second Check control,
+// both carried the guest and the cross-contact request, and they disagreed about whether the
+// elapsed time and the stage rail belonged to either of them. A kitchen does not need a
+// collapsed card, an expanded card AND a review; it needs the board and one record.
+//
+// WHICH record is open is application state, not a DOM fact. The sheet used to exist only as
+// innerHTML on a detached overlay, so anything that re-entered the board could leave it
+// inconsistent with nothing able to put it back. It is re-asserted from this id after every
+// render instead.
+var recordOpenId=null;
+// Signature of what was last drawn, so a 5-second poll does not rebuild an unchanged sheet
 // underneath the operator.
-var verifySig=null;
-// True while a hold is in progress on the review's button. A rebuild mid-hold would destroy
-// the gesture and the progress fill, so it is never rebuilt while one is running.
-var verifyHolding=false;
+var recordSig=null;
+// True while a hold is running on the sheet's button. A rebuild mid-hold would destroy the
+// gesture and the progress fill, so the sheet is never rebuilt while one is in progress.
+var recordHolding=false;
 
-function openVerify(id){
+// Navigation only. Opening a record can never be the same act as recording something about
+// it: the row's Second Check used to call verifyDish() directly, so one tap wrote a safety
+// milestone with no review and no deliberate gesture.
+function openRecord(id){
   if(!cards[id])return;
-  verifyOpenId=id;
-  verifySig=null;
-  renderVerify();
+  recordOpenId=id;
+  recordSig=null;
+  renderRecord();
 }
 
-function closeVerify(){
-  verifyOpenId=null;verifySig=null;verifyHolding=false;
+function closeRecord(){
+  recordOpenId=null;recordSig=null;recordHolding=false;
   var lk=document.getElementById('verify');if(lk)lk.classList.remove('on');
 }
 
-// Draws (or re-asserts) the review from state. Called by openVerify AND at the end of every
+// The single next required action for this record, as one press-and-hold. Same four functions
+// in the same order as the row's control — one workflow, two places it can be reached from,
+// and only ever one of them on screen because the sheet is a full-screen overlay.
+function recordAction(c){
+  var an=isAnaph(c.severity),acked=isAcked(c),proto=!!c.protocol_confirmed_at;
+  if(c.served_at)return null;
+  if(!acked)return {a:'ack',  label:'Hold to Confirm Allergy Received', cls:an?'red':'amber',
+                    aria:'Hold to confirm allergy received'};
+  if(!proto&&an)return {a:'prep', label:'Confirm Prep Area Cleared', cls:'red',
+                    aria:'Hold to confirm prep area cleared'};
+  if(!c.verified_at)return {a:'verify', label:'Hold to Record Second Check', cls:'green',
+                    aria:'Hold to record the second check', check:true};
+  return {a:'serve', label:'Mark as Served', cls:'', aria:'Hold to mark served'};
+}
+
+// Draws (or re-asserts) the sheet from state. Called by openRecord AND at the end of every
 // renderCards(), so a board refresh can never leave the operator somewhere they did not ask
 // to be.
-function renderVerify(){
-  if(!verifyOpenId)return;
+function renderRecord(){
+  if(!recordOpenId)return;
   var lk=document.getElementById('verify'),lc=document.getElementById('verifyContent');
   if(!lk||!lc)return;
-  lk.classList.add('on');            // always re-assert: cheap, idempotent, and the fix
-  if(verifyHolding)return;           // never rebuild under a running gesture
+  lk.classList.add('on');            // always re-assert: cheap and idempotent
+  if(recordHolding)return;           // never rebuild under a running gesture
 
-  var c=cards[verifyOpenId];
+  var c=cards[recordOpenId];
   if(!c){
-    // The declaration left the board while the review was open — resolved elsewhere, another
-    // display served it, or the service closed. Say so explicitly instead of silently
-    // dropping the operator back to the board with no idea why.
-    if(verifySig==='gone')return;
-    verifySig='gone';
+    // The declaration left the board while the sheet was open — served elsewhere, closed, or
+    // the service ended. Say so explicitly instead of silently dropping the operator back to
+    // the board with no idea why.
+    if(recordSig==='gone')return;
+    recordSig='gone';
     lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">No longer on the board</div>'
-      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeVerify()">&times;</button></div>'
+      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>'
       +'<div class="vfy-body">This allergy is no longer current work for this kitchen. It may '
       +'have been served, closed, or handled on another display. Nothing was recorded here.</div>'
       +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
-      +'onclick="closeVerify()"><span class="hold-lbl">Back to the board</span></button>';
+      +'onclick="closeRecord()"><span class="hold-lbl">Back to the board</span></button>';
     return;
   }
 
-  var an=isAnaph(c.severity);
-  var sig=[c.id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.kitchen_ack_at,
-           c.protocol_confirmed_at,c.verified_at,c.served_at,c._error||''].join('|');
-  if(sig===verifySig)return;         // unchanged — leave the panel exactly as it is
-  verifySig=sig;
+  var id=c.id,an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
+  var acked=isAcked(c),proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
+  var act=recordAction(c);
+  // Everything the sheet renders, and nothing it does not. The elapsed time is deliberately
+  // absent: it is updated in place by the one-second tick, so putting created_at here would
+  // be harmless but putting the formatted value here would rebuild the sheet every second.
+  var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
+           c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
+           c._error||'',c._ackPending?1:0].join('|');
+  if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
+  recordSig=sig;
 
-  var id=c.id;
+  var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
   var h='';
   h+='<div class="vfy-hd">'+(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t">Independent Check</div>'
-    +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeVerify()">&times;</button></div>';
+    +'<div class="vfy-t">'+(act&&act.check?'Independent Check':'Allergy Record')+'</div>'
+    +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>';
+
+  if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
+
+  // The row abbreviates and may truncate; the record never does.
   h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
-  if(c.guest_name)h+='<div class="vfy-guest">'+esc(guestLabel(c))+'</div>';
+  if(c.guest_name&&String(c.guest_name).trim())
+    h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
   h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
   h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
     +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
   if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
-  h+='<div class="vfy-sec">Already recorded</div><div class="vfy-rec">';
-  h+='<div><span>Kitchen received</span><b>'+(c.kitchen_ack_at?esc(fmtTime(c.kitchen_ack_at)):'not recorded')+'</b></div>';
-  h+='<div><span>Prep area confirmed</span><b>'+(c.protocol_confirmed_at?esc(fmtTime(c.protocol_confirmed_at)):'not recorded')+'</b></div>';
+  h+='<div class="vfy-el">'+(isSrv?'Served at ':'Waiting ')+'<span id="timer-'+esc(id)+'">'
+    +(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</span></div>';
+
+  // The four stages with their recorded times. This replaces a separate "Already recorded"
+  // pair that listed two of the same timestamps in a second format — the rail says when the
+  // kitchen received it and when the prep area was confirmed, labelled, in one place.
+  h+='<div class="prog">';
+  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'da')+'">'+CK+'</div><div class="plbl '+(isSrv?'g':'a')+'">Received</div><div class="ptm">'+fmtTime(c.created_at)+'</div></div>';
+  h+='<div class="pln '+(acked?(isSrv?'g':'a'):'')+'"></div>';
+  h+='<div class="ps"><div class="pd '+(acked?(isSrv?'dg':'da'):'')+'">'+(!acked?'':CK)+'</div><div class="plbl '+(acked?(isSrv?'g':'a'):'')+'">Confirmed</div>'+(acked?'<div class="ptm">'+fmtTime(c.kitchen_ack_at)+'</div>':'')+'</div>';
+  h+='<div class="pln '+(verified?(isSrv?'g':'v'):'')+'"></div>';
+  h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Second Check</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
+  h+='<div class="pln '+(isSrv?'g':'')+'"></div>';
+  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
   h+='</div>';
-  h+='<div class="vfy-sec">What this check is for</div>';
-  h+='<div class="vfy-body">Another team member should check the allergy preparation before it '
-    +'leaves the kitchen.</div>';
-  h+='<div class="vfy-honest">This records that a second check happened. It does not prove who '
-    +'carried it out — this board is shared and not signed in.</div>';
-  if(c.verified_at){
-    h+='<div class="vfy-note">Already recorded at '+esc(fmtTime(c.verified_at))+'.</div>'
-      +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
-      +'onclick="closeVerify()"><span class="hold-lbl">Back to the board</span></button>';
+
+  // Avoid all — one block per declared allergen, hit or miss. Severity gates prominence
+  // (.low), never existence: an allergen with no derivative list is the one most likely to be
+  // mishandled, so it must never be the one we omit. This is the information a cook prepares
+  // from, which is why the sheet has to be reachable from any stage of the record and not only
+  // at the second check.
+  if(!isSrv){
+    var lowW=(an||sv==='severe')?'':' low';
+    (c.allergens||[]).forEach(function(a){
+      var defs=getAllergenDef(a);
+      // defs.map(esc) not esc(defs.join(…)) — the ' · ' separator is ours and must stay
+      // literal. Same reasoning for the ' — ' in the heading.
+      if(defs)h+='<div class="avoid'+lowW+'" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all — '+esc(a)+'</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
+      else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">No derivative list — '+esc(a)+'</div><div class="avoid-l">Not in the reference list. Confirm ingredients with the guest.</div></div>';
+    });
+  }
+
+  // ⚠ MUST STAY WRAPPED IN esc(). `notes` is guest-authored free text arriving through an
+  // UNAUTHENTICATED insert — anyone holding the publishable key can write it, for any venue.
+  //
+  // Rendered VERBATIM, attributed, and BELOW the Avoid all blocks: the derivative lists are
+  // the curated instruction and lead, guest notes are context for them. Promoting guest free
+  // text above curated safety data would rank the less-verified source higher. Unlabelled it
+  // sat in operator-instruction position and the guest's words read as the system's own.
+  if(c.notes&&!isSrv)h+='<div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div>';
+
+  if(act&&act.check){
+    h+='<div class="vfy-sec">What this check is for</div>';
+    h+='<div class="vfy-body">Another team member should check the allergy preparation before it '
+      +'leaves the kitchen.</div>';
+    // Kitchen identity comes from a ?device= string on a shared board. Any wording implying a
+    // different, identified person performed this step would be a claim the data cannot support.
+    h+='<div class="vfy-honest">This records that a second check happened. It does not prove who '
+      +'carried it out — this board is shared and not signed in.</div>';
+  }
+
+  if(act){
+    h+='<button type="button" class="hold-btn '+act.cls+' vfy-go" aria-label="'+esc(act.aria)+'" '
+      +(act.cls?'':'style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" ')
+      +HOLD_ATTRS(id,act.a)
+      +'><div class="hold-fill"></div><span class="hold-lbl">'+esc(act.label)+'</span></button>';
   }else{
-    h+='<button type="button" class="hold-btn green vfy-go" aria-label="Hold to record the second check" '
-      +HOLD_ATTRS(id,'verify')
-      +'><div class="hold-fill"></div><span class="hold-lbl">Hold to Record Second Check</span></button>';
+    h+='<div class="vfy-note">Served at '+esc(fmtTime(c.served_at))+'. Nothing further to record.</div>'
+      +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
+      +'onclick="closeRecord()"><span class="hold-lbl">Back to the board</span></button>';
   }
   lc.innerHTML=h;
 }
@@ -1244,9 +1236,9 @@ async function minimizeCard(id){
 }
 function restoreGhost(id){delete ghosted[id];renderCards();cacheCards()}
 
-var touchStartX=0,touchCardId=null;
-document.addEventListener('touchstart',function(e){var card=e.target.closest('.row');if(!card)return;var id=card.querySelector('.ac');touchCardId=card;touchStartX=e.touches[0].clientX});
-document.addEventListener('touchend',function(e){if(!touchCardId)return;var dx=e.changedTouches[0].clientX-touchStartX;touchCardId=null});
+// (Removed: two document-level touch listeners that recorded a start X and a card, computed a
+// horizontal delta on touchend and discarded it. A swipe gesture that was never finished, and
+// dead weight on every touch on the board.)
 
 function checkEscalations(){
   // Reads kitchen_ack_at DIRECTLY and must continue to. That field is database-confirmed
