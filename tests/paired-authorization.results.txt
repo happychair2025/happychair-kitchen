@@ -1,0 +1,21 @@
+════ PAIRED ════
+PASS  paired board renders its venue work   → 2 rows
+PASS  the P4 records are present
+PASS  Fish and Fish, Tree Nuts both present, unmerged   → Fish | Fish, Tree Nuts
+PASS  rehearsal still reads as rehearsal
+PASS  two-record marker still shown
+PASS  no supersession invented
+PASS  ack + prep evidence preserved → next action is Second Check   → Second Check → | Second Check →
+PASS  status chip shows the paired display   → Kitchen Display · Paired
+      rendered ages: Waiting 4d 19h | Waiting 4d 17h
+PASS  records older than 36h are on the board   → 115h and 113h old
+PASS  QA performed NO writes   → 0 writes
+
+ALL 10 CHECKS PASS
+════ UNPAIRED ════
+PASS  unpaired board loads NO allergy data   → 0 rows
+PASS  unpaired board prompts for pairing
+PASS  status reads not paired
+PASS  no anonymous fallback was used
+
+ALL 4 CHECKS PASS

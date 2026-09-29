@@ -50,3 +50,17 @@ regression — no no-write interaction can remove a card, including with `_writi
 under a failed or hung write.
 
 100 checks across the three modes.
+
+## Paired authorization (`paired-authorization.*`)
+
+Drives the real board with the credential exchange stubbed and `kitchen_board()` returning
+EXACTLY the rows it returned for the real paired display — including their 115h/113h ages.
+
+Paired: both P4 records render, rehearsal still reads as rehearsal, the two records stay
+separate with no invented supersession, ack/prep evidence survives so the next action is
+Second Check, and QA performs zero writes.
+
+Unpaired: no allergy data loads at all, the pairing sheet opens, and no anonymous fallback is
+used — an unpaired board has no authority and does not borrow any.
+
+The database side is proven separately in SQL against the REAL paired device's claims.
