@@ -80,3 +80,17 @@ untouched and nothing anywhere is served/closed/superseded/minimized.
 `repro-attempt.txt` records that the original failure could NOT be reproduced in the harness
 (18s of real 5s polling, zero writes, stayed open) — the fix is architectural, not a patch to
 an identified trigger.
+
+## Render churn (`render-churn.*`)
+
+Live state shape: 3 current records (1 Needs You, 2 In Progress), all rehearsal, two sharing a
+service point so the duplicate marker renders, paired venue-device state.
+
+`before.txt` is the measured defect: the Second Check button node was destroyed and recreated
+on **4 of 4 polls** with identical data. `results.txt` is after: **0 of 5**, while a card whose
+data genuinely changes still updates in place (node kept, content changed, action advances to
+Mark Served and reverts).
+
+Also covers the full Second Check lifecycle under the real 5s cadence: one click opens, no
+open/close flash, stays open across polls, token refresh and a poll mid-hold, background
+polling continues, early release and Close write nothing, a completed hold writes exactly once.

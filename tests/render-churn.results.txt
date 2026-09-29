@@ -1,0 +1,31 @@
+════ A · DOM CHURN (the hover stutter) ════
+      rows 3 · bands Needs You 1 / In Progress 2
+PASS  A1 · Second Check node survives 5 polls untouched   → 0 replacements
+PASS  A2 · card rows survive 5 polls untouched   → 0 replacements
+PASS  A3 · a card WITH changed data updates in place   → node kept: true, content changed: true
+PASS  A3b · its next action advanced to Mark Served   → Mark Served
+PASS  A3c · and reverts when the data reverts
+
+════ B · SECOND CHECK LIFECYCLE ════
+      clicking: "Second Check →"
+PASS  B1 · one click opens the review
+PASS  B2 · opening wrote nothing   → 0
+PASS  B3 · no open/close/open flash   → 1 class transitions
+PASS  B4 · open across two real 5s polling cycles
+PASS  B5 · open across a token refresh
+PASS  B6 · nothing called closeVerify
+      renderCards during the open window: 2
+PASS  B7 · board kept polling behind the review   → 2 board reads
+
+════ C · THE HOLD ════
+PASS  C1 · review survives a poll mid-hold
+PASS  C2 · early release keeps it open
+PASS  C3 · early release wrote nothing   → 0
+PASS  C4 · Close returns to the board
+PASS  C5 · Close wrote nothing
+PASS  C6 · completed hold writes exactly once   → [{"verified_at":"2026-09-29T18:59:28.543Z","verified_by":"Kitchen Display"}]
+PASS  C7 · only verified_at/verified_by
+PASS  C8 · sibling untouched
+PASS  C9 · nothing served/closed/superseded/minimized
+
+ALL 21 CHECKS PASS

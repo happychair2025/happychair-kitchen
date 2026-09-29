@@ -1,0 +1,23 @@
+════ A · DOES UNCHANGED CARD DOM CHURN? ════
+      rows: 3  needs-you: Needs You / In Progress
+      reconciles sampled: 4  button node replaced: 4 time(s)
+FAIL  A1 · unchanged data does NOT replace the button node   → 4 of 4 polls replaced the hovered control
+PASS  A2 · unchanged data does NOT replace the row
+
+════ B · THE CLICK SEQUENCE ════
+      clicking: "Second Check →"
+PASS  B1 · review open after click   → open
+      event log around the click:
+         + 1827ms  openVerify  56a859b5
+         + 1827ms  renderVerify  open=true
+         + 1828ms  #verify.class  vfy on
+         + 1828ms  #verify.children  content replaced
+
+════ C · SURVIVAL ════
+PASS  C1 · still open after two real polling cycles   → open
+      closeVerify calls during survival window: 0
+      renderCards during survival window: 2
+PASS  C2 · nothing called closeVerify on its own
+PASS  C3 · zero writes throughout   → 0
+
+5 pass, 1 FAIL

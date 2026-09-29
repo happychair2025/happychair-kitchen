@@ -538,7 +538,10 @@ function renderCards(){
   }
 
   var h='';
+  // Returns this card's markup. It used to append to one shared buffer that was written
+  // to the board wholesale, which is what destroyed every card on every poll.
   function buildCard(id){
+    var h='';
     var c=cards[id],an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
     var acked=isAcked(c),proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
     var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
@@ -710,34 +713,70 @@ function renderCards(){
       h+='<div class="pos-d"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Order items</span><span class="pos-tag">Coming soon</span></div>';
     }
     h+='</div>';
+    return h;
   }
 
-  if(needs.length){
-    h+='<div class="sec-l">Needs You <span class="sec-ct red">'+needs.length+'</span><div class="sec-ln"></div></div>';
-    needs.forEach(function(id){buildCard(id)});
+  // ── ASSEMBLE A KEYED SEQUENCE, THEN RECONCILE ─────────────────────────────────────────
+  // The board used to be rebuilt with one area.innerHTML on every poll, which destroyed and
+  // recreated EVERY card node five seconds apart — measured: the Second Check button was
+  // replaced on 4 of 4 polls with identical data. That is what makes a control stutter under
+  // the pointer, and it churns interactive DOM underneath an operator for no reason.
+  //
+  // Now each card carries a signature of everything its markup depends on. Unchanged cards
+  // keep their exact nodes; only what actually changed is rebuilt.
+  var seq=[];
+  function sec(key,label,cls,n,extra){
+    seq.push({k:'sec:'+key,sig:label+'|'+n+'|'+(extra||''),cls:'sec-l'+(key==='earlier'?' earlier-l':''),
+      html:label+' <span class="sec-ct '+cls+'">'+n+'</span><div class="sec-ln"></div>'+(extra||'')});
   }
-  if(working.length){
-    h+='<div class="sec-l">In Progress <span class="sec-ct amber">'+working.length+'</span><div class="sec-ln"></div></div>';
-    working.forEach(function(id){buildCard(id)});
+  function cardSig(id){
+    var c=cards[id],grp=openByAsset[c.asset_id];
+    var ex=document.getElementById('ex-'+id);
+    return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,c.supersedes_id,
+            c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
+            c.served_at,c.notes,c._error||'',c._ackPending?1:0,grp?grp.length:1,
+            (ex&&ex.style.display!=='none')?1:0].join('|');
   }
-  if(served.length){
-    h+='<div class="sec-l">Done This Service <span class="sec-ct gray">'+served.length+'</span><div class="sec-ln"></div></div>';
-    served.forEach(function(id){buildCard(id)});
-  }
+  function pushCards(list){list.forEach(function(id){
+    seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
+
+  if(needs.length){ sec('needs','Needs You','red',needs.length); pushCards(needs) }
+  if(working.length){ sec('working','In Progress','amber',working.length); pushCards(working) }
+  if(served.length){ sec('served','Done This Service','gray',served.length); pushCards(served) }
   // EARLIER — preserved, never deleted, and deliberately quiet. Collapsed to a count so a
-  // prior service cannot compete with the one running now. Says plainly that this is only
-  // what the board can see; the complete record lives in the Shift Record.
+  // prior service cannot compete with the one running now.
   if(earlier.length){
-    h+='<div class="sec-l earlier-l">Earlier <span class="sec-ct gray">'+earlier.length+'</span><div class="sec-ln"></div>'
-      +'<button class="earlier-tg" onclick="toggleEarlier()">'+(earlierOpen?'Hide':'Show')+'</button></div>';
-    h+='<div class="earlier-note">Not part of the service running now. Review in the Shift Record.</div>';
-    if(earlierOpen){h+='<div class="earlier-wrap">';earlier.forEach(function(id){buildCard(id)});h+='</div>'}
+    sec('earlier','Earlier','gray',earlier.length,
+        '<button class="earlier-tg" onclick="toggleEarlier()">'+(earlierOpen?'Hide':'Show')+'</button>');
+    seq.push({k:'earlier-note',sig:'1',cls:'earlier-note',
+      html:'Not part of the service running now. Review in the Shift Record.'});
+    if(earlierOpen)pushCards(earlier);
   }
 
-  area.innerHTML=h;
-  // The board and the review are independent surfaces. Re-asserting here means no reconcile,
-  // poll, realtime event or re-render can leave the operator somewhere they did not ask to
-  // be — and the panel refreshes with the record's current state while it stays open.
+  var have={};
+  Array.prototype.slice.call(area.children).forEach(function(n){
+    if(n.dataset&&n.dataset.k)have[n.dataset.k]=n; else n.remove();
+  });
+  var want=[];
+  seq.forEach(function(e){
+    var n=have[e.k];
+    if(n){
+      // REUSED UNTOUCHED when nothing it renders has changed. This is the whole fix.
+      if(n.dataset.sig!==e.sig){
+        n.innerHTML=e.build?buildCard(e.build):e.html;
+        n.dataset.sig=e.sig;
+      }
+      delete have[e.k];
+    }else{
+      n=document.createElement('div');
+      n.className=e.cls||''; n.dataset.k=e.k; n.dataset.sig=e.sig;
+      n.innerHTML=e.build?buildCard(e.build):e.html;
+    }
+    want.push(n);
+  });
+  Object.keys(have).forEach(function(k){have[k].remove()});
+  want.forEach(function(n,i){ if(area.children[i]!==n)area.insertBefore(n,area.children[i]||null) });
+
   renderVerify();
   renderGhosts(ghostIds);
   updateSummary();
