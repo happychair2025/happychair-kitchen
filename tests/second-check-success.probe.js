@@ -100,7 +100,7 @@ function deliverUpdate(rowObj){ // exactly what postgres_changes delivers: table
  ok('Back wrote nothing', W().length-W0===1);
  ok('board: B at Mark Served with badge, C at Second Check with badge', /Mark Served/.test(rowAct(B))&&badge(B)&&/Second Check/.test(rowAct(C))&&badge(C));
  openRecord(B); await w(200);
- ok('reopening B shows the ordinary record, not a stale success', !/Second Check Recorded/.test(sheetTxt()) && /Mark as Served/.test(sheetTxt()));
+ ok('reopening B shows the ordinary record, not a stale success', !/Second Check Recorded/.test(sheetTxt()) && /Hold to Mark Served/.test(sheetTxt()));
  ok('reopened record still marked rehearsal', /REHEARSAL · NOT A GUEST/.test(sheetTxt()));
  closeRecord(); await w(100);
 

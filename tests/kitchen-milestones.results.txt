@@ -1,0 +1,90 @@
+PASS  setup: 8 records on the board   → 8
+
+──── 1 · LOCKOUT · CONFIRM RECEIVED (A, keyboard) ────
+PASS  lockout up on A with REHEARSAL
+PASS  early release = zero writes
+PASS  keyboard hold = exactly one write   → 1
+PASS  ...kitchen_ack_at/by + status, to A
+
+──── 3 · RECEIVED CONFIRMED IN PLACE (same lockout card) ────
+PASS  lockout still up, still A
+PASS  states Allergy Received
+PASS  context kept: P4, guest, allergens, ANAPHYLAXIS
+PASS  Avoid all / check-ingredients blocks kept
+PASS  REHEARSAL kept
+PASS  next requirement exposed with no extra click
+PASS  poll + token refresh + live update: confirmation survives
+
+──── 1 · LOCKOUT · CONFIRM PREP AREA CLEARED IS A HOLD ────
+PASS  is a <button> with hold wiring, no onclick
+PASS  has visible progress fill
+PASS  carries touch, leave, blur and key cancels
+PASS  a single tap writes nothing
+PASS  early release writes nothing
+PASS  leaving the button cancels
+PASS  blur cancels a keyboard hold
+PASS  progress visible mid-hold   → 25.12%
+PASS  a poll mid-hold does not replace the control
+PASS  completed hold = exactly one write   → 1
+PASS  ...protocol_confirmed_at/by only, to A
+PASS  lockout confirms in place: Received ✓ + Prep Area Cleared ✓
+PASS  names the next Kitchen step, no action performed for them
+PASS  context + REHEARSAL kept
+PASS  poll + token refresh + live update: survives
+PASS  Back to Kitchen Board closes it, zero writes
+PASS  A row badge survives Received → Prep
+
+──── 3 · SHEET · NON-ANAPHYLAXIS RECEIVED (D) ────
+PASS  early release = zero writes
+PASS  exactly one ack write to D
+PASS  no lockout popped
+PASS  sheet stayed open on D
+PASS  Allergy Received confirmed visibly (not a toast)
+PASS  next requirement is Second Check (no prep for severe)
+PASS  rail: Received and Confirmed complete
+PASS  poll + token + live update: banner survives, REHEARSAL kept
+
+──── 2 · SECOND CHECK (preserved) THEN SERVED ON D ────
+PASS  Second Check: one write, success sheet unchanged
+PASS  Mark Served early release = zero writes
+PASS  Mark Served: exactly one write, served_at + status
+PASS  sheet did NOT auto-close
+PASS  title: Served Recorded
+PASS  rail: all four complete
+PASS  Kitchen Steps Complete + copy
+PASS  names the authenticated display, never a person
+PASS  no guest-delivery, safety or closure claim
+PASS  REHEARSAL kept
+PASS  only exit is Back to Kitchen Board
+PASS  poll + token + live update: Served Recorded survives
+PASS  D row badge survives to Served
+PASS  Back closes, zero writes
+
+──── 3 · SHEET · ANAPHYLAXIS RECEIVED → PREP (E): no screen swap ────
+PASS  ack on E from the sheet does NOT pop the lockout
+PASS  Allergy Received banner + next is the prep hold
+PASS  prep from the sheet: Prep Area Cleared banner, next Second Check
+PASS  E writes: exactly ack then prep
+
+──── FAILED AND HUNG WRITES NEVER CLAIM COMPLETION ────
+PASS  lockout prep refused: no Prep Area Cleared   → ALLERGY RECEIVED
+PASS  ...error shown ON the lockout, prep hold still offered
+PASS  ...F protocol_confirmed_at reverted
+PASS  lockout prep hung: never claims Prep Area Cleared
+PASS  sheet ack refused: no banner, error shown, ack hold still offered
+PASS  ...no lockout popped
+PASS  sheet ack hung: no banner, never offers the next step
+PASS  Mark Served refused: no Served Recorded, error shown, hold still offered
+PASS  ...served_at reverted
+PASS  Mark Served hung: never claims Served Recorded
+
+──── NO ANONYMOUS KITCHEN WRITES ────
+PASS  no write ever went through the anonymous client
+PASS  unpaired display: a completed hold writes nothing
+
+──── SIBLINGS (stand-ins for the live Tom records) ────
+PASS  B: zero writes, state identical
+PASS  C: zero writes, state identical
+PASS  B and C keep REHEARSAL badges
+
+ALL 70 CHECKS PASS

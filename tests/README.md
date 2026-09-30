@@ -143,3 +143,24 @@ the next step early.
 
 48 checks; results in `second-check-success.results.txt`. Against 03830b1 the same probe fails
 15 checks, including the badge-after-UPDATE regression.
+
+## One Kitchen interaction contract (`kitchen-milestones.*`)
+
+Received → Prep Confirmed → Second Check → Served, driven from all three places a milestone
+can start: the anaphylaxis lockout, the record sheet, and (for the unpaired check) the sheet
+with no credential. Adds five fixture records in every stage; B and C are the sibling
+controls and are never acted on.
+
+Asserts: early release, a single tap, mouse-leave and blur all write nothing; a completed hold
+(mouse or keyboard) writes exactly the one intended milestone to the intended record; Confirm
+Prep Area Cleared is a real hold button, and a poll mid-hold does not replace it; success is
+confirmed IN PLACE — the lockout keeps the same card and states Allergy Received / Prep Area
+Cleared, the sheet shows a Received/Prep banner with the next requirement, Served Recorded
+with all four rail stages and the display-not-person disclosure — and survives a real 5s poll,
+a token refresh and a raw realtime UPDATE; REHEARSAL survives every transition on the sheet,
+the lockout and the row; refused and hung writes never claim completion and a refused lockout
+write shows its error ON the lockout; no write ever uses the anonymous client, and an unpaired
+display writes nothing.
+
+70 checks; results in `kitchen-milestones.results.txt`. Against 4247714 a single click() on
+Confirm Prep Area Cleared wrote protocol_confirmed_at and closed the lockout.
