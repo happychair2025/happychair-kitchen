@@ -1,0 +1,27 @@
+──── 2 · SECOND CHECK, NOT INDEPENDENT CHECK ────
+PASS  title reads Second Check
+PASS  "Independent Check" appears nowhere on the page
+PASS  instruction kept
+PASS  identity disclosure kept
+PASS  row button aria no longer says independent
+──── 4 · ACTION COLOUR ────
+PASS  sheet action still the hold to record the second check
+PASS  action is not the green success class
+PASS  action background is not the --ok success colour   → rgb(26, 37, 53)
+PASS  action uses the neutral action surface (--s2)   → rgb(26, 37, 53)
+PASS  hold fill is light enough to see on the dark button   → rgba(226, 232, 240, 0.18)
+PASS  progress rail still shows Second Check stage (not yet done)
+PASS  red still carries anaphylaxis severity
+PASS  rehearsal marker still present
+──── 3 · REFERENCE-LIST LANGUAGE ────
+PASS  Peanut heading is human   → PEANUT — CHECK INGREDIENTS
+PASS  supporting copy
+PASS  no "derivative list" wording on the sheet
+PASS  Sesame still renders its Avoid all list
+PASS  A (unacked) action still Confirm Received, red
+PASS  lockout uses the same reference-list language
+──── 5 · AGE UNCHANGED (report only) ────
+PASS  Waiting still derived from created_at (unchanged this batch)   → Waiting 4d 19h
+PASS  probe performed zero writes   → 0
+
+ALL 21 CHECKS PASS

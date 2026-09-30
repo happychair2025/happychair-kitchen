@@ -187,7 +187,7 @@ function dn(){return document.querySelectorAll('.exp, .r-multi, .pos-d').length}
   var ta=sheetTxt();
   ok('A opens its own record',recordOpenId===A,NM[recordOpenId]);
   ok('A shows Sesame + Peanut',/Sesame, Peanut/.test(ta));
-  ok('A shows the Avoid all lists while still unacknowledged',/Avoid all|No derivative list/i.test(ta));
+  ok('A shows the Avoid all lists while still unacknowledged',/Avoid all|Check ingredients/i.test(ta));
   ok('A offers Confirm Received as the one hold',/Confirm Allergy Received/.test(ta)&&
      document.querySelectorAll('#verifyContent .vfy-go').length===1);
   ok('A does NOT offer a second check yet',!/Hold to Record Second Check/.test(ta));

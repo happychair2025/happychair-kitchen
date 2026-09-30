@@ -165,6 +165,11 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .hold-btn.red{background:var(--danger);color:#fff}
 .hold-btn.amber{background:var(--warn);color:var(--bg)}
 .hold-btn.green{background:var(--ok);color:#fff}
+/* An action still to be taken. Green is completed/success, so a step that has NOT happened
+   must not wear it. Same neutral surface as the row's Second Check → and Mark Served; the
+   fill is light because the default dark fill is invisible on a dark button. */
+.hold-btn.act{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
+.hold-btn.act .hold-fill{background:rgba(226,232,240,.18)}
 .hold-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,0,0,.25);border-radius:10px}
 .hold-lbl{position:relative;z-index:1;display:flex;align-items:center;gap:6px}
 .ghost-tabs{position:fixed;right:0;top:52px;bottom:40px;width:36px;display:flex;flex-direction:column;gap:4px;padding:8px 0;z-index:50}
@@ -258,7 +263,7 @@ var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lact
 // the custom-allergen path guards on allergenSearch.trim() (App.tsx :765) but then
 // compares and stores the UNTRIMMED string (:766, :768). " lactose" is stored with its
 // leading space — and since " ".toUpperCase() is " ", the capitalisation step silently
-// no-ops too. A stored " lactose" would miss this lookup and render NO DERIVATIVE LIST
+// no-ops too. A stored " lactose" would miss this lookup and render CHECK INGREDIENTS
 // for an allergen that has one.
 //
 // Lookup normalisation ONLY — trim and case. Deliberately no synonym or plural matching:
@@ -584,7 +589,7 @@ function renderCards(){
         // NAVIGATION ONLY — this writes nothing. It used to call verifyDish() straight from
         // the row, so a single tap recorded a verification milestone with no review and no
         // deliberate gesture. Opening the check must never be the check.
-        act='<button type="button" class="r-act r-act--nav" aria-label="Open the independent check" onclick="event.stopPropagation();openRecord(\''+esc(id)+'\')"><span class="hold-lbl">Second Check →</span></button>';
+        act='<button type="button" class="r-act r-act--nav" aria-label="Open the second check" onclick="event.stopPropagation();openRecord(\''+esc(id)+'\')"><span class="hold-lbl">Second Check →</span></button>';
       } else {
         act='<button type="button" class="r-act hold-btn r-act--srv" aria-label="Hold to mark served" onclick="event.stopPropagation()" '
           +HOLD_ATTRS(id,'serve')+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
@@ -881,7 +886,7 @@ async function markServed(id){
 }
 
 /**
- * The independent check, as a review screen. Opening it writes NOTHING.
+ * The second check, as a review screen. Opening it writes NOTHING.
  *
  * It exists because the collapsed row used to call verifyDish() directly: one tap recorded a
  * verification milestone with no review of what was being verified and no deliberate gesture.
@@ -1069,7 +1074,7 @@ function recordAction(c){
                     aria:'Hold to confirm allergy received'};
   if(!proto&&an)return {a:'prep', label:'Confirm Prep Area Cleared', cls:'red',
                     aria:'Hold to confirm prep area cleared'};
-  if(!c.verified_at)return {a:'verify', label:'Hold to Record Second Check', cls:'green',
+  if(!c.verified_at)return {a:'verify', label:'Hold to Record Second Check', cls:'act',
                     aria:'Hold to record the second check', check:true};
   return {a:'serve', label:'Mark as Served', cls:'', aria:'Hold to mark served'};
 }
@@ -1115,7 +1120,7 @@ function renderRecord(){
   var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
   var h='';
   h+='<div class="vfy-hd">'+(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t">'+(act&&act.check?'Independent Check':'Allergy Record')+'</div>'
+    +'<div class="vfy-t">'+(act&&act.check?'Second Check':'Allergy Record')+'</div>'
     +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>';
 
   if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
@@ -1156,7 +1161,7 @@ function renderRecord(){
       // defs.map(esc) not esc(defs.join(…)) — the ' · ' separator is ours and must stay
       // literal. Same reasoning for the ' — ' in the heading.
       if(defs)h+='<div class="avoid'+lowW+'" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all — '+esc(a)+'</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
-      else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">No derivative list — '+esc(a)+'</div><div class="avoid-l">Not in the reference list. Confirm ingredients with the guest.</div></div>';
+      else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">'+esc(a)+' — Check ingredients</div><div class="avoid-l">No reference list is available. Confirm ingredients before preparation.</div></div>';
     });
   }
 
@@ -1202,7 +1207,7 @@ function showLockout(id){
   (c.allergens||[]).forEach(function(a){
     var d=getAllergenDef(a);
     if(d)avoidHtml+='<div style="border-left:3px solid var(--danger);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--danger);text-transform:uppercase;margin-bottom:4px">Avoid all — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t1);line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
-    else avoidHtml+='<div style="border-left:3px solid var(--t2);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">No derivative list — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t2);line-height:1.5">Not in the reference list. Confirm ingredients with the guest.</div></div>';
+    else avoidHtml+='<div style="border-left:3px solid var(--t2);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">'+esc(a)+' — Check ingredients</div><div style="font-size:18px;font-weight:500;color:var(--t2);line-height:1.5">No reference list is available. Confirm ingredients before preparation.</div></div>';
   });
   // The blocking modal is the single most urgent thing this board ever shows. If it is a
   // rehearsal, that has to be the first line read — above the table, above the allergens.

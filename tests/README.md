@@ -107,3 +107,14 @@ another table, which is why no test ever exercised the group and the marker defe
 | C | Tom `7784ff89…` | Fish + Tree Nuts | acked + prep, **different** guest session, no supersession |
 
 `diagnosis.txt` is the measured state before the change. `results.txt` is after — 83 checks.
+
+## Record sheet UX pass (`ux-pass.*`)
+
+Same offline fixture as `record-sheet.*`. Asserts the sheet is titled Second Check (never
+"Independent Check") while the instruction and the identity disclosure survive; the incomplete
+Second Check hold wears the neutral action surface, not the green success colour, with a
+visible fill; an allergen with no reference list reads "<ALLERGEN> — CHECK INGREDIENTS" on both
+the sheet and the lockout; red severity and the rehearsal marker are unchanged; Waiting is
+still derived from `created_at` (deliberately unchanged); and the probe writes nothing.
+
+21 checks; results in `ux-pass.results.txt`.
