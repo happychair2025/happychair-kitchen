@@ -67,11 +67,11 @@ function dn(){return document.querySelectorAll('.exp, .r-multi, .pos-d').length}
   var t=sheetTxt();
   [['service point',/P4/],['guest',/Tom/],['allergens',/Fish, Tree Nuts/],
    ['stated severity',/ANAPHYLAXIS/],['cross-contact request',/CROSS-CONTACT REQUIRED/],
-   ['cross-contact sentence',/asked for cross-contact/],['elapsed time',/Waiting/],
+   ['cross-contact sentence',/asked for cross-contact/],['elapsed time (owed step)',/Second Check waiting \d/],
    ['Received stage',/Received/],['Confirmed stage \\(prep\\)',/Confirmed/],
    ['Second Check stage',/Second Check/],['Served stage',/Served/],
    ['Avoid all block',/Avoid all/i],['what the check is for',/before it leaves the kitchen/],
-   ['unproven-identity honesty line',/does not prove who/]].forEach(function(p){
+   ['device-not-person honesty line',/does not identify the person who performed the check/]].forEach(function(p){
     ok('sheet shows '+p[0],p[1].test(t))});
   ok('rehearsal stated',/REHEARSAL/.test(document.getElementById('verifyContent').innerText));
   ok('no food-safety claim',!/\bsafe\b|allergy-safe|risk-free/i.test(t),'');

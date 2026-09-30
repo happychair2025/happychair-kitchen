@@ -4,6 +4,20 @@ PASS  "Independent Check" appears nowhere on the page
 PASS  instruction kept
 PASS  identity disclosure kept
 PASS  row button aria no longer says independent
+PASS  old unauthenticated claim is gone
+PASS  disclosure: authenticated to the venue, person not identified (fallback before venue read)
+PASS  no personal-identity or different-person claim
+PASS  venue name comes from the device-credential read   → Happy Bistro
+PASS  venue name not set from the query string
+──── 4b · REHEARSAL HIERARCHY ────
+PASS  rehearsal marker present with full wording
+PASS  rehearsal sits ABOVE the title
+PASS  rehearsal is a compact status, smaller than the title   → 13px < 22px
+PASS  rehearsal still boxed, bold, purple
+PASS  big lockout-style rehearsal block no longer on the sheet
+PASS  order: REHEARSAL → Second Check → P4 · Terrace → Tom → allergens   → 43 < 75 < 115 < 150 < 180
+PASS  service point line reads P4 · Terrace   → P4 · Terrace
+PASS  close button still reachable in the header
 ──── 4 · ACTION COLOUR ────
 PASS  sheet action still the hold to record the second check
 PASS  action is not the green success class
@@ -20,8 +34,16 @@ PASS  no "derivative list" wording on the sheet
 PASS  Sesame still renders its Avoid all list
 PASS  A (unacked) action still Confirm Received, red
 PASS  lockout uses the same reference-list language
-──── 5 · AGE UNCHANGED (report only) ────
-PASS  Waiting still derived from created_at (unchanged this batch)   → Waiting 4d 19h
+──── 5 · ACTION-RELATIVE ELAPSED TIME ────
+PASS  B (awaiting Second Check) timed from protocol_confirmed_at   → Second Check waiting 3d 18h | created_at would be 4d 19h
+PASS  no bare "Waiting <age>" from created_at
+PASS  the 1s tick keeps the same basis   → Second Check waiting 3d 18h
+PASS  A (awaiting Received) timed from created_at   → Confirm Received waiting 6d 2h
+PASS  awaiting Prep → kitchen_ack_at
+PASS  awaiting Served → verified_at
+PASS  non-anaphylaxis skips prep: Second Check from kitchen_ack_at
+PASS  served → no owed step
+PASS  escalation clock untouched (checkEscalations still keyed off created_at/ack)
 PASS  probe performed zero writes   → 0
 
-ALL 21 CHECKS PASS
+ALL 42 CHECKS PASS

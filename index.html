@@ -199,6 +199,12 @@ body.dimmed .summary{opacity:.3}
     .lockout-reh{font-size:20px;font-weight:800;letter-spacing:.1em;color:#c9adff;
       border:2px solid rgba(168,130,255,.6);border-radius:8px;padding:8px 18px;
       margin-bottom:18px;display:inline-block}
+    /* Record Sheet: a status line ABOVE the title, not a second title. Compact, but still
+       boxed, bold, uppercase and the full wording — smaller, never weaker. */
+    .vfy-reh{font-size:13px;font-weight:800;letter-spacing:.1em;color:#c9adff;
+      border:1.5px solid rgba(168,130,255,.6);border-radius:6px;padding:3px 9px;
+      margin-bottom:8px;display:inline-block}
+    .vfy-hl{flex:1;min-width:0}
   </style>
 </head>
 <body>
@@ -321,6 +327,19 @@ function fmtTimer(ts){
   }
   var h=Math.floor(sec/3600);var m=Math.floor((sec%3600)/60);var s=sec%60;
   return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+// The Kitchen step this record currently owes, and when that step became owed — i.e. when
+// the previous step was recorded. DISPLAY ONLY: checkEscalations keeps its own clock and
+// is deliberately untouched. Keyed off recordAction() so the timer can never name a
+// different step from the button beneath it. A missing timestamp falls back to
+// created_at rather than inventing a time.
+function owedStep(c){
+  var act=recordAction(c); if(!act)return null;
+  var since={ack:c.created_at, prep:c.kitchen_ack_at,
+             verify:c.protocol_confirmed_at||c.kitchen_ack_at, serve:c.verified_at}[act.a];
+  var label={ack:'Confirm Received', prep:'Prep Confirmation', verify:'Second Check',
+             serve:'Mark Served'}[act.a];
+  return {label:label, since:since||c.created_at};
 }
 function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
@@ -914,11 +933,13 @@ async function markServed(id){
  */
 var VD_K='hc_k_venue_device';
 var vdToken=null, vdJwt=null, vdJwtExp=0, vdIdentity=null, vdTimer=null;
+// Venue name as read through the DEVICE credential (loadVenue, venueId from the exchange).
+var vdVenueName=null;
 
 function vdLoad(){try{var r=JSON.parse(localStorage.getItem(VD_K)||'null');
   if(r&&r.device_token&&r.device_id)vdToken=r;}catch(e){}}
 function vdSave(r){vdToken=r;try{localStorage.setItem(VD_K,JSON.stringify(r))}catch(e){}}
-function vdForget(){vdToken=null;vdJwt=null;vdIdentity=null;try{localStorage.removeItem(VD_K)}catch(e){}}
+function vdForget(){vdToken=null;vdJwt=null;vdIdentity=null;vdVenueName=null;try{localStorage.removeItem(VD_K)}catch(e){}}
 
 // device token -> short-lived venue JWT. Re-run before expiry; a failure is surfaced, never
 // silently retried into a loop.
@@ -1113,14 +1134,15 @@ function renderRecord(){
   // be harmless but putting the formatted value here would rebuild the sheet every second.
   var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
            c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
-           c._error||'',c._ackPending?1:0].join('|');
+           c._error||'',c._ackPending?1:0,vdVenueName||''].join('|');
   if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
   recordSig=sig;
 
   var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
   var h='';
-  h+='<div class="vfy-hd">'+(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t">'+(act&&act.check?'Second Check':'Allergy Record')+'</div>'
+  h+='<div class="vfy-hd"><div class="vfy-hl">'
+    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
+    +'<div class="vfy-t">'+(act&&act.check?'Second Check':'Allergy Record')+'</div></div>'
     +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>';
 
   if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
@@ -1133,8 +1155,9 @@ function renderRecord(){
   h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
     +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
   if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
-  h+='<div class="vfy-el">'+(isSrv?'Served at ':'Waiting ')+'<span id="timer-'+esc(id)+'">'
-    +(isSrv?fmtTime(c.served_at):fmtTimer(c.created_at))+'</span></div>';
+  var owed=owedStep(c);
+  h+='<div class="vfy-el">'+(isSrv||!owed?'Served at ':esc(owed.label)+' waiting ')+'<span id="timer-'+esc(id)+'">'
+    +(isSrv||!owed?fmtTime(c.served_at):fmtTimer(owed.since))+'</span></div>';
 
   // The four stages with their recorded times. This replaces a separate "Already recorded"
   // pair that listed two of the same timestamps in a second format — the rail says when the
@@ -1178,10 +1201,11 @@ function renderRecord(){
     h+='<div class="vfy-sec">What this check is for</div>';
     h+='<div class="vfy-body">Another team member should check the allergy preparation before it '
       +'leaves the kitchen.</div>';
-    // Kitchen identity comes from a ?device= string on a shared board. Any wording implying a
-    // different, identified person performed this step would be a claim the data cannot support.
-    h+='<div class="vfy-honest">This records that a second check happened. It does not prove who '
-      +'carried it out — this board is shared and not signed in.</div>';
+    // The display IS authenticated — to the venue, as venue-owned hardware. It still carries
+    // no personal identity, so nothing here may imply who checked or that it was someone else.
+    h+='<div class="vfy-honest">This records that a second check happened. This display is '
+      +'authenticated to '+esc(vdVenueName||'this venue')+', but it does not identify the person '
+      +'who performed the check.</div>';
   }
 
   if(act){
@@ -1258,7 +1282,7 @@ function checkEscalations(){
 
 setInterval(function(){
   Object.keys(cards).forEach(function(id){if(cards[id].closed_at||cards[id].served_at)return;
-    var el=document.getElementById('timer-'+id);if(el)el.textContent=fmtTimer(cards[id].created_at)});
+    var el=document.getElementById('timer-'+id),ow=el&&owedStep(cards[id]);if(ow)el.textContent=fmtTimer(ow.since)});
   checkEscalations();
   // Covers the reconcile that neither succeeds nor fails because its request hangs: no
   // callback runs, so nothing else would ever mark the board degraded.
@@ -1507,6 +1531,7 @@ function subscribe(){
 async function loadVenue(){
   if(!venueId)return;
   var {data}=await boundRead((sbv||sb).from('venues').select('name').eq('id',venueId).single());
+  if(data&&sbv){vdVenueName=data.name;if(recordOpenId)renderRecord()}   // only when read under the device credential
   if(data){document.getElementById('venueName').textContent=data.name+' · Kitchen';document.getElementById('venueLogo').textContent=data.name.charAt(0)}
   // The venue's own mark, from the same authoritative venues.logo_url that Admin renders —
   // no second branding configuration. Presentation only: venue_branding_logo returns the logo

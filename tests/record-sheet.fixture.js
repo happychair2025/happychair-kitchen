@@ -54,6 +54,7 @@ if(location.search.indexOf('inst=1')>=0){
     vdIdentity={venue_id:'v',display_name:'Kitchen Display',device_role:'kitchen_display'};
     sbv=stub;vdRenderStatus();return vdJwt };
   vdToken={device_token:'stub',device_id:'d1'};
+  window.__realLoadVenue=loadVenue;   // ux-pass drives the real device-credential read
   loadVenue=async function(){};
   var _rc=renderCards; renderCards=function(){ var r=_rc.apply(this,arguments);
     __L('renderCards','rows='+document.querySelectorAll('.row').length); return r };

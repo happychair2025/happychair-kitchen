@@ -115,6 +115,11 @@ Same offline fixture as `record-sheet.*`. Asserts the sheet is titled Second Che
 Second Check hold wears the neutral action surface, not the green success colour, with a
 visible fill; an allergen with no reference list reads "<ALLERGEN> — CHECK INGREDIENTS" on both
 the sheet and the lockout; red severity and the rehearsal marker are unchanged; Waiting is
-still derived from `created_at` (deliberately unchanged); and the probe writes nothing.
+is timed from the start of the step the record currently owes (Received → `created_at`,
+Prep → `kitchen_ack_at`, Second Check → `protocol_confirmed_at`, Served → `verified_at`) while
+`checkEscalations` keeps its own clock; the disclosure says the display is authenticated to the
+venue — name read through the device credential — without identifying the person; the
+rehearsal marker is a compact boxed status above the title in the order REHEARSAL → Second
+Check → P4 · Terrace → Tom → allergens; and the probe writes nothing.
 
-21 checks; results in `ux-pass.results.txt`.
+42 checks; results in `ux-pass.results.txt`.
