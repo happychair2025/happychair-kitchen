@@ -1,0 +1,67 @@
+──── 0 · BEFORE ────
+PASS  B shows REHEARSAL badge at Second Check
+PASS  C shows REHEARSAL badge at Second Check
+PASS  B row action is Second Check →   → Second Check →
+
+──── 1 · OPEN AND HOLD ────
+PASS  review open on B
+PASS  opening wrote nothing
+PASS  hold is Record Second Check
+
+──── 2 · WRITE CONTRACT ────
+PASS  exactly one write   → 1
+PASS  write targets B   → 56a859b5-aaaa
+PASS  write is verified_at + verified_by only   → verified_at,verified_by,__target
+PASS  no served write
+PASS  sibling C: zero writes
+PASS  sibling C: state identical
+
+──── 3 · SUCCESS STATE ────
+PASS  sheet stayed open
+PASS  selected declaration is still B
+PASS  title: Second Check Recorded
+PASS  rehearsal marker on the success sheet
+PASS  identity: P4 · Terrace / Tom / Fish
+PASS  rail: Second Check complete (check mark)
+PASS  rail: Served NOT complete
+PASS  Ready to Serve heading
+PASS  explanatory copy
+PASS  device-not-person disclosure
+PASS  no personal / different-person claim
+PASS  Mark Served offered as the primary (hold) action
+PASS  Mark Served is a hold, not a click
+PASS  Back to Kitchen Board offered as secondary
+PASS  no toast used as confirmation
+
+──── 4 · REHEARSAL IDENTITY THROUGH THE REALTIME ECHO ────
+PASS  B row action advanced to Mark Served   → Mark Served
+PASS  B keeps REHEARSAL badge after the UPDATE event (regression)
+PASS  B card still carries service_kind   → rehearsal
+PASS  success sheet survives the UPDATE event
+PASS  C still at Second Check → with badge
+
+──── 5 · POLL / TOKEN REFRESH CANNOT ERASE IT ────
+PASS  after a real poll: still success on B
+PASS  after a token refresh: still success on B
+PASS  after forced re-renders: still success, badge intact
+PASS  still exactly one write overall
+
+──── 6 · MARK SERVED IS NOT EXECUTED ────
+PASS  an early release on Mark Served writes nothing
+PASS  ...and the success sheet is still up
+
+──── 7 · BACK ────
+PASS  Back closes the sheet
+PASS  Back wrote nothing
+PASS  board: B at Mark Served with badge, C at Second Check with badge
+PASS  reopening B shows the ordinary record, not a stale success
+PASS  reopened record still marked rehearsal
+
+──── 8 · FAILED AND HUNG WRITES (fixture C only) ────
+PASS  refused write: no success state
+PASS  refused write: back on the review with the hold, error shown
+PASS  refused write: C verified_at reverted
+PASS  hung write: never claims success
+PASS  hung write: never offers the next step early   → Hold to Record Second Check
+
+ALL 48 CHECKS PASS

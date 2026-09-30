@@ -160,7 +160,8 @@ function dn(){return document.querySelectorAll('.exp, .r-multi, .pos-d').length}
      window.__W__.length?Object.keys(window.__W__[0]).filter(function(k){return k!=='__target'}).sort().join(','):'-');
   ok('written to the SELECTED declaration',window.__W__.length===1&&window.__W__[0].__target===C,
      window.__W__.length?String(window.__W__[0].__target):'-');
-  ok('recording returned to the board',!sheetUp());
+  // Reversed deliberately: the sheet used to close here, which read as the screen vanishing.
+  ok('recording confirms in place (sheet stays on Second Check Recorded)',sheetUp()&&/Second Check Recorded/.test(sheetTxt()));
   ok('C8 · sibling B untouched',!cards[B].verified_at&&!cards[B].served_at);
   ok('A untouched',!cards[A].kitchen_ack_at&&!cards[A].verified_at&&!cards[A].served_at);
   ok('C9 · nothing served/closed/superseded/minimized',

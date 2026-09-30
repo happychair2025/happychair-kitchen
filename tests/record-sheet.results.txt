@@ -76,17 +76,17 @@ PASS  reverts when the data reverts
   HOLD_MS=1100
 PASS  the sheet action is a press-and-hold
 PASS  it is the only action in the sheet
-PASS  progress starts immediately   → 13.6873%
+PASS  progress starts immediately   → 13.5127%
 PASS  C1 · a poll mid-hold leaves the sheet open
 PASS  C1b · and does NOT replace the button being held
 PASS  C1c · wrote nothing so far   → 0
 PASS  C2 · early release keeps it open
 PASS  C3 · early release wrote nothing   → 0
 PASS  the fill reset
-PASS  C6 · completed hold wrote exactly once   → [{"verified_at":"2026-09-30T14:28:43.247Z","verified_by":"Kitchen Display","__target":"7784ff89-bbbb"}]
+PASS  C6 · completed hold wrote exactly once   → [{"verified_at":"2026-09-30T16:12:57.616Z","verified_by":"Kitchen Display","__target":"7784ff89-bbbb"}]
 PASS  C7 · only verified_at / verified_by   → verified_at,verified_by
 PASS  written to the SELECTED declaration   → 7784ff89-bbbb
-PASS  recording returned to the board
+PASS  recording confirms in place (sheet stays on Second Check Recorded)
 PASS  C8 · sibling B untouched
 PASS  A untouched
 PASS  C9 · nothing served/closed/superseded/minimized

@@ -123,3 +123,23 @@ rehearsal marker is a compact boxed status above the title in the order REHEARSA
 Check → P4 · Terrace → Tom → allergens; and the probe writes nothing.
 
 42 checks; results in `ux-pass.results.txt`.
+
+## Second Check success + rehearsal identity (`second-check-success.*`)
+
+Same offline fixture; its stub channel now KEEPS realtime handlers so the probe can deliver a
+`postgres_changes` UPDATE exactly as the socket does — raw table columns, no `service_kind`.
+That is the path that erased the REHEARSAL badge at Mark Served, and no earlier probe could
+reach it because the stub discarded the handlers.
+
+Asserts: a completed Second Check hold writes once, only `verified_at`/`verified_by`, to the
+selected record, sibling untouched; the sheet stays open on "Second Check Recorded" with the
+rehearsal marker, the same identity lines, the rail showing Second Check complete and Served
+not, "Ready to Serve" copy and the device-not-person disclosure; Mark Served is offered as a
+hold and is not executed (an early release writes nothing); Back closes with no write; the
+success state survives the realtime echo, a real 5s poll, a token refresh and forced
+re-renders; the REHEARSAL badge survives the UPDATE event; reopening shows the ordinary record;
+a refused write shows the error and no success; a hung write neither claims success nor offers
+the next step early.
+
+48 checks; results in `second-check-success.results.txt`. Against 03830b1 the same probe fails
+15 checks, including the badge-after-UPDATE regression.

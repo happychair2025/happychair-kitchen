@@ -47,7 +47,9 @@ if(location.search.indexOf('inst=1')>=0){
         return {eq:function(id,val){window.__W__[window.__W__.length-1].__target=val;
           return Promise.resolve({error:null})}}}
     }},
-    channel:function(){return {on:function(){return this},subscribe:function(){return this}}},
+    // Handlers are KEPT so a probe can deliver a realtime event exactly as the socket would.
+    channel:function(){return {on:function(ev,flt,cb){(window.__RT=window.__RT||[]).push({flt:flt,cb:cb});return this},
+      subscribe:function(){return this}}},
     removeChannel:function(){}, realtime:{setAuth:function(){}}};
   vdExchange=async function(){ __L('token.exchange');
     vdJwt='stub';vdJwtExp=Date.now()+900000;venueId='v';

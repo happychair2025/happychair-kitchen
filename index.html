@@ -205,6 +205,11 @@ body.dimmed .summary{opacity:.3}
       border:1.5px solid rgba(168,130,255,.6);border-radius:6px;padding:3px 9px;
       margin-bottom:8px;display:inline-block}
     .vfy-hl{flex:1;min-width:0}
+    /* Success reads as done: --ok is reserved for completed state, which this now is. */
+    .vfy-t--done{color:var(--ok);display:flex;align-items:center;gap:8px}
+    .vfy-back{margin-top:10px;width:100%;height:48px;border-radius:10px;background:transparent;
+      border:1px solid var(--b2);color:var(--t1);font-size:16px;font-weight:600;cursor:pointer}
+    .vfy-back:focus{outline:none}.vfy-back:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
   </style>
 </head>
 <body>
@@ -876,14 +881,18 @@ async function verifyDish(id){
   if(c._writing)return;
   c._writing=true;
   var prev={verified_at:c.verified_at,verified_by:c.verified_by};
+  if(recordOpenId===id)recordFlow={id:id,phase:'saving'};
   c.verified_at=new Date().toISOString();c.verified_by=deviceName;
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] verify failed:',error);Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
+  if(error){console.error('[kitchen] verify failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
   delete c._error;
   chimeAck();
-  closeRecord();
+  // Confirm IN PLACE. The sheet used to close here, so a deliberate safety hold ended with
+  // the screen vanishing — indistinguishable from a crash. It stays open on a success state
+  // until the operator chooses Mark Served or Back. Nothing further is advanced for them.
+  if(recordFlow&&recordFlow.id===id&&recordOpenId===id)recordFlow.phase='done';
   renderCards();cacheCards();
 }
 
@@ -1069,19 +1078,24 @@ var recordSig=null;
 // True while a hold is running on the sheet's button. A rebuild mid-hold would destroy the
 // gesture and the progress fill, so the sheet is never rebuilt while one is in progress.
 var recordHolding=false;
+// Second Check ONLY: {id, phase:'saving'|'done'}. 'saving' freezes the review while the write
+// is in flight, so the sheet never shows the next action before the database accepts this
+// one. 'done' is the success state — application state, so a poll or token refresh
+// re-asserts it rather than erasing it. Cleared only by the operator (close / open another).
+var recordFlow=null;
 
 // Navigation only. Opening a record can never be the same act as recording something about
 // it: the row's Second Check used to call verifyDish() directly, so one tap wrote a safety
 // milestone with no review and no deliberate gesture.
 function openRecord(id){
   if(!cards[id])return;
-  recordOpenId=id;
+  recordOpenId=id;recordFlow=null;
   recordSig=null;
   renderRecord();
 }
 
 function closeRecord(){
-  recordOpenId=null;recordSig=null;recordHolding=false;
+  recordOpenId=null;recordSig=null;recordHolding=false;recordFlow=null;
   var lk=document.getElementById('verify');if(lk)lk.classList.remove('on');
 }
 
@@ -1098,6 +1112,22 @@ function recordAction(c){
   if(!c.verified_at)return {a:'verify', label:'Hold to Record Second Check', cls:'act',
                     aria:'Hold to record the second check', check:true};
   return {a:'serve', label:'Mark as Served', cls:'', aria:'Hold to mark served'};
+}
+
+// The four-stage rail with recorded times. Shared by the review and the Second Check success
+// state so the two can never disagree about which stages are complete.
+function railHtml(c){
+  var acked=isAcked(c),verified=!!c.verified_at,isSrv=!!c.served_at,h='';
+  h+='<div class="prog">';
+  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'da')+'">'+CK+'</div><div class="plbl '+(isSrv?'g':'a')+'">Received</div><div class="ptm">'+fmtTime(c.created_at)+'</div></div>';
+  h+='<div class="pln '+(acked?(isSrv?'g':'a'):'')+'"></div>';
+  h+='<div class="ps"><div class="pd '+(acked?(isSrv?'dg':'da'):'')+'">'+(!acked?'':CK)+'</div><div class="plbl '+(acked?(isSrv?'g':'a'):'')+'">Confirmed</div>'+(acked?'<div class="ptm">'+fmtTime(c.kitchen_ack_at)+'</div>':'')+'</div>';
+  h+='<div class="pln '+(verified?(isSrv?'g':'v'):'')+'"></div>';
+  h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Second Check</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
+  h+='<div class="pln '+(isSrv?'g':'')+'"></div>';
+  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
+  h+='</div>';
+  return h;
 }
 
 // Draws (or re-asserts) the sheet from state. Called by openRecord AND at the end of every
@@ -1126,6 +1156,9 @@ function renderRecord(){
     return;
   }
 
+  if(recordFlow&&recordFlow.id!==recordOpenId)recordFlow=null;
+  if(recordFlow&&recordFlow.phase==='saving')return;   // never show the next step before the write lands
+  if(recordFlow&&recordFlow.phase==='done'&&c.verified_at&&!c.served_at){renderSecondCheckDone(c,lc);return}
   var id=c.id,an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
   var acked=isAcked(c),proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
   var act=recordAction(c);
@@ -1134,7 +1167,7 @@ function renderRecord(){
   // be harmless but putting the formatted value here would rebuild the sheet every second.
   var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
            c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
-           c._error||'',c._ackPending?1:0,vdVenueName||''].join('|');
+           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind].join('|');
   if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
   recordSig=sig;
 
@@ -1162,15 +1195,7 @@ function renderRecord(){
   // The four stages with their recorded times. This replaces a separate "Already recorded"
   // pair that listed two of the same timestamps in a second format — the rail says when the
   // kitchen received it and when the prep area was confirmed, labelled, in one place.
-  h+='<div class="prog">';
-  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'da')+'">'+CK+'</div><div class="plbl '+(isSrv?'g':'a')+'">Received</div><div class="ptm">'+fmtTime(c.created_at)+'</div></div>';
-  h+='<div class="pln '+(acked?(isSrv?'g':'a'):'')+'"></div>';
-  h+='<div class="ps"><div class="pd '+(acked?(isSrv?'dg':'da'):'')+'">'+(!acked?'':CK)+'</div><div class="plbl '+(acked?(isSrv?'g':'a'):'')+'">Confirmed</div>'+(acked?'<div class="ptm">'+fmtTime(c.kitchen_ack_at)+'</div>':'')+'</div>';
-  h+='<div class="pln '+(verified?(isSrv?'g':'v'):'')+'"></div>';
-  h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Second Check</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
-  h+='<div class="pln '+(isSrv?'g':'')+'"></div>';
-  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
-  h+='</div>';
+  h+=railHtml(c);
 
   // Avoid all — one block per declared allergen, hit or miss. Severity gates prominence
   // (.low), never existence: an allergen with no derivative list is the one most likely to be
@@ -1221,6 +1246,38 @@ function renderRecord(){
   lc.innerHTML=h;
 }
 
+
+// Second Check success. Same header, identity lines and rail as the review, so it is
+// unmistakably the SAME record; the rail now shows Second Check complete. Mark Served is
+// offered as a hold (same gesture as every safety write) and is never performed for the
+// operator. Back writes nothing.
+var CK_DONE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+function renderSecondCheckDone(c,lc){
+  var id=c.id,an=isAnaph(c.severity);
+  var sig=['done',id,(c.allergens||[]).join(','),c.guest_name,c._assetLabel,c.verified_at,
+           c.served_at,c.service_kind,vdVenueName||'',c._error||''].join('|');
+  if(sig===recordSig)return;
+  recordSig=sig;
+  var h='<div class="vfy-hd"><div class="vfy-hl">'
+    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
+    +'<div class="vfy-t vfy-t--done">'+CK_DONE+'Second Check Recorded</div></div>'
+    +'<button type="button" class="vfy-x" aria-label="Back to Kitchen Board" onclick="closeRecord()">&times;</button></div>';
+  if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
+  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
+  if(c.guest_name&&String(c.guest_name).trim())
+    h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
+  h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
+  h+=railHtml(c);
+  h+='<div class="vfy-sec">Ready to Serve</div>';
+  h+='<div class="vfy-body">The second check has been recorded. The next Kitchen step is to mark '
+    +'this allergy record served when the dish leaves the kitchen.</div>';
+  h+='<div class="vfy-honest">This display is authenticated to '+esc(vdVenueName||'this venue')
+    +', but it does not identify the person who performed the check.</div>';
+  h+='<button type="button" class="hold-btn act vfy-go" aria-label="Hold to mark served" '
+    +HOLD_ATTRS(id,'serve')+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Mark Served</span></button>';
+  h+='<button type="button" class="vfy-back" onclick="closeRecord()">Back to Kitchen Board</button>';
+  lc.innerHTML=h;
+}
 
 function showLockout(id){
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
@@ -1499,7 +1556,13 @@ function subscribe(){
       // _writing / _ackPending / _reackRequired / _error are carried across. Dropping
       // _writing here would defeat the reconciliation in-flight guard, and dropping
       // _ackPending would silently discard an attempt still outstanding.
-      var d=payload.new;if(cards[d.id]){var p=cards[d.id];var ui={_assetLabel:p._assetLabel,_updated:p._updated,_escalated:p._escalated,_writing:p._writing,_ackPending:p._ackPending,_reackRequired:p._reackRequired,_error:p._error};cards[d.id]=Object.assign(d,ui);
+      var d=payload.new;if(cards[d.id]){var p=cards[d.id];var ui={_assetLabel:p._assetLabel,
+        // service_kind is computed by kitchen_board(), not a column, so a raw UPDATE row never
+        // carries it. Replacing the card wholesale erased rehearsal identity on every write —
+        // the REHEARSAL badge vanished at Mark Served. Carried only while the row is still
+        // stamped to the same instance; a restamp waits for the next board read.
+        service_kind:(d.service_instance_id===p.service_instance_id?p.service_kind:undefined),
+        _updated:p._updated,_escalated:p._escalated,_writing:p._writing,_ackPending:p._ackPending,_reackRequired:p._reackRequired,_error:p._error};cards[d.id]=Object.assign(d,ui);
       // Database provenance settles a pending attempt.
       if(cards[d.id].kitchen_ack_at)delete cards[d.id]._ackPending;
       Object.keys(cards[d.id]).forEach(function(k){if(cards[d.id][k]===undefined)delete cards[d.id][k]});
