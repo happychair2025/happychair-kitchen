@@ -1,0 +1,29 @@
+      ordinary C        gaps [6,12,2,8,8,8,8,6]  h=717
+      Second Check Rec. gaps [6,12,2,8,8,8,8,6]  h=642
+      Served Recorded   gaps [6,12,2,8,8,8,8,6]  h=556
+──── 1 · COMPLETED RAIL READS COMPLETED ────
+PASS  Served Recorded: all four stages complete   → Received✓ Confirmed✓ Second Check✓ Served✓
+PASS  ...none grey/disabled
+PASS  ...every stage keeps its timestamp   → 06:51 PM | 08:15 PM | 02:15 PM | 02:15 PM
+PASS  ...connectors between completed stages use the success class
+PASS  Second Check Recorded: three complete, Served pending (not green)
+PASS  ordinary record: completed stages green, owed ones neutral
+PASS  no new colour: completed = existing --ok
+
+──── 1 · SERVED STATE KEEPS EVERYTHING ────
+PASS  ✓ Served Recorded
+PASS  REHEARSAL · NOT A GUEST
+PASS  Kitchen Steps Complete
+PASS  display-not-person disclosure
+PASS  Back to Kitchen Board, no auto-close
+PASS  still open after a real poll
+
+──── 2 · ONE COMPONENT, THREE STATES ────
+PASS  same blocks present in all three   → [true,true,true,true,true,true,true,true,true]
+PASS  same top-to-bottom order in all three
+PASS  identical vertical gaps between shared blocks
+PASS  badges (severity + cross-contact) present after Served
+PASS  context line: Served at <time>
+PASS  context line before Served: the owed step
+
+ALL 19 CHECKS PASS

@@ -164,3 +164,13 @@ display writes nothing.
 
 70 checks; results in `kitchen-milestones.results.txt`. Against 4247714 a single click() on
 Confirm Prep Area Cleared wrote protocol_confirmed_at and closed the lockout.
+
+## Record sheet coherence (`sheet-coherence.*`)
+
+Drives fixture B through Second Check → Served and measures the sheet in three states against
+the ordinary record (C). Asserts every completed rail stage uses the existing success class
+with its timestamp — none grey after Served, none amber mid-workflow — owed stages are neutral,
+and the three states share the same blocks, in the same order, with identical vertical gaps
+(REHEARSAL → title → service point → guest → allergens → badges → note → context → rail).
+Against a7eaf42 the served rail failed every completion check and the success states were
+missing the badges and context line. 19 checks.

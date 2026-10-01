@@ -72,27 +72,28 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .vfy.on{display:flex}
 .vfy-card{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:22px 24px;
   width:100%;max-width:560px;max-height:100%;overflow-y:auto}
-.vfy-hd{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.vfy-hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .vfy-t{font-size:22px;font-weight:800;letter-spacing:-.01em;color:var(--t1);flex:1}
 .vfy-x{background:none;border:none;color:var(--t2);font-size:30px;line-height:1;cursor:pointer;
   min-width:44px;min-height:44px;font-family:inherit}
 .vfy-tbl{font-size:30px;font-weight:800;color:#fff;line-height:1.1}
 .vfy-guest{font-size:17px;font-weight:600;color:var(--t2);margin-top:2px}
-.vfy-al{font-size:26px;font-weight:800;color:var(--t1);margin-top:10px;line-height:1.25}
+.vfy-al{font-size:26px;font-weight:800;color:var(--t1);margin-top:8px;line-height:1.25}
 .vfy-al.an{color:var(--danger)}
-.vfy-marks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.vfy-marks{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .vfy-sev,.vfy-xc{font-size:12px;font-weight:800;letter-spacing:.07em;padding:5px 10px;border-radius:6px;
   background:rgba(245,158,11,.16);color:var(--warn)}
 .vfy-sev.an{background:rgba(239,68,68,.18);color:var(--danger)}
 .vfy-xc{background:rgba(148,163,184,.14);color:var(--t1)}
-.vfy-note{margin-top:10px;font-size:15px;font-weight:600;color:var(--warn)}
-.vfy-sec{margin-top:20px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
-.vfy-body{margin-top:8px;font-size:16px;line-height:1.5;color:var(--t1)}
-.vfy-honest{margin-top:14px;font-size:14px;line-height:1.5;color:var(--t2)}
-.vfy-go{margin-top:20px}
+.vfy-note{margin-top:8px;font-size:15px;font-weight:600;color:var(--warn)}
+.vfy-sec{margin-top:16px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.vfy-body{margin-top:6px;font-size:16px;line-height:1.5;color:var(--t1)}
+.vfy-honest{margin-top:12px;font-size:14px;line-height:1.5;color:var(--t2)}
+.vfy-go{margin-top:16px}
+.vfy-card .prog{margin-top:6px}
 /* The record sheet absorbed the elapsed time and the stage rail from the inline panel that
    used to expand under the row. Same .prog markup, so the rail is one implementation. */
-.vfy-el{margin-top:12px;font-size:14px;color:var(--t2);font-variant-numeric:tabular-nums}
+.vfy-el{margin-top:8px;font-size:14px;color:var(--t2);font-variant-numeric:tabular-nums}
 /* Navigation, not a safety write — so it must not wear the filled press-and-hold styling. */
 .row .r-act--nav{background:var(--s2);border:1px solid var(--b2);color:var(--t1);
   display:flex;align-items:center;justify-content:center;border-radius:10px;
@@ -203,14 +204,14 @@ body.dimmed .summary{opacity:.3}
        boxed, bold, uppercase and the full wording — smaller, never weaker. */
     .vfy-reh{font-size:13px;font-weight:800;letter-spacing:.1em;color:#c9adff;
       border:1.5px solid rgba(168,130,255,.6);border-radius:6px;padding:3px 9px;
-      margin-bottom:8px;display:inline-block}
+      margin-bottom:6px;display:inline-block}
     .vfy-hl{flex:1;min-width:0}
     /* A completed milestone, stated once. Green marks the COMPLETED fact only; actions keep
        their existing roles. */
-    .vfy-ok{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:9px 12px;border-radius:10px;
+    .vfy-ok{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:9px 12px;border-radius:10px;
       border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.08);font-size:17px;font-weight:700;color:var(--t1)}
     .vfy-ok svg{color:var(--ok);flex-shrink:0}.vfy-ok-t{margin-left:auto;font-size:13px;font-weight:500;color:var(--t2)}
-    .vfy-back--only{margin-top:20px}
+    .vfy-back--only{margin-top:16px}
     .lk-ok{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;color:var(--ok);
       letter-spacing:.02em;margin-bottom:10px;text-transform:uppercase}
     .lk-err{max-width:500px;width:100%;margin-bottom:14px;padding:10px 14px;border-radius:8px;text-align:center;
@@ -1152,15 +1153,40 @@ function recordAction(c){
 // state so the two can never disagree about which stages are complete.
 function railHtml(c){
   var acked=isAcked(c),verified=!!c.verified_at,isSrv=!!c.served_at,h='';
-  h+='<div class="prog">';
-  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'da')+'">'+CK+'</div><div class="plbl '+(isSrv?'g':'a')+'">Received</div><div class="ptm">'+fmtTime(c.created_at)+'</div></div>';
-  h+='<div class="pln '+(acked?(isSrv?'g':'a'):'')+'"></div>';
-  h+='<div class="ps"><div class="pd '+(acked?(isSrv?'dg':'da'):'')+'">'+(!acked?'':CK)+'</div><div class="plbl '+(acked?(isSrv?'g':'a'):'')+'">Confirmed</div>'+(acked?'<div class="ptm">'+fmtTime(c.kitchen_ack_at)+'</div>':'')+'</div>';
-  h+='<div class="pln '+(verified?(isSrv?'g':'v'):'')+'"></div>';
-  h+='<div class="ps"><div class="pd '+(verified?(isSrv?'dg':'dv'):'')+'">'+(!verified?'':CK)+'</div><div class="plbl '+(verified?(isSrv?'g':'v'):'')+'">Second Check</div>'+(verified?'<div class="ptm">'+fmtTime(c.verified_at)+'</div>':'')+'</div>';
-  h+='<div class="pln '+(isSrv?'g':'')+'"></div>';
-  h+='<div class="ps"><div class="pd '+(isSrv?'dg':'')+'">'+(!isSrv?'':CK)+'</div><div class="plbl '+(isSrv?'g':'')+'">Served</div>'+(isSrv?'<div class="ptm">'+fmtTime(c.served_at)+'</div>':'')+'</div>';
-  h+='</div>';
+  // A completed milestone reads as completed — the existing success class (dv / v) — whatever
+  // stage the record has reached. It used to be amber while in progress and grey once served,
+  // so the moment every step was done the rail looked disabled.
+  function st(done,label,ts){return '<div class="ps"><div class="pd'+(done?' dv':'')+'">'+(done?CK:'')
+    +'</div><div class="plbl'+(done?' v':'')+'">'+label+'</div>'+(done?'<div class="ptm">'+fmtTime(ts)+'</div>':'')+'</div>'}
+  function ln(done){return '<div class="pln'+(done?' v':'')+'"></div>'}
+  h+='<div class="prog">'+st(true,'Received',c.created_at)+ln(acked)+st(acked,'Confirmed',c.kitchen_ack_at)
+    +ln(verified)+st(verified,'Second Check',c.verified_at)+ln(isSrv)+st(isSrv,'Served',c.served_at)+'</div>';
+  return h;
+}
+
+// The top of the record sheet, shared by the ordinary record, Second Check Recorded and Served
+// Recorded so the three are visibly one component advancing — same blocks, same order, same
+// spacing — rather than three screens that happen to look alike.
+function recordHeadHtml(c,title,done,okA){
+  var id=c.id,an=isAnaph(c.severity),isSrv=!!c.served_at,h='';
+  h+='<div class="vfy-hd"><div class="vfy-hl">'
+    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
+    +'<div class="vfy-t'+(done?' vfy-t--done':'')+'">'+(done?CK_DONE:'')+esc(title)+'</div></div>'
+    +'<button type="button" class="vfy-x" aria-label="'+(done?'Back to Kitchen Board':'Close')+'" onclick="closeRecord()">&times;</button></div>';
+  if(okA)h+='<div class="vfy-ok" role="status">'+CK_DONE+'<span>'+(okA==='ack'?'Allergy Received':'Prep Area Cleared')
+    +'</span><span class="vfy-ok-t">Recorded '+esc(fmtTime(okA==='ack'?c.kitchen_ack_at:c.protocol_confirmed_at))+'</span></div>';
+  if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
+  // The row abbreviates and may truncate; the record never does.
+  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
+  if(c.guest_name&&String(c.guest_name).trim())
+    h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
+  h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
+  h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
+    +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
+  if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
+  var owed=owedStep(c);
+  h+='<div class="vfy-el">'+(isSrv||!owed?'Served at ':esc(owed.label)+' waiting ')+'<span id="timer-'+esc(id)+'">'
+    +(isSrv||!owed?fmtTime(c.served_at):fmtTimer(owed.since))+'</span></div>';
   return h;
 }
 
@@ -1210,27 +1236,7 @@ function renderRecord(){
   recordSig=sig;
 
   var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
-  var h='';
-  h+='<div class="vfy-hd"><div class="vfy-hl">'
-    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t">'+(act&&act.check?'Second Check':'Allergy Record')+'</div></div>'
-    +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>';
-
-  if(okA)h+='<div class="vfy-ok" role="status">'+CK_DONE+'<span>'+(okA==='ack'?'Allergy Received':'Prep Area Cleared')
-    +'</span><span class="vfy-ok-t">Recorded '+esc(fmtTime(okA==='ack'?c.kitchen_ack_at:c.protocol_confirmed_at))+'</span></div>';
-  if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
-
-  // The row abbreviates and may truncate; the record never does.
-  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
-  if(c.guest_name&&String(c.guest_name).trim())
-    h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
-  h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
-  h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
-    +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
-  if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
-  var owed=owedStep(c);
-  h+='<div class="vfy-el">'+(isSrv||!owed?'Served at ':esc(owed.label)+' waiting ')+'<span id="timer-'+esc(id)+'">'
-    +(isSrv||!owed?fmtTime(c.served_at):fmtTimer(owed.since))+'</span></div>';
+  var h=recordHeadHtml(c,(act&&act.check?'Second Check':'Allergy Record'),false,okA);
 
   // The four stages with their recorded times. This replaces a separate "Already recorded"
   // pair that listed two of the same timestamps in a second format — the rail says when the
@@ -1293,20 +1299,12 @@ function renderRecord(){
 // operator. Back writes nothing.
 var CK_DONE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
 function renderSecondCheckDone(c,lc){
-  var id=c.id,an=isAnaph(c.severity);
-  var sig=['done',id,(c.allergens||[]).join(','),c.guest_name,c._assetLabel,c.verified_at,
-           c.served_at,c.service_kind,vdVenueName||'',c._error||''].join('|');
+  var id=c.id;
+  var sig=['done',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c._assetLabel,
+           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||''].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
-  var h='<div class="vfy-hd"><div class="vfy-hl">'
-    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t vfy-t--done">'+CK_DONE+'Second Check Recorded</div></div>'
-    +'<button type="button" class="vfy-x" aria-label="Back to Kitchen Board" onclick="closeRecord()">&times;</button></div>';
-  if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
-  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
-  if(c.guest_name&&String(c.guest_name).trim())
-    h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
-  h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
+  var h=recordHeadHtml(c,'Second Check Recorded',true,'');
   h+=railHtml(c);
   h+='<div class="vfy-sec">Ready to Serve</div>';
   h+='<div class="vfy-body">The second check has been recorded. The next Kitchen step is to mark '
@@ -1322,20 +1320,13 @@ function renderSecondCheckDone(c,lc){
 // Served success. Records only what happened: the Kitchen step was recorded on this display.
 // It claims nothing about the guest, the plate, or safety, and nothing about who pressed it.
 function renderServedDone(c,lc){
-  var id=c.id,an=isAnaph(c.severity);
-  var sig=['served',id,(c.allergens||[]).join(','),c.guest_name,c._assetLabel,c.served_at,
-           c.service_kind,vdVenueName||'',(vdIdentity&&vdIdentity.display_name)||''].join('|');
+  var id=c.id;
+  var sig=['served',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c._assetLabel,
+           c.served_at,c.service_kind,vdVenueName||'',(vdIdentity&&vdIdentity.display_name)||''].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
   var disp=(vdIdentity&&vdIdentity.display_name)||'this display';
-  var h='<div class="vfy-hd"><div class="vfy-hl">'
-    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t vfy-t--done">'+CK_DONE+'Served Recorded</div></div>'
-    +'<button type="button" class="vfy-x" aria-label="Back to Kitchen Board" onclick="closeRecord()">&times;</button></div>';
-  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
-  if(c.guest_name&&String(c.guest_name).trim())
-    h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
-  h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
+  var h=recordHeadHtml(c,'Served Recorded',true,'');
   h+=railHtml(c);
   h+='<div class="vfy-sec">Kitchen Steps Complete</div>';
   h+='<div class="vfy-body">The Kitchen workflow for this allergy record has been completed.</div>';
