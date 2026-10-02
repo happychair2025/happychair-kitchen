@@ -187,3 +187,23 @@ over a single instruction, no wait line or "Served at" prose once served, no pro
 
 `renders/phase1/before/` (cd08f57) and `after/` are screenshots of the same walk, produced by
 `renders/phase1/walk.probe.js` under a DevTools-enabled copy of the offline harness.
+
+## Localization — EN | ES (`kitchen-i18n.*`, `kitchen-i18n-boot.*`, `i18n/`, `renders/i18n-es/`)
+
+One catalog (`I18N` in `index.html`), one UI, one state machine: a locale changes which string
+is drawn, never which state is drawn or what a control does. `i18n/KITCHEN_STRINGS_EN_ES.md` is
+the full EN → ES inventory, generated from the catalog, with every term flagged for review.
+
+`kitchen-i18n.probe.js` (57): EN → ES with the board open (same records, states, order, zero
+writes); with the Second Check sheet open (same declaration, same step); ES → EN round trip;
+lockout in both languages at the same stage; a mouse or keyboard hold cannot be disturbed — the
+switch is refused mid-hold, the held button is not replaced, the hold completes exactly once,
+and the control never takes focus; refused while a milestone write is in flight; polls, token
+refresh and live updates never reset the language; a failed save keeps the choice and retries
+at next boot; a missing string shows ⟦locale:key⟧ in development and the English meaning in
+production; no Spanish string claims safe / allergen-free / guaranteed / certified / protected /
+verified; provenance written to the database stays "Kitchen Display".
+
+`kitchen-i18n-boot.probe.js` (5 per display): run with `?devlocale=es` and `?devlocale=en` in
+fresh profiles — each display starts in its own stored language, writes nothing to read it, and
+caches it for first paint.

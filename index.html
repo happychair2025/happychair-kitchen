@@ -228,32 +228,44 @@ body.dimmed .summary{opacity:.3}
     .vfy-back{margin-top:10px;width:100%;height:48px;border-radius:10px;background:transparent;
       border:1px solid var(--b2);color:var(--t1);font-size:16px;font-weight:600;cursor:pointer}
     .vfy-back:focus{outline:none}.vfy-back:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+    /* EN | ES — one tap, no Settings. Neutral: it is a preference, not a signal. */
+    .lang-sw{display:flex;align-items:center;margin-right:10px;position:relative}
+    .lang-b{min-width:46px;height:38px;border:1px solid var(--b2);background:transparent;color:var(--t2);
+      font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;font-family:inherit}
+    .lang-b:first-child{border-radius:8px 0 0 8px}.lang-b+.lang-b{border-radius:0 8px 8px 0;border-left:none}
+    .lang-b.on{background:var(--s2);color:var(--t1)}
+    .lang-b:focus{outline:none}.lang-b:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+    .lang-msg{position:absolute;top:100%;right:0;margin-top:4px;font-size:12px;font-weight:600;color:var(--warn);white-space:nowrap}
+    .ref-untr{font-size:12.5px;color:var(--t3);margin:2px 0 6px}
+    .lockout .ref-untr{font-size:14px;text-align:left}
+    .i18n-fail{position:fixed;top:0;left:0;right:0;z-index:999;background:#7f1d1d;color:#fff;font:600 14px/1.4 system-ui;padding:8px 12px}
   </style>
 </head>
 <body>
 <div id="app">
-<div class="audio-prompt" id="audioPrompt" onclick="activateAudio()"><div class="audio-prompt-btn">Tap to Activate · HC Kitchen</div></div>
+<div class="audio-prompt" id="audioPrompt" onclick="activateAudio()"><div class="audio-prompt-btn" data-i18n="app.activate">Tap to Activate · HC Kitchen</div></div>
 <div class="hdr">
 <div class="hdr-logo" id="venueLogo">H</div>
-<div class="hdr-venue" id="venueName">HC Kitchen</div>
+<div class="hdr-venue" id="venueName" data-i18n="brand">HC Kitchen</div>
 <div class="hdr-clock" id="headerClock"></div>
 <div class="hdr-right">
 <!-- Starts DEGRADED. At page load nothing has been read, so healthy would be a claim the
      board has not earned. reconcile() promotes it on the first successful read. -->
-<button type="button" class="vd-st" id="vdStatus" onclick="openPair()" title="Pair this display">Not paired</button>
+<div class="lang-sw" id="langSw" role="group" aria-label="Display language" data-i18n-aria="lang.label"><button type="button" class="lang-b" data-l="en" onpointerdown="event.preventDefault()" onclick="switchLocale('en')">EN</button><button type="button" class="lang-b" data-l="es" onpointerdown="event.preventDefault()" onclick="switchLocale('es')">ES</button><span class="lang-msg" id="langMsg" role="status" aria-live="polite"></span></div>
+<button type="button" class="vd-st" id="vdStatus" onclick="openPair()" title="Pair this display" data-i18n-title="status.pair_title">Not paired</button>
 <div class="hb off" id="heartbeat"></div>
 <div class="vol-ctrl" id="volCtrl">
 <div class="vol-icon" onclick="toggleMute()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path class="vw1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/><path class="vw2" d="M17 7a7 7 0 0 1 0 10"/><path class="vw3" d="M19.5 4.5a10.5 10.5 0 0 1 0 15"/></svg></div>
 <input type="range" class="vol-range" id="volSlider" min="0" max="100" value="60" oninput="setVolume(this.value)">
 </div>
-<button class="hdr-btn" id="contrastBtn" onclick="toggleContrast()" title="Contrast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg></button>
+<button class="hdr-btn" id="contrastBtn" onclick="toggleContrast()" title="Contrast" data-i18n-title="hdr.contrast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg></button>
 </div>
 </div>
-<div class="offline-banner" id="offlineBanner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
+<div class="offline-banner" id="offlineBanner" data-i18n="offline.banner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
 <div class="lockout" id="lockout"><div class="lockout-card" id="lockoutContent"></div></div>
 <div class="vfy" id="verify"><div class="vfy-card" id="verifyContent"></div></div>
 <div class="vfy" id="pair"><div class="vfy-card" id="pairContent"></div></div>
-<div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div></div>
+<div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text" data-i18n="board.empty">No Active Allergies</div></div></div>
 <div class="ghost-tabs" id="ghostTabs"></div>
 <div class="summary" id="summaryBar"><span class="w">0 Tables</span> · <span class="w">0 Allergies</span></div>
 </div>
@@ -315,6 +327,7 @@ function toggleContrast(){document.body.classList.toggle('hc-mode');document.get
 // The error is drawn by whichever surface is showing the record — the row carries it, and the
 // sheet carries it while open. This used to also force the inline panel open so the message
 // could be seen; there is no inline panel now.
+// message is a catalog KEY (err.*), rendered with th() so it follows a language change.
 function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;renderCards();renderRecord();setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;renderCards();renderRecord()}},8000)}
 
 // Under 24h this stays h:mm:ss and keeps ticking every second. At/over 24h it rolls to
@@ -360,11 +373,9 @@ function owedStep(c){
   var act=recordAction(c); if(!act)return null;
   var since={ack:c.created_at, prep:c.kitchen_ack_at,
              verify:c.protocol_confirmed_at||c.kitchen_ack_at, serve:c.verified_at}[act.a];
-  var label={ack:'Confirm Received', prep:'Prep Confirmation', verify:'Second Check',
-             serve:'Mark Served'}[act.a];
-  return {label:label, since:since||c.created_at};
+  return {key:'step.'+act.a, label:tt('step.'+act.a), since:since||c.created_at};
 }
-function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString(LOCALE_TAG[locale],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
 // Ascending risk order. SEV_RANK is derived from SEV_ORDER so the list and the
 // ranking cannot drift apart — the same shape tableside uses (happychair-tableside
@@ -417,6 +428,350 @@ function esc(v){
     .replace(/'/g,'&#39;');
 }
 
+// ── KITCHEN STRING CATALOG ──────────────────────────────────────────────────────────────────
+// Every word this board shows, per locale. One UI, one state machine: a locale changes only
+// which string is drawn, never which state is drawn or what a control does.
+//
+// Rules:
+//   * Interface and workflow language only. Allergen names, Avoid all reference lists, guest
+//     notes, guest names, table / service-point labels, venue and display names are DATA and
+//     stay exactly as stored — passed in as {placeholders}, never baked into a translation.
+//   * A translation may never claim more than the English: no "safe", "allergen-free",
+//     "guaranteed", "certified", "protected", "verified safe".
+//   * Every key exists in every locale with the same {placeholders}. tests/kitchen-i18n.probe.js
+//     fails if not; at runtime a missing string shows ⟦locale:key⟧ in development and falls
+//     back to the English string in production (meaning preserved, logged).
+//   * Spanish is a DRAFT for native-speaker review — see tests/i18n/KITCHEN_STRINGS_EN_ES.md.
+var I18N={
+ en:{
+  'brand':'HC Kitchen',
+  'app.activate':'Tap to Activate · HC Kitchen',
+  'hdr.kitchen':'{venue} · Kitchen',
+  'hdr.contrast':'Contrast',
+  'lang.label':'Display language',
+  'lang.blocked':'Finish the current step first',
+  'lang.not_saved':'Language not saved to this display',
+  'status.paired':'{display} · Paired',
+  'status.not_paired':'Not paired',
+  'status.pair_title':'Pair this display',
+  'offline.banner':'OFFLINE — NOT RECEIVING ALLERGY ALERTS',
+  'board.empty':'No Active Allergies',
+  'board.needs':'Needs You',
+  'board.working':'In Progress',
+  'board.done':'Done This Service',
+  'board.earlier':'Earlier',
+  'board.show':'Show',
+  'board.hide':'Hide',
+  'board.earlier_note':'Not part of the service running now. Review in the Shift Record.',
+  'summary.tables.one':'{n} Table',
+  'summary.tables.other':'{n} Tables',
+  'summary.allergies.one':'{n} Allergy',
+  'summary.allergies.other':'{n} Allergies',
+  'summary.anaphylaxis':'{n} Anaphylaxis',
+  'summary.need_action.one':'{n} Need Action',
+  'summary.need_action.other':'{n} Need Action',
+  'summary.all_confirmed':'All Confirmed',
+  'row.rehearsal':'REHEARSAL',
+  'row.updated':'UPDATED',
+  'row.open':'Open this allergy record',
+  'row.confirm_received':'Confirm Received',
+  'row.confirm_prep':'Confirm Prep Area',
+  'row.second_check':'Second Check →',
+  'row.second_check_aria':'Open the second check',
+  'row.mark_served':'Mark Served',
+  'sev.anaphylaxis':'ANAPHYLAXIS',
+  'sev.severe':'SEVERE',
+  'sev.discomfort':'DISCOMFORT',
+  'sev.unsure':'UNSURE',
+  'sev.unknown':'UNKNOWN',
+  'chip.cross_contact':'CROSS-CONTACT',
+  'reh.full':'REHEARSAL · NOT A GUEST',
+  'step.ack':'Confirm Received',
+  'step.prep':'Prep Confirmation',
+  'step.verify':'Second Check',
+  'step.serve':'Mark Served',
+  'step.waiting':'{step} waiting {time}',
+  'hold.ack':'Hold to Confirm Allergy Received',
+  'hold.prep':'Hold to Confirm Prep Area Cleared',
+  'hold.verify':'Hold to Record Second Check',
+  'hold.serve':'Hold to Mark Served',
+  'do.ack':'Confirm the kitchen has received this allergy.',
+  'do.prep':'Clear and separate the prep area, utensils and surfaces.',
+  'do.verify':'Have another team member check the allergy preparation.',
+  'do.serve':'Mark served when the dish leaves the kitchen.',
+  'do.complete':'Kitchen steps complete.',
+  'do.gone':'This allergy is no longer current work here. Nothing was recorded on this display.',
+  'title.record':'Allergy Record',
+  'title.second_check_done':'Second Check Recorded',
+  'title.served_done':'Served Recorded',
+  'title.gone':'No longer on the board',
+  'ok.ack':'Allergy Received',
+  'ok.prep':'Prep Area Cleared',
+  'ok.recorded':'Recorded {time}',
+  'rail.received':'Received',
+  'rail.confirmed':'Confirmed',
+  'rail.second_check':'Second Check',
+  'rail.served':'Served',
+  'ref.avoid_all':'Avoid all — {allergen}',
+  'ref.check_ingredients':'{allergen} — Check ingredients',
+  'ref.no_list':'No reference list is available. Confirm ingredients before preparation.',
+  'ref.untranslated':'',
+  'notes.heading':'Guest notes',
+  'prov.line':'{display} · {venue} — records the display, not the person.',
+  'prov.this_display':'This display',
+  'prov.this_venue':'this venue',
+  'nav.back':'Back to Kitchen Board',
+  'nav.close':'Close',
+  'lock.next':'Next: Second Check.',
+  'misc.table':'Table',
+  'misc.guest':'Guest',
+  'err.not_paired':'Display not paired — pair it in Set Up.',
+  'err.ack':'Received NOT recorded — try again',
+  'err.prep':'Prep NOT recorded — try again',
+  'err.verify':'Second Check NOT recorded — try again',
+  'err.serve':'Served NOT recorded — try again',
+  'err.minimize':'Hidden locally, but couldn\'t sync — try again',
+  'pair.title':'Pair this display',
+  'pair.body':'In Happy Chair, open {path} and tap {action}, then enter the 6-digit code it shows.',
+  'pair.button':'Pair Display',
+  'pair.need_code':'Enter the 6-digit code.',
+  'pair.pairing':'Pairing…',
+  'pair.failed':'Could not pair. Check the code and try again.',
+  'pair.unreachable':'Could not reach Happy Chair.',
+  'pair.done_title':'Display paired',
+  'pair.done_body':'This display is now authenticated to this venue. It identifies the display, not the person using it.',
+  'pair.this_venue':'This venue'
+ },
+ es:{
+  'brand':'HC Kitchen',
+  'app.activate':'Toca para activar · HC Kitchen',
+  'hdr.kitchen':'{venue} · Cocina',
+  'hdr.contrast':'Contraste',
+  'lang.label':'Idioma de la pantalla',
+  'lang.blocked':'Termina primero el paso actual',
+  'lang.not_saved':'El idioma no se guardó en esta pantalla',
+  'status.paired':'{display} · Vinculada',
+  'status.not_paired':'Sin vincular',
+  'status.pair_title':'Vincular esta pantalla',
+  'offline.banner':'SIN CONEXIÓN — NO SE ESTÁN RECIBIENDO ALERTAS DE ALERGIAS',
+  'board.empty':'No hay alergias activas',
+  'board.needs':'Requiere acción',
+  'board.working':'En curso',
+  'board.done':'Terminadas en este servicio',
+  'board.earlier':'Anteriores',
+  'board.show':'Mostrar',
+  'board.hide':'Ocultar',
+  'board.earlier_note':'No forman parte del servicio en curso. Revísalas en el Shift Record.',
+  'summary.tables.one':'{n} mesa',
+  'summary.tables.other':'{n} mesas',
+  'summary.allergies.one':'{n} alergia',
+  'summary.allergies.other':'{n} alergias',
+  'summary.anaphylaxis':'{n} con anafilaxia',
+  'summary.need_action.one':'{n} requiere acción',
+  'summary.need_action.other':'{n} requieren acción',
+  'summary.all_confirmed':'Todas confirmadas',
+  'row.rehearsal':'ENSAYO',
+  'row.updated':'ACTUALIZADA',
+  'row.open':'Abrir este registro de alergia',
+  'row.confirm_received':'Confirmar recepción',
+  'row.confirm_prep':'Confirmar área de preparación',
+  'row.second_check':'Segunda revisión →',
+  'row.second_check_aria':'Abrir la segunda revisión',
+  'row.mark_served':'Marcar como servida',
+  'sev.anaphylaxis':'ANAFILAXIA',
+  'sev.severe':'GRAVE',
+  'sev.discomfort':'MALESTAR',
+  'sev.unsure':'GRAVEDAD NO INDICADA',
+  'sev.unknown':'DESCONOCIDA',
+  'chip.cross_contact':'CONTACTO CRUZADO',
+  'reh.full':'ENSAYO · NO ES UN HUÉSPED REAL',
+  'step.ack':'Confirmar recepción',
+  'step.prep':'Confirmación de preparación',
+  'step.verify':'Segunda revisión',
+  'step.serve':'Marcar como servida',
+  'step.waiting':'{step}: esperando {time}',
+  'hold.ack':'Mantén presionado para confirmar que se recibió la alergia',
+  'hold.prep':'Mantén presionado para confirmar el área de preparación despejada',
+  'hold.verify':'Mantén presionado para registrar la segunda revisión',
+  'hold.serve':'Mantén presionado para marcar como servida',
+  'do.ack':'Confirma que la cocina recibió esta alergia.',
+  'do.prep':'Despeja y separa el área de preparación, los utensilios y las superficies.',
+  'do.verify':'Pide a otro miembro del equipo que revise la preparación de la alergia.',
+  'do.serve':'Márcala como servida cuando el plato salga de la cocina.',
+  'do.complete':'Pasos de cocina completados.',
+  'do.gone':'Esta alergia ya no es trabajo actual aquí. No se registró nada en esta pantalla.',
+  'title.record':'Registro de alergia',
+  'title.second_check_done':'Segunda revisión registrada',
+  'title.served_done':'Servida: registrado',
+  'title.gone':'Ya no está en la pantalla',
+  'ok.ack':'Alergia recibida',
+  'ok.prep':'Área de preparación despejada',
+  'ok.recorded':'Registrado {time}',
+  'rail.received':'Recibida',
+  'rail.confirmed':'Confirmada',
+  'rail.second_check':'Segunda revisión',
+  'rail.served':'Servida',
+  'ref.avoid_all':'Evitar todo — {allergen}',
+  'ref.check_ingredients':'{allergen} — Revisa los ingredientes',
+  'ref.no_list':'No hay lista de referencia. Confirma los ingredientes antes de preparar.',
+  'ref.untranslated':'Los nombres de alérgenos y las listas de referencia se muestran en inglés (sin traducir).',
+  'notes.heading':'Notas del huésped (sin traducir)',
+  'prov.line':'{display} · {venue} — registra la pantalla, no a la persona.',
+  'prov.this_display':'Esta pantalla',
+  'prov.this_venue':'este local',
+  'nav.back':'Volver a la pantalla de cocina',
+  'nav.close':'Cerrar',
+  'lock.next':'Siguiente: segunda revisión.',
+  'misc.table':'Mesa',
+  'misc.guest':'Huésped',
+  'err.not_paired':'Pantalla sin vincular — vincúlala en Set Up.',
+  'err.ack':'Recepción NO registrada — inténtalo de nuevo',
+  'err.prep':'Preparación NO registrada — inténtalo de nuevo',
+  'err.verify':'Segunda revisión NO registrada — inténtalo de nuevo',
+  'err.serve':'Servida NO registrada — inténtalo de nuevo',
+  'err.minimize':'Oculta en esta pantalla, pero no se sincronizó — inténtalo de nuevo',
+  'pair.title':'Vincular esta pantalla',
+  'pair.body':'En Happy Chair, abre {path} y toca {action}; luego escribe el código de 6 dígitos que aparece.',
+  'pair.button':'Vincular pantalla',
+  'pair.need_code':'Escribe el código de 6 dígitos.',
+  'pair.pairing':'Vinculando…',
+  'pair.failed':'No se pudo vincular. Revisa el código e inténtalo de nuevo.',
+  'pair.unreachable':'No se pudo conectar con Happy Chair.',
+  'pair.done_title':'Pantalla vinculada',
+  'pair.done_body':'Esta pantalla ya está autenticada en este local. Identifica la pantalla, no a la persona que la usa.',
+  'pair.this_venue':'Este local'
+ }
+};
+var KITCHEN_LOCALES=['en','es'];
+var LOCALE_TAG={en:'en-US',es:'es-US'};
+var locale='en';
+// Development surfaces (offline fixtures, localhost, ?i18ncheck=1) show a missing string as
+// ⟦locale:key⟧ so it cannot ship unnoticed. Production falls back to the English string —
+// the meaning of a safety instruction is never replaced by a guess — and logs it.
+var I18N_DEV=/[?&](fixture|i18ncheck)=1/.test(location.search)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+var i18nLogged={};
+function tRaw(key,n){
+  var k=key,cat=I18N[locale]||I18N.en;
+  if(typeof n==='number'&&I18N.en[key+'.one']!==undefined)k=key+(n===1?'.one':'.other');
+  var s=cat[k];
+  if(s===undefined){
+    if(!i18nLogged[locale+':'+k]){i18nLogged[locale+':'+k]=1;console.error('[kitchen] missing '+locale+' string: '+k)}
+    if(I18N_DEV||I18N.en[k]===undefined)return '⟦'+locale+':'+k+'⟧';
+    s=I18N.en[k];
+  }
+  return s;
+}
+// HTML-safe: the template is escaped, then each {placeholder} is filled with its escaped value,
+// or with trusted markup passed as {html:'…'} (a timer span, a bold label).
+function th(key,p){
+  var s=esc(tRaw(key,p&&p.n));
+  if(p)s=s.replace(/\{(\w+)\}/g,function(m,k){var v=p[k];if(v===undefined)return m;
+    return (v!==null&&typeof v==='object'&&'html' in v)?v.html:esc(String(v))});
+  return s;
+}
+// Plain text, for textContent / title / aria where the browser does the escaping.
+function tt(key,p){
+  var s=tRaw(key,p&&p.n);
+  if(p)s=s.replace(/\{(\w+)\}/g,function(m,k){var v=p[k];return v===undefined?m:String(v)});
+  return s;
+}
+// Catalog parity: every key in every locale, with identical placeholders. Run at boot; in
+// development a failure is put on screen, not only in the console.
+function i18nParity(){
+  var bad=[],en=I18N.en;
+  KITCHEN_LOCALES.forEach(function(l){
+    var cat=I18N[l]||{};
+    Object.keys(en).forEach(function(k){
+      if(cat[k]===undefined){bad.push(l+':'+k+' missing');return}
+      var a=(en[k].match(/\{\w+\}/g)||[]).sort().join(),b=(cat[k].match(/\{\w+\}/g)||[]).sort().join();
+      if(a!==b)bad.push(l+':'+k+' placeholders '+b+' ≠ '+a);
+    });
+    Object.keys(cat).forEach(function(k){if(en[k]===undefined)bad.push(l+':'+k+' not in en')});
+  });
+  return bad;
+}
+
+function sevLabel(sev){
+  var k=(sev||'').toLowerCase();
+  if(I18N.en['sev.'+k]!==undefined)return th('sev.'+k);
+  return k?esc(String(sev).toUpperCase()):th('sev.unknown');   // an unknown stored value stays data
+}
+
+// ── DISPLAY LANGUAGE ──────────────────────────────────────────────────────────────────────────
+// Kitchen language belongs to THIS display (venue_devices.display_locale), never to whoever is
+// on shift. Changing it only redraws: no state, no record, no step and no write is touched.
+var hdrVenue=null;
+var LOCALE_K='hc_k_locale';     // {d: device_id, l: locale, synced: bool} — first paint + unsent choice
+var localeBootDone=false;
+function localeCacheGet(){try{var r=JSON.parse(localStorage.getItem(LOCALE_K)||'null');
+  return r&&vdToken&&r.d===vdToken.device_id&&KITCHEN_LOCALES.indexOf(r.l)>=0?r:null}catch(e){return null}}
+function localeCacheSet(l,synced){try{if(vdToken)localStorage.setItem(LOCALE_K,JSON.stringify({d:vdToken.device_id,l:l,synced:!!synced}))}catch(e){}}
+function holdInProgress(){return !!recordHolding||Object.keys(holdTimers).length>0}
+function writeInFlight(){return !!(recordFlow&&recordFlow.phase==='saving')||Object.keys(cards).some(function(id){return cards[id]._writing})}
+var langMsgTimer=null;
+function langMsg(key){var el=document.getElementById('langMsg');if(!el)return;
+  el.textContent=key?tt(key):'';clearTimeout(langMsgTimer);if(key)langMsgTimer=setTimeout(function(){el.textContent=''},2500)}
+function applyStatic(){
+  document.documentElement.lang=locale;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=tt(el.getAttribute('data-i18n'))});
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el){el.title=tt(el.getAttribute('data-i18n-title'))});
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){el.setAttribute('aria-label',tt(el.getAttribute('data-i18n-aria')))});
+  document.querySelectorAll('#langSw .lang-b').forEach(function(b){var on=b.getAttribute('data-l')===locale;
+    b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false')});
+  if(hdrVenue)document.getElementById('venueName').textContent=tt('hdr.kitchen',{venue:hdrVenue});
+  vdRenderStatus();
+}
+// Redraw everything that is on screen, in place: the same records, the same open sheet on the
+// same record at the same step, the same lockout stage.
+function applyLocale(l){
+  locale=l;
+  applyStatic();
+  recordSig=null;
+  renderCards();                       // rows, sections, summary — and re-asserts the open sheet
+  if(lockoutId&&document.getElementById('lockout').classList.contains('on'))renderLockout(lockoutId,lockoutStage,lockoutErr);
+  if(document.getElementById('pair').classList.contains('on')&&document.getElementById('pairCode'))openPair();
+}
+// The EN | ES control. Refused while a hold is running or a milestone write is in flight:
+// a redraw would replace the very button being held (cancelling a deliberate safety action),
+// and a sheet must not change language while its write is still unconfirmed. The control
+// takes no focus (pointerdown is prevented), so pressing it can never blur — and so never
+// end — a keyboard hold.
+function switchLocale(l){
+  if(KITCHEN_LOCALES.indexOf(l)<0||l===locale)return;
+  if(holdInProgress()||writeInFlight()){langMsg('lang.blocked');return}
+  applyLocale(l);
+  langMsg('');
+  localeCacheSet(l,false);
+  saveLocale(l);
+}
+// Persist for this display. Not an AllergyShield write: set_own_display_locale changes only
+// venue_devices.display_locale, for the display named by its own credential. A failed save
+// keeps the cook's choice on screen (preference, not state) and is retried at next boot.
+async function saveLocale(l){
+  if(!paired())return;
+  try{
+    var r=await boundRead(sbv.rpc('set_own_display_locale',{p_locale:l}));
+    if(!r||r.error)throw (r&&r.error)||new Error('no response');
+    if(locale===l)localeCacheSet(l,true);
+  }catch(e){console.error('[kitchen] language not saved:',e);langMsg('lang.not_saved')}
+}
+// Once per page life, after the credential is in hand. Token refreshes never re-read it, so a
+// refresh can never reset the language under a cook.
+async function loadDeviceLocale(){
+  if(localeBootDone||!paired())return;
+  localeBootDone=true;
+  var cached=localeCacheGet();
+  if(cached&&!cached.synced){saveLocale(cached.l);return}   // an unsent choice wins, and is sent
+  try{
+    var r=await boundRead(sbv.from('venue_devices').select('display_locale').eq('id',vdToken.device_id).single());
+    var l=r&&!r.error&&r.data&&r.data.display_locale;
+    if(KITCHEN_LOCALES.indexOf(l)<0)return;
+    localeCacheSet(l,true);
+    if(l!==locale&&!holdInProgress()&&!writeInFlight())applyLocale(l);
+  }catch(e){console.error('[kitchen] display language read failed:',e)}
+}
+
+
 var CK='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
 // The restaurant is practising. The card is real and was written through the real path —
@@ -446,7 +801,7 @@ function toggleEarlier(){earlierOpen=!earlierOpen;renderCards()}
 function isRehearsal(c){ return !!(c&&c.service_kind==='rehearsal') }
 
 function guestLabel(c){
-  var gn='Guest';
+  var gn=tt('misc.guest');
   if(c.guest_name){var p=c.guest_name.split(' ');gn=p[0].toUpperCase();if(p.length>1&&p[1])gn+=' '+p[1].charAt(0).toUpperCase()+'.';}
   return gn;
 }
@@ -580,7 +935,7 @@ function renderCards(){
   needs.sort(sSort);working.sort(sSort);served.sort(sSort);earlier.sort(sSort);
 
   if(!needs.length&&!working.length&&!served.length&&!earlier.length&&!ghostIds.length){
-    area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">No Active Allergies</div></div>';
+    area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">'+th('board.empty')+'</div></div>';
     updateSummary();resetDim();return;
   }
 
@@ -616,13 +971,13 @@ function renderCards(){
       if(!acked){
         // The fill was missing here entirely, so the row hold showed no progress at all —
         // the whole of finding 1. A real <button> so it is focusable and keyboard-operable.
-        act='<button type="button" class="r-act hold-btn '+(an?'red':'amber')+'" aria-label="Hold to confirm allergy received" onclick="event.stopPropagation()" '
+        act='<button type="button" class="r-act hold-btn '+(an?'red':'amber')+'" aria-label="'+th('hold.ack')+'" onclick="event.stopPropagation()" '
           +HOLD_ATTRS(id)+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
-          +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Received</span></button>';
+          +'><div class="hold-fill"></div><span class="hold-lbl">'+th('row.confirm_received')+'</span></button>';
       } else if(!proto&&an){
-        act='<button type="button" class="r-act hold-btn red" aria-label="Hold to confirm prep area cleared" onclick="event.stopPropagation()" '
+        act='<button type="button" class="r-act hold-btn red" aria-label="'+th('hold.prep')+'" onclick="event.stopPropagation()" '
           +HOLD_ATTRS(id,'prep')+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
-          +'><div class="hold-fill"></div><span class="hold-lbl">Confirm Prep Area</span></button>';
+          +'><div class="hold-fill"></div><span class="hold-lbl">'+th('row.confirm_prep')+'</span></button>';
       } else if(!verified){
         // "Second Check" names the STEP — a second look before the dish leaves — without
         // claiming a different person performed it. Kitchen identity comes from a ?device=
@@ -631,31 +986,31 @@ function renderCards(){
         // NAVIGATION ONLY — this writes nothing. It used to call verifyDish() straight from
         // the row, so a single tap recorded a verification milestone with no review and no
         // deliberate gesture. Opening the check must never be the check.
-        act='<button type="button" class="r-act r-act--nav" aria-label="Open the second check" onclick="event.stopPropagation();openRecord(\''+esc(id)+'\')"><span class="hold-lbl">Second Check →</span></button>';
+        act='<button type="button" class="r-act r-act--nav" aria-label="'+th('row.second_check_aria')+'" onclick="event.stopPropagation();openRecord(\''+esc(id)+'\')"><span class="hold-lbl">'+th('row.second_check')+'</span></button>';
       } else {
-        act='<button type="button" class="r-act hold-btn r-act--srv" aria-label="Hold to mark served" onclick="event.stopPropagation()" '
+        act='<button type="button" class="r-act hold-btn r-act--srv" aria-label="'+th('hold.serve')+'" onclick="event.stopPropagation()" '
           +HOLD_ATTRS(id,'serve')+' onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"'
-          +'><div class="hold-fill"></div><span class="hold-lbl">Mark Served</span></button>';
+          +'><div class="hold-fill"></div><span class="hold-lbl">'+th('row.mark_served')+'</span></button>';
       }
     }
 
     // ONE WAY IN. The row used to toggle an inline panel that carried a second copy of every
     // control; it now opens the record sheet, which is the only detail surface there is.
-    h+='<div class="'+rowCls+'" role="button" tabindex="0" aria-label="Open this allergy record"'
+    h+='<div class="'+rowCls+'" role="button" tabindex="0" aria-label="'+th('row.open')+'"'
       +' onclick="openRecord(\''+esc(id)+'\')"'
       +' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openRecord(\''+esc(id)+'\')}">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
-    if(isRehearsal(c))h+='<div class="r-reh">REHEARSAL</div>';
-    h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||'Table').split(' ')[0])+'</div>';
+    if(isRehearsal(c))h+='<div class="r-reh">'+th('row.rehearsal')+'</div>';
+    h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||tt('misc.table')).split(' ')[0])+'</div>';
     h+='<div class="r-guest"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc(guestLabel(c))+'</div>';
     h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
-    h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:var(--t3)"':'')+'>'+esc((c.severity||'unknown').toUpperCase())+'</div>';
+    h+='<div class="r-sev '+(an?'r':'a')+'"'+(isSrv?' style="background:rgba(148,163,184,.06);color:var(--t3)"':'')+'>'+sevLabel(c.severity)+'</div>';
     // "XC" was internal shorthand on a surface read under time pressure by people who never saw
     // the schema. The stored boolean and its meaning are unchanged — only the word is.
-    if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">CROSS-CONTACT</div>';
+    if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">'+th('chip.cross_contact')+'</div>';
     // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
     // declaration must still read as a correction after a reload or a reconciliation read.
-    if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">UPDATED</div>';
+    if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">'+th('row.updated')+'</div>';
     h+=act;
     h+='</div>';
 
@@ -682,6 +1037,7 @@ function renderCards(){
   // keep their exact nodes; only what actually changed is rebuilt.
   var seq=[];
   function sec(key,label,cls,n,extra){
+    label=th(label);
     seq.push({k:'sec:'+key,sig:label+'|'+n+'|'+(extra||''),cls:'sec-l'+(key==='earlier'?' earlier-l':''),
       html:label+' <span class="sec-ct '+cls+'">'+n+'</span><div class="sec-ln"></div>'+(extra||'')});
   }
@@ -692,21 +1048,21 @@ function renderCards(){
     var c=cards[id];
     return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,c.supersedes_id,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
-            c.served_at,c._error||'',c._ackPending?1:0].join('|');
+            c.served_at,c._error||'',c._ackPending?1:0,locale].join('|');
   }
   function pushCards(list){list.forEach(function(id){
     seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
 
-  if(needs.length){ sec('needs','Needs You','red',needs.length); pushCards(needs) }
-  if(working.length){ sec('working','In Progress','amber',working.length); pushCards(working) }
-  if(served.length){ sec('served','Done This Service','gray',served.length); pushCards(served) }
+  if(needs.length){ sec('needs','board.needs','red',needs.length); pushCards(needs) }
+  if(working.length){ sec('working','board.working','amber',working.length); pushCards(working) }
+  if(served.length){ sec('served','board.done','gray',served.length); pushCards(served) }
   // EARLIER — preserved, never deleted, and deliberately quiet. Collapsed to a count so a
   // prior service cannot compete with the one running now.
   if(earlier.length){
-    sec('earlier','Earlier','gray',earlier.length,
-        '<button class="earlier-tg" onclick="toggleEarlier()">'+(earlierOpen?'Hide':'Show')+'</button>');
-    seq.push({k:'earlier-note',sig:'1',cls:'earlier-note',
-      html:'Not part of the service running now. Review in the Shift Record.'});
+    sec('earlier','board.earlier','gray',earlier.length,
+        '<button class="earlier-tg" onclick="toggleEarlier()">'+th(earlierOpen?'board.hide':'board.show')+'</button>');
+    seq.push({k:'earlier-note',sig:locale,cls:'earlier-note',
+      html:th('board.earlier_note')});
     if(earlierOpen)pushCards(earlier);
   }
 
@@ -751,11 +1107,11 @@ function updateSummary(){
   var tables=new Set(),alCount=0,anCount=0,unack=0;
   ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!isAcked(c))unack++});
   var p=[];
-  p.push('<span class="w">'+tables.size+' Table'+(tables.size!==1?'s':'')+'</span>');
-  p.push('<span class="w">'+alCount+' Allerg'+(alCount!==1?'ies':'y')+'</span>');
-  if(anCount)p.push('<span class="rd">'+anCount+' Anaphylaxis</span>');
-  if(unack)p.push('<span class="rd">'+unack+' Need Action</span>');
-  else if(ids.length)p.push('<span style="color:var(--ok)">All Confirmed</span>');
+  p.push('<span class="w">'+th('summary.tables',{n:tables.size})+'</span>');
+  p.push('<span class="w">'+th('summary.allergies',{n:alCount})+'</span>');
+  if(anCount)p.push('<span class="rd">'+th('summary.anaphylaxis',{n:anCount})+'</span>');
+  if(unack)p.push('<span class="rd">'+th('summary.need_action',{n:unack})+'</span>');
+  else if(ids.length)p.push('<span style="color:var(--ok)">'+th('summary.all_confirmed')+'</span>');
   document.getElementById('summaryBar').innerHTML=p.join(' · ');
 }
 
@@ -854,7 +1210,7 @@ function holdKeyUp(e,id,el){
 async function doAck(id,origin){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var c=cards[id];if(!c)return;
-  if(!paired()){showRowError(id,'Display not paired — pair it in Set Up.');return}
+  if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
   // Optimistic UI only. kitchen_ack_at is NOT written here — a PATCH that hangs would
@@ -868,8 +1224,8 @@ async function doAck(id,origin){
   delete c._writing;
   // Rejection clears the attempt and nothing needs reverting — no safety field was ever
   // mutated. Escalation resumes on the next 1s tick with no manual intervention.
-  if(error){console.error('[kitchen] acknowledge failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();showRowError(id,"Received NOT recorded — try again");
-    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'ack',"Received NOT recorded — try again");return}
+  if(error){console.error('[kitchen] acknowledge failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();showRowError(id,'err.ack');
+    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'ack','err.ack');return}
   // Accepted. Only now is this confirmed truth.
   c.kitchen_ack_at=ackAt;c.kitchen_ack_by=ackBy;c.status='acknowledged';
   delete c._ackPending;
@@ -889,7 +1245,7 @@ async function doAck(id,origin){
 
 async function confirmProtocol(id,origin){
   var c=cards[id];if(!c)return;
-  if(!paired()){showRowError(id,'Display not paired — pair it in Set Up.');return}
+  if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
   var prev={protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by};
@@ -898,8 +1254,8 @@ async function confirmProtocol(id,origin){
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] protocol confirm failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Prep NOT recorded — try again");
-    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'prep',"Prep NOT recorded — try again");return}
+  if(error){console.error('[kitchen] protocol confirm failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,'err.prep');
+    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'prep','err.prep');return}
   delete c._error;
   chimeAck();
   // Confirmed in place; the operator leaves when they choose. It used to closeLockout() here —
@@ -911,7 +1267,7 @@ async function confirmProtocol(id,origin){
 
 async function verifyDish(id,origin){
   var c=cards[id];if(!c)return;
-  if(!paired()){showRowError(id,'Display not paired — pair it in Set Up.');return}
+  if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
   var prev={verified_at:c.verified_at,verified_by:c.verified_by};
@@ -920,7 +1276,7 @@ async function verifyDish(id,origin){
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] verify failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Second Check NOT recorded — try again");return}
+  if(error){console.error('[kitchen] verify failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,'err.verify');return}
   delete c._error;
   chimeAck();
   // Confirm IN PLACE. The sheet used to close here, so a deliberate safety hold ended with
@@ -932,7 +1288,7 @@ async function verifyDish(id,origin){
 
 async function markServed(id,origin){
   var c=cards[id];if(!c)return;
-  if(!paired()){showRowError(id,'Display not paired — pair it in Set Up.');return}
+  if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
   var prev={served_at:c.served_at,status:c.status};
@@ -942,7 +1298,7 @@ async function markServed(id,origin){
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({served_at:c.served_at,status:'resolved'}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] mark served failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Served NOT recorded — try again");return}
+  if(error){console.error('[kitchen] mark served failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,'err.serve');return}
   delete c._error;
   chimeAck();
   // From the sheet: confirm in place (Served Recorded) instead of vanishing. From a board row
@@ -1045,19 +1401,21 @@ function paired(){return !!(vdToken&&vdJwt&&sbv)}
 
 function vdRenderStatus(){
   var el=document.getElementById('vdStatus');if(!el)return;
-  if(vdIdentity){el.textContent=vdIdentity.display_name+' · Paired';el.className='vd-st ok'}
-  else{el.textContent='Not paired';el.className='vd-st'}
+  if(vdIdentity){el.textContent=tt('status.paired',{display:vdIdentity.display_name});el.className='vd-st ok'}
+  else{el.textContent=tt('status.not_paired');el.className='vd-st'}
 }
 
 function openPair(){
   var lk=document.getElementById('pair'),lc=document.getElementById('pairContent');
-  lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">Pair this display</div>'
-    +'<button type="button" class="vfy-x" aria-label="Close" onclick="closePair()">&times;</button></div>'
-    +'<div class="vfy-body">In Happy Chair, open <b>Set Up &rarr; Kitchen Displays</b> '
-    +'and tap <b>Add Kitchen Display</b>, then enter the 6-digit code it shows.</div>'
-    +'<input id="pairCode" class="pair-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">'
+  // A language change re-runs this; keep whatever has been typed.
+  var prev=document.getElementById('pairCode'),typed=prev?prev.value:'';
+  // The two bold names are Admin's own (English) labels, so they stay as data.
+  lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">'+th('pair.title')+'</div>'
+    +'<button type="button" class="vfy-x" aria-label="'+th('nav.close')+'" onclick="closePair()">&times;</button></div>'
+    +'<div class="vfy-body">'+th('pair.body',{path:{html:'<b>Set Up &rarr; Kitchen Displays</b>'},action:{html:'<b>Add Kitchen Display</b>'}})+'</div>'
+    +'<input id="pairCode" class="pair-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" value="'+esc(typed)+'">'
     +'<div id="pairErr" class="vfy-honest"></div>'
-    +'<button type="button" class="hold-btn green vfy-go" onclick="submitPair()"><span class="hold-lbl">Pair Display</span></button>';
+    +'<button type="button" class="hold-btn green vfy-go" onclick="submitPair()"><span class="hold-lbl">'+th('pair.button')+'</span></button>';
   lk.classList.add('on');
   setTimeout(function(){var i=document.getElementById('pairCode');if(i)i.focus()},50);
 }
@@ -1066,14 +1424,14 @@ function closePair(){document.getElementById('pair').classList.remove('on')}
 async function submitPair(){
   var input=document.getElementById('pairCode'),err=document.getElementById('pairErr');
   var code=(input.value||'').trim();
-  if(!/^[0-9]{6}$/.test(code)){err.textContent='Enter the 6-digit code.';return}
-  err.textContent='Pairing…';
+  if(!/^[0-9]{6}$/.test(code)){err.textContent=tt('pair.need_code');return}
+  err.textContent=tt('pair.pairing');
   try{
     var res=await fetch(SUPABASE_URL+'/functions/v1/venue-device-token',{
       method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
       body:JSON.stringify({action:'claim',code:code})});
     var j=await res.json();
-    if(!res.ok){err.textContent=j&&j.error?j.error:'Could not pair.';return}
+    if(!res.ok){console.error('[kitchen] pairing refused:',j&&j.error);err.textContent=tt('pair.failed');return}
     vdSave({device_token:j.device_token,device_id:j.device_id});
     await vdExchange();
     var who=await vdWhoAmI();
@@ -1083,20 +1441,20 @@ async function submitPair(){
     // DISPLAY, not whoever is standing at it.
     vdRenderStatus();
     // Newly paired: the board has authority now, so start it.
+    loadDeviceLocale();
     loadVenue();reconcile();subscribe();startReconcileLoop();
     // Shown on the PAIRING overlay, which this flow owns. It used to be written into the
     // record sheet's own surface and that sheet's 'on' class set by hand, so a pairing
     // confirmation and an open record fought over one container with no state saying which
     // was up.
     var lc=document.getElementById('pairContent');
-    if(lc){lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">Display paired</div>'
-      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closePair()">&times;</button></div>'
-      +'<div class="vfy-tbl">'+esc((who&&who.venue_name)||'This venue')+'</div>'
+    if(lc){lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">'+th('pair.done_title')+'</div>'
+      +'<button type="button" class="vfy-x" aria-label="'+th('nav.close')+'" onclick="closePair()">&times;</button></div>'
+      +'<div class="vfy-tbl">'+esc((who&&who.venue_name)||tt('pair.this_venue'))+'</div>'
       +'<div class="vfy-guest">'+esc((who&&who.display_name)||'Kitchen Display')+'</div>'
-      +'<div class="vfy-honest">This display is now authenticated to this venue. It identifies '
-      +'the display, not the person using it.</div>';
+      +'<div class="vfy-honest">'+th('pair.done_body')+'</div>';
       document.getElementById('pair').classList.add('on')}
-  }catch(e){err.textContent='Could not reach Happy Chair.'}
+  }catch(e){err.textContent=tt('pair.unreachable')}
 }
 
 // ── THE RECORD SHEET ─────────────────────────────────────────────────────────────────────
@@ -1144,13 +1502,12 @@ function closeRecord(){
 function recordAction(c){
   var an=isAnaph(c.severity),acked=isAcked(c),proto=!!c.protocol_confirmed_at;
   if(c.served_at)return null;
-  if(!acked)return {a:'ack',  label:'Hold to Confirm Allergy Received', cls:an?'red':'amber',
-                    aria:'Hold to confirm allergy received'};
-  if(!proto&&an)return {a:'prep', label:'Hold to Confirm Prep Area Cleared', cls:'red',
-                    aria:'Hold to confirm prep area cleared'};
-  if(!c.verified_at)return {a:'verify', label:'Hold to Record Second Check', cls:'act',
-                    aria:'Hold to record the second check', check:true};
-  return {a:'serve', label:'Hold to Mark Served', cls:'', aria:'Hold to mark served'};
+  // Labels come from the catalog at render time; the step itself (a) is the state machine and
+  // is identical in every language.
+  if(!acked)return {a:'ack',  label:tt('hold.ack'), cls:an?'red':'amber', aria:tt('hold.ack')};
+  if(!proto&&an)return {a:'prep', label:tt('hold.prep'), cls:'red', aria:tt('hold.prep')};
+  if(!c.verified_at)return {a:'verify', label:tt('hold.verify'), cls:'act', aria:tt('hold.verify'), check:true};
+  return {a:'serve', label:tt('hold.serve'), cls:'', aria:tt('hold.serve')};
 }
 
 // The four-stage rail with recorded times. Shared by the review and the Second Check success
@@ -1163,8 +1520,8 @@ function railHtml(c){
   function st(done,label,ts){return '<div class="ps"><div class="pd'+(done?' dv':'')+'">'+(done?CK:'')
     +'</div><div class="plbl'+(done?' v':'')+'">'+label+'</div>'+(done?'<div class="ptm">'+fmtTime(ts)+'</div>':'')+'</div>'}
   function ln(done){return '<div class="pln'+(done?' v':'')+'"></div>'}
-  h+='<div class="prog">'+st(true,'Received',c.created_at)+ln(acked)+st(acked,'Confirmed',c.kitchen_ack_at)
-    +ln(verified)+st(verified,'Second Check',c.verified_at)+ln(isSrv)+st(isSrv,'Served',c.served_at)+'</div>';
+  h+='<div class="prog">'+st(true,th('rail.received'),c.created_at)+ln(acked)+st(acked,th('rail.confirmed'),c.kitchen_ack_at)
+    +ln(verified)+st(verified,th('rail.second_check'),c.verified_at)+ln(isSrv)+st(isSrv,th('rail.served'),c.served_at)+'</div>';
   return h;
 }
 
@@ -1174,37 +1531,35 @@ function railHtml(c){
 function recordHeadHtml(c,title,done,okA){
   var id=c.id,an=isAnaph(c.severity),isSrv=!!c.served_at,h='';
   h+='<div class="vfy-hd"><div class="vfy-hl">'
-    +(isRehearsal(c)?'<div class="vfy-reh">REHEARSAL &middot; NOT A GUEST</div>':'')
-    +'<div class="vfy-t'+(done?' vfy-t--done':'')+'">'+(done?CK_DONE:'')+esc(title)+'</div></div>'
-    +'<button type="button" class="vfy-x" aria-label="'+(done?'Back to Kitchen Board':'Close')+'" onclick="closeRecord()">&times;</button></div>';
-  if(okA)h+='<div class="vfy-ok" role="status">'+CK_DONE+'<span>'+(okA==='ack'?'Allergy Received':'Prep Area Cleared')
-    +'</span><span class="vfy-ok-t">Recorded '+esc(fmtTime(okA==='ack'?c.kitchen_ack_at:c.protocol_confirmed_at))+'</span></div>';
-  if(c._error)h+='<div class="row-err">'+esc(c._error)+'</div>';
+    +(isRehearsal(c)?'<div class="vfy-reh">'+th('reh.full')+'</div>':'')
+    +'<div class="vfy-t'+(done?' vfy-t--done':'')+'">'+(done?CK_DONE:'')+th(title)+'</div></div>'
+    +'<button type="button" class="vfy-x" aria-label="'+th(done?'nav.back':'nav.close')+'" onclick="closeRecord()">&times;</button></div>';
+  if(okA)h+='<div class="vfy-ok" role="status">'+CK_DONE+'<span>'+th(okA==='ack'?'ok.ack':'ok.prep')
+    +'</span><span class="vfy-ok-t">'+th('ok.recorded',{time:fmtTime(okA==='ack'?c.kitchen_ack_at:c.protocol_confirmed_at)})+'</span></div>';
+  // _error holds a catalog KEY, so the message follows a language change.
+  if(c._error)h+='<div class="row-err">'+th(c._error)+'</div>';
   // The row abbreviates and may truncate; the record never does.
-  h+='<div class="vfy-tbl">'+esc(c._assetLabel||'Table')+'</div>';
+  h+='<div class="vfy-tbl">'+esc(c._assetLabel||tt('misc.table'))+'</div>';
   if(c.guest_name&&String(c.guest_name).trim())
     h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
   h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
-  h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
-    +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT</span>':'')+'</div>';
+  h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+sevLabel(c.severity)+'</span>'
+    +(c.cross_contact?'<span class="vfy-xc">'+th('chip.cross_contact')+'</span>':'')+'</div>';
   // Cross-contact is stated ONCE, as the chip. The sentence repeating it is gone.
   var owed=owedStep(c);
-  if(owed&&!isSrv)h+='<div class="vfy-el">'+esc(owed.label)+' waiting <span id="timer-'+esc(id)+'">'
-    +fmtTimer(owed.since)+'</span></div>';
+  if(owed&&!isSrv)h+='<div class="vfy-el">'+th('step.waiting',{step:owed.label,
+    time:{html:'<span id="timer-'+esc(id)+'">'+fmtTimer(owed.since)+'</span>'}})+'</div>';
   return h;
 }
 
 // What the operator must do at each step — one sentence, imperative, no rationale.
-var STEP_DO={ack:'Confirm the kitchen has received this allergy.',
-             prep:'Clear and separate the prep area, utensils and surfaces.',
-             verify:'Have another team member check the allergy preparation.',
-             serve:'Mark served when the dish leaves the kitchen.'};
+function stepDo(a){return th('do.'+a)}
 
 // Provenance, stated once and small: the display records, never a person. Same line on every
 // state and on the lockout.
 function provHtml(){
-  return '<div class="vfy-prov">'+esc((vdIdentity&&vdIdentity.display_name)||'This display')+' &middot; '
-    +esc(vdVenueName||'this venue')+' &mdash; records the display, not the person.</div>';
+  return '<div class="vfy-prov">'+th('prov.line',{display:(vdIdentity&&vdIdentity.display_name)||tt('prov.this_display'),
+    venue:vdVenueName||tt('prov.this_venue')})+'</div>';
 }
 
 // The safety reference a cook prepares from: Avoid all / Check ingredients, then guest notes.
@@ -1223,9 +1578,12 @@ function referenceHtml(c){
       var defs=getAllergenDef(a);
       // defs.map(esc) not esc(defs.join(…)) — the ' · ' separator is ours and must stay
       // literal. Same reasoning for the ' — ' in the heading.
-      if(defs)h+='<div class="avoid'+lowW+'" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">Avoid all — '+esc(a)+'</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
-      else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">'+esc(a)+' — Check ingredients</div><div class="avoid-l">No reference list is available. Confirm ingredients before preparation.</div></div>';
+      if(defs)h+='<div class="avoid'+lowW+'" style="border-color:'+sevCol+'"><div class="avoid-t" style="color:'+sevCol+'">'+th('ref.avoid_all',{allergen:a})+'</div><div class="avoid-l">'+defs.map(esc).join(' · ')+'</div></div>';
+      else h+='<div class="avoid avoid-miss'+lowW+'"><div class="avoid-t">'+th('ref.check_ingredients',{allergen:a})+'</div><div class="avoid-l">'+th('ref.no_list')+'</div></div>';
     });
+    // Say so when the reference data is not in the display's language, rather than let an
+    // English list sit under a translated heading as though it had been translated.
+    if((c.allergens||[]).length&&tRaw('ref.untranslated'))h+='<div class="ref-untr">'+th('ref.untranslated')+'</div>';
   }
 
   // ⚠ MUST STAY WRAPPED IN esc(). `notes` is guest-authored free text arriving through an
@@ -1235,7 +1593,7 @@ function referenceHtml(c){
   // the curated instruction and lead, guest notes are context for them. Promoting guest free
   // text above curated safety data would rank the less-verified source higher. Unlabelled it
   // sat in operator-instruction position and the guest's words read as the system's own.
-  if(c.notes&&!isSrv)h+='<div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div>';
+  if(c.notes&&!isSrv)h+='<div class="al-notes-h">'+th('notes.heading')+'</div><div class="al-notes">'+esc(c.notes)+'</div>';
 
   return h;
 }
@@ -1243,7 +1601,7 @@ function referenceHtml(c){
 // The bottom of every actionable state: one instruction, the hold, the provenance line.
 function actionTailHtml(c,act){
   if(!act)return provHtml();
-  return '<div class="vfy-do">'+esc(STEP_DO[act.a])+'</div>'
+  return '<div class="vfy-do">'+stepDo(act.a)+'</div>'
     +'<button type="button" class="hold-btn '+act.cls+' vfy-go" aria-label="'+esc(act.aria)+'" '
     +(act.cls?'':'style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" ')
     +HOLD_ATTRS(c.id,act.a)
@@ -1266,12 +1624,12 @@ function renderRecord(){
     // The declaration left the board while the sheet was open — served elsewhere, closed, or
     // the service ended. Say so explicitly instead of silently dropping the operator back to
     // the board with no idea why.
-    if(recordSig==='gone')return;
-    recordSig='gone';
-    lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">No longer on the board</div>'
-      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>'
-      +'<div class="vfy-do">This allergy is no longer current work here. Nothing was recorded on this display.</div>'
-      +'<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">Back to Kitchen Board</button>';
+    if(recordSig==='gone|'+locale)return;
+    recordSig='gone|'+locale;
+    lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">'+th('title.gone')+'</div>'
+      +'<button type="button" class="vfy-x" aria-label="'+th('nav.close')+'" onclick="closeRecord()">&times;</button></div>'
+      +'<div class="vfy-do">'+th('do.gone')+'</div>'
+      +'<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">'+th('nav.back')+'</button>';
     return;
   }
 
@@ -1292,13 +1650,13 @@ function renderRecord(){
   // be harmless but putting the formatted value here would rebuild the sheet every second.
   var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
            c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
-           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA].join('|');
+           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA,locale].join('|');
   if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
   recordSig=sig;
 
   var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
   var owedNow=owedStep(c);
-  var h=recordHeadHtml(c,owedNow?owedNow.label:'Allergy Record',false,okA);
+  var h=recordHeadHtml(c,owedNow?owedNow.key:'title.record',false,okA);
 
   // The four stages with their recorded times. This replaces a separate "Already recorded"
   // pair that listed two of the same timestamps in a second format — the rail says when the
@@ -1321,14 +1679,14 @@ var CK_DONE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke=
 function renderSecondCheckDone(c,lc){
   var id=c.id;
   var sig=['done',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
-           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||''].join('|');
+           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||'',locale].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
-  var h=recordHeadHtml(c,'Second Check Recorded',true,'');
+  var h=recordHeadHtml(c,'title.second_check_done',true,'');
   h+=railHtml(c);
   h+=referenceHtml(c);
-  h+=actionTailHtml(c,{a:'serve',label:'Hold to Mark Served',cls:'act',aria:'Hold to mark served'});
-  h+='<button type="button" class="vfy-back" onclick="closeRecord()">Back to Kitchen Board</button>';
+  h+=actionTailHtml(c,{a:'serve',label:tt('hold.serve'),cls:'act',aria:tt('hold.serve')});
+  h+='<button type="button" class="vfy-back" onclick="closeRecord()">'+th('nav.back')+'</button>';
   lc.innerHTML=h;
 }
 
@@ -1337,20 +1695,22 @@ function renderSecondCheckDone(c,lc){
 function renderServedDone(c,lc){
   var id=c.id;
   var sig=['served',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c._assetLabel,
-           c.served_at,c.service_kind,vdVenueName||'',(vdIdentity&&vdIdentity.display_name)||''].join('|');
+           c.served_at,c.service_kind,vdVenueName||'',(vdIdentity&&vdIdentity.display_name)||'',locale].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
-  var h=recordHeadHtml(c,'Served Recorded',true,'');
+  var h=recordHeadHtml(c,'title.served_done',true,'');
   h+=railHtml(c);
-  h+='<div class="vfy-do">Kitchen steps complete.</div>';
+  h+='<div class="vfy-do">'+th('do.complete')+'</div>';
   h+=provHtml();
-  h+='<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">Back to Kitchen Board</button>';
+  h+='<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">'+th('nav.back')+'</button>';
   lc.innerHTML=h;
 }
 
 // Which declaration the single-slot lockout is showing, so a milestone only ever changes the
 // lockout that belongs to it.
 var lockoutId=null;
+// Which stage (and error key) the lockout is showing, so a language change redraws it in place.
+var lockoutStage=null,lockoutErr=null;
 function showLockout(id){renderLockout(id,'ack')}
 
 function renderLockout(id,stage,err){
@@ -1361,27 +1721,29 @@ function renderLockout(id,stage,err){
   // apply here — the lockout only fires on anaphylaxis, so every block is full weight.
   (c.allergens||[]).forEach(function(a){
     var d=getAllergenDef(a);
-    if(d)avoidHtml+='<div style="border-left:3px solid var(--danger);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--danger);text-transform:uppercase;margin-bottom:4px">Avoid all — '+esc(a)+'</div><div style="font-size:18px;font-weight:500;color:var(--t1);line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
-    else avoidHtml+='<div style="border-left:3px solid var(--t2);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">'+esc(a)+' — Check ingredients</div><div style="font-size:18px;font-weight:500;color:var(--t2);line-height:1.5">No reference list is available. Confirm ingredients before preparation.</div></div>';
+    if(d)avoidHtml+='<div style="border-left:3px solid var(--danger);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--danger);text-transform:uppercase;margin-bottom:4px">'+th('ref.avoid_all',{allergen:a})+'</div><div style="font-size:18px;font-weight:500;color:var(--t1);line-height:1.5">'+d.map(esc).join(' · ')+'</div></div>';
+    else avoidHtml+='<div style="border-left:3px solid var(--t2);padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0;text-align:left;max-width:500px;width:100%"><div style="font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">'+th('ref.check_ingredients',{allergen:a})+'</div><div style="font-size:18px;font-weight:500;color:var(--t2);line-height:1.5">'+th('ref.no_list')+'</div></div>';
   });
   // The blocking modal is the single most urgent thing this board ever shows. If it is a
   // rehearsal, that has to be the first line read — above the table, above the allergens.
   if(!c)return;
   // Completed milestones sit directly under the rehearsal marker, above the record they
   // belong to, so confirmation never costs the cook the table, guest or allergens.
-  var done=stage==='ack'?'':'<div class="lk-ok" role="status">'+CK_DONE+'Allergy Received</div>'
-    +(stage==='done'?'<div class="lk-ok" role="status">'+CK_DONE+'Prep Area Cleared</div>':'');
+  lockoutStage=stage;lockoutErr=err||null;
+  if((c.allergens||[]).length&&tRaw('ref.untranslated'))avoidHtml+='<div class="ref-untr" style="max-width:500px;width:100%">'+th('ref.untranslated')+'</div>';
+  var done=stage==='ack'?'':'<div class="lk-ok" role="status">'+CK_DONE+th('ok.ack')+'</div>'
+    +(stage==='done'?'<div class="lk-ok" role="status">'+CK_DONE+th('ok.prep')+'</div>':'');
   var tail=stage==='ack'
-    ?'<div class="lockout-sub">'+STEP_DO.ack+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm allergy received" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>'
+    ?'<div class="lockout-sub">'+stepDo('ack')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="'+th('hold.ack')+'" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.ack')+'</span></button>'
     :stage==='prep'
     // Was a plain <div onclick>: ONE TAP wrote protocol_confirmed_at. Now the same hold as
     // every other safety milestone — same HOLD_MS, fill, cancel-on-release/leave/blur, keys.
-    ?'<div class="lockout-sub">'+STEP_DO.prep+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm prep area cleared" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Prep Area Cleared</span></button>'
-    :'<div class="lockout-sub">Next: Second Check.</div><button type="button" class="lockout-back" onclick="closeLockout()">Back to Kitchen Board</button>';
-  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')+done+(err?'<div class="lk-err" role="alert">'+esc(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">CROSS-CONTACT</div>':'')+'</div>'+avoidHtml
+    ?'<div class="lockout-sub">'+stepDo('prep')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="'+th('hold.prep')+'" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.prep')+'</span></button>'
+    :'<div class="lockout-sub">'+th('lock.next')+'</div><button type="button" class="lockout-back" onclick="closeLockout()">'+th('nav.back')+'</button>';
+  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
     // Guest notes were missing from the lockout entirely. Verbatim, esc()'d, labelled — the
     // same rule as the record sheet.
-    +(c.notes?'<div class="lk-notes"><div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div></div>':'')
+    +(c.notes?'<div class="lk-notes"><div class="al-notes-h">'+th('notes.heading')+'</div><div class="al-notes">'+esc(c.notes)+'</div></div>':'')
     +tail+provHtml();
   lockoutId=id;
   lk.classList.add('on');
@@ -1391,7 +1753,7 @@ function renderLockout(id,stage,err){
 // existing next requirement. It used to replace the whole card with a different screen.
 function showLockoutProtocol(id){renderLockout(id,'prep')}
 
-function closeLockout(){lockoutId=null;document.getElementById('lockout').classList.remove('on')}
+function closeLockout(){lockoutId=null;lockoutStage=null;lockoutErr=null;document.getElementById('lockout').classList.remove('on')}
 
 // Minimize is a local UI preference (ghosting the card into the side rail).
 // The minimized_at write is bookkeeping for admin reporting. If the write
@@ -1399,13 +1761,13 @@ function closeLockout(){lockoutId=null;document.getElementById('lockout').classL
 // the error so the divergence isn't silent.
 async function minimizeCard(id){
   if(!cards[id]||!cards[id].kitchen_ack_at)return;
-  if(!paired()){showRowError(id,'Display not paired — pair it in Set Up.');return}
+  if(!paired()){showRowError(id,'err.not_paired');return}
   if(cards[id]._writing)return;
   cards[id]._writing=true;
   ghosted[id]=true;renderCards();
   var {error}=await sbv.from('allergen_declarations').update({minimized_at:new Date().toISOString()}).eq('id',id);
   delete cards[id]._writing;
-  if(error){console.error('[kitchen] minimize bookkeeping failed:',error);showRowError(id,"Hidden locally, but couldn't sync — try again");return}
+  if(error){console.error('[kitchen] minimize bookkeeping failed:',error);showRowError(id,'err.minimize');return}
   delete cards[id]._error;
   cacheCards();
 }
@@ -1433,7 +1795,7 @@ setInterval(function(){
   // Covers the reconcile that neither succeeds nor fails because its request hangs: no
   // callback runs, so nothing else would ever mark the board degraded.
   if(online&&lastReconcileOk&&Date.now()-lastReconcileOk>STALE_AFTER_MS)setOnline(false);
-  var hc=document.getElementById('headerClock');if(hc){var now=new Date();hc.textContent=now.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'})+' · '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+  var hc=document.getElementById('headerClock');if(hc){var now=new Date();hc.textContent=now.toLocaleDateString(LOCALE_TAG[locale],{weekday:'short',month:'short',day:'numeric',year:'numeric'})+' · '+now.toLocaleTimeString(LOCALE_TAG[locale],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 },1000);
 
 function resetDim(){document.body.classList.remove('dimmed');clearTimeout(dimTimer);var n=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at}).length;if(!n)dimTimer=setTimeout(function(){document.body.classList.add('dimmed')},180000)}
@@ -1684,7 +2046,7 @@ async function loadVenue(){
   if(!venueId)return;
   var {data}=await boundRead((sbv||sb).from('venues').select('name').eq('id',venueId).single());
   if(data&&sbv){vdVenueName=data.name;if(recordOpenId)renderRecord()}   // only when read under the device credential
-  if(data){document.getElementById('venueName').textContent=data.name+' · Kitchen';document.getElementById('venueLogo').textContent=data.name.charAt(0)}
+  if(data){hdrVenue=data.name;document.getElementById('venueName').textContent=tt('hdr.kitchen',{venue:data.name});document.getElementById('venueLogo').textContent=data.name.charAt(0)}
   // The venue's own mark, from the same authoritative venues.logo_url that Admin renders —
   // no second branding configuration. Presentation only: venue_branding_logo returns the logo
   // and nothing else, anon's column grant on `venues` is untouched at (id, name), and this
@@ -1708,6 +2070,12 @@ async function loadVenue(){
 // there is no anonymous fallback to quietly use instead.
 ;(async function boot(){
   vdLoad();
+  var lc0=localeCacheGet();if(lc0)locale=lc0.l;
+  var i18nBad=i18nParity();
+  if(i18nBad.length){console.error('[kitchen] string catalog incomplete:',i18nBad);
+    if(I18N_DEV){var ib=document.createElement('div');ib.id='i18nFail';ib.className='i18n-fail';
+      ib.textContent='Kitchen string catalog incomplete — '+i18nBad.join('; ');document.body.prepend(ib)}}
+  applyStatic();
   loadCache();if(Object.keys(cards).length>0)renderCards();
   if(vdToken)await vdExchange();
   if(!paired()){
@@ -1718,6 +2086,7 @@ async function loadVenue(){
     openPair();
     return;
   }
+  loadDeviceLocale();
   loadVenue();reconcile();subscribe();startReconcileLoop();
 })();
 // Tablet wake / tab restore. A socket can die without emitting CLOSED, so resubscribe

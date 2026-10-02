@@ -1,0 +1,87 @@
+
+──── 0 · CATALOG ────
+PASS  boot parity check clean, no failure banner
+PASS  starts in English (display default en)
+PASS  EN | ES control present, EN pressed
+
+──── 1 · EN → ES WITH THE BOARD OPEN ────
+PASS  language switched in one action
+PASS  the control takes no focus (pointerdown prevented)
+PASS  same records, same states
+PASS  same rows, same order
+PASS  zero AllergyShield writes   → 0
+PASS  section headings in Spanish
+PASS  row actions in Spanish
+PASS  summary in Spanish with agreement   → 2 mesas
+·
+7 alergias
+·
+5 con anafilaxia
+·
+2 requieren acción
+PASS  rehearsal still visible on every row (ENSAYO)
+PASS  header, offline banner and status follow
+PASS  persisted for this display (one set_own_display_locale, es)
+PASS  local copy marked saved   → {"d":"d1","l":"es","synced":true}
+
+──── 2 · ES WITH THE SECOND CHECK SHEET OPEN (C, opened only) ────
+PASS  same declaration still open
+PASS  same step
+PASS  title + hold in Spanish
+PASS  instruction + provenance in Spanish
+PASS  rehearsal marker in Spanish
+PASS  allergens, reference lists, guest name, table stay data (English)
+PASS  says the reference data is untranslated
+PASS  wait line localised, timer still ticking in place
+PASS  no stronger claim than English
+PASS  opening + switching wrote nothing
+
+──── 3 · ES → EN REVERSIBLE ────
+PASS  back to English, same record, same step
+PASS  state untouched across the round trip
+
+──── 4 · LOCKOUT IN BOTH LANGUAGES (A, opened only) ────
+PASS  lockout still up on the same record and stage
+PASS  lockout in Spanish, rehearsal first
+PASS  lockout data untranslated
+PASS  lockout: Check ingredients localised, allergen kept
+PASS  lockout back in English, same stage
+
+──── 5 · A HELD SAFETY ACTION CANNOT BE DISTURBED ────
+PASS  mid-hold switch refused
+PASS  …and says so
+PASS  the held button was not replaced
+PASS  the hold was not cancelled (still filling)
+PASS  the hold completed exactly once
+PASS  provenance unchanged by language (verified_by is the display name)
+PASS  success state shown, in Spanish
+PASS  keyboard hold: switch refused, focus never left the hold
+PASS  keyboard hold completed exactly once (Mark Served)
+
+──── 6 · POLLS, TOKEN REFRESH AND LIVE UPDATES DO NOT RESET LANGUAGE ────
+PASS  after a real 5s poll
+PASS  after a token refresh
+PASS  after a live UPDATE event
+PASS  server value is not re-read on refresh
+
+──── 7 · PERSISTENCE ────
+PASS  failed save keeps the choice on screen
+PASS  …says it was not saved
+PASS  …and is marked unsent
+PASS  next boot: the unsent choice wins over the stored default and is sent
+
+──── 8 · MISSING TRANSLATION FAILS VISIBLY ────
+PASS  development shows the gap, not a guess
+PASS  parity check names it
+PASS  production falls back to the English meaning
+PASS  catalog restored
+
+──── 9 · NO STRONGER CLAIMS IN SPANISH ────
+PASS  no es string claims safe / allergen-free / guaranteed / certified / protected / verified
+
+──── 10 · A MILESTONE WRITE IN FLIGHT (last: it is left hung on purpose) ────
+PASS  switch refused while a milestone write is in flight
+PASS  the in-flight write was not duplicated
+PASS  stand-ins B and C untouched
+
+ALL 57 CHECKS PASS

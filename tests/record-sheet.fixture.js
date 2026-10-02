@@ -38,11 +38,19 @@ if(location.search.indexOf('inst=1')>=0){
     supersedes_id:null,minimized_at:null,service_instance_id:'s1',service_kind:'rehearsal',is_open:true}];
   var thenable=function(v){var o={retry:function(){return o},abortSignal:function(){return o},
     then:function(r,j){return Promise.resolve(v).then(r,j)}};return o};
-  var stub={ rpc:function(fn){ __L('net.rpc',fn);
+  // This display's stored language (venue_devices.display_locale) — ?devlocale=es starts the
+  // board as a display whose default is Spanish. set_own_display_locale is recorded, not sent.
+  window.__DEVICE_LOCALE=(location.search.match(/devlocale=([a-z]+)/)||[])[1]||'en';
+  window.__LOCALE_RPC=[];
+  var stub={ rpc:function(fn,args){ __L('net.rpc',fn);
+      if(fn==='set_own_display_locale'){window.__LOCALE_RPC.push(args);
+        if(window.__LOCALE_FAIL)return thenable({data:null,error:{message:'refused'}});
+        window.__DEVICE_LOCALE=args.p_locale;return thenable({data:args.p_locale,error:null})}
       return thenable(fn==='kitchen_board'?{data:JSON.parse(JSON.stringify(window.__ROWS)),error:null}:{data:[],error:null}) },
-    from:function(){return {
+    from:function(tbl){return {
       select:function(){return {eq:function(){return {single:function(){
-        return thenable({data:{name:'Happy Bistro'},error:null})}}}}},
+        return thenable(tbl==='venue_devices'?{data:{display_locale:window.__DEVICE_LOCALE},error:null}
+                                           :{data:{name:'Happy Bistro'},error:null})}}}}},
       update:function(v){window.__W__.push(v);__L('net.update',Object.keys(v).join(','));
         return {eq:function(id,val){window.__W__[window.__W__.length-1].__target=val;
           return Promise.resolve({error:null})}}}
