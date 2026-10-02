@@ -24,9 +24,9 @@ PASS  rehearsal marker on the success sheet
 PASS  identity: P4 · Terrace / Tom / Fish
 PASS  rail: Second Check complete (check mark)
 PASS  rail: Served NOT complete
-PASS  Ready to Serve heading
-PASS  explanatory copy
-PASS  device-not-person disclosure
+PASS  one instruction for the next step
+PASS  no explanatory paragraph restating the rail
+PASS  short provenance line: display, not person
 PASS  no personal / different-person claim
 PASS  Mark Served offered as the primary (hold) action
 PASS  Mark Served is a hold, not a click

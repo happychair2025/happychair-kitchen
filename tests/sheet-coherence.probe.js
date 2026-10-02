@@ -7,7 +7,7 @@ const ok=(n,c,x)=>{c?pass++:fail++;T.push((c?'PASS  ':'FAIL  ')+n+(x!==undefined
 const w=ms=>new Promise(r=>setTimeout(r,ms));
 const B='56a859b5-aaaa',C='7784ff89-bbbb';
 const sh=()=>document.getElementById('verifyContent'), shOn=()=>document.getElementById('verify').classList.contains('on');
-const BLOCKS=['.vfy-reh','.vfy-t','.vfy-tbl','.vfy-guest','.vfy-al','.vfy-marks','.vfy-note','.vfy-el','.prog'];
+const BLOCKS=['.vfy-reh','.vfy-t','.vfy-tbl','.vfy-guest','.vfy-al','.vfy-marks','.prog'];   // head + rail, common to every state
 function layout(){const tops=BLOCKS.map(q=>{const e=sh().querySelector(q);return e?e.getBoundingClientRect():null});
   return {present:tops.map(Boolean),order:tops.every((r,i)=>!r||i===0||!tops[i-1]||r.top>=tops[i-1].bottom-1),
     gaps:tops.slice(1).map((r,i)=>r&&tops[i]?Math.round(r.top-tops[i].bottom):null),
@@ -41,17 +41,21 @@ async function hold(b,ms){b.dispatchEvent(new MouseEvent('mousedown',{bubbles:tr
  T.push(''); T.push('──── 1 · SERVED STATE KEEPS EVERYTHING ────');
  ok('✓ Served Recorded',sh().querySelector('.vfy-t').textContent.trim()==='Served Recorded'&&!!sh().querySelector('.vfy-t svg'));
  ok('REHEARSAL · NOT A GUEST',/REHEARSAL · NOT A GUEST/.test(t2));
- ok('Kitchen Steps Complete',/Kitchen Steps Complete/i.test(t2));
- ok('display-not-person disclosure',/a display authenticated to Happy Bistro\. It does not identify the person who marked this served\./.test(t2));
+ ok('one closing line: Kitchen steps complete',/Kitchen steps complete\./.test(t2));
+ ok('provenance line: display, not person',/Kitchen Display · Happy Bistro — records the display, not the person\./.test(t2));
  ok('Back to Kitchen Board, no auto-close',/Back to Kitchen Board/.test(t2)&&shOn());
  await w(5600); ok('still open after a real poll',shOn()&&/Served Recorded/.test(sh().innerText));
 
  T.push(''); T.push('──── 2 · ONE COMPONENT, THREE STATES ────');
  ok('same blocks present in all three',JSON.stringify(L0.present)===JSON.stringify(L1.present)&&JSON.stringify(L1.present)===JSON.stringify(L2.present),JSON.stringify(L2.present));
  ok('same top-to-bottom order in all three',L0.order&&L1.order&&L2.order);
- ok('identical vertical gaps between shared blocks',JSON.stringify(L0.gaps)===JSON.stringify(L1.gaps)&&JSON.stringify(L1.gaps)===JSON.stringify(L2.gaps));
- ok('badges (severity + cross-contact) present after Served',/ANAPHYLAXIS/.test(t2)&&/CROSS-CONTACT REQUIRED/.test(t2));
- ok('context line: Served at <time>',/Served at \d/.test(t2));
+ // The head rhythm is identical in every state. Before Served the wait line sits between the
+ // badges and the rail; once served it is dropped (the rail carries the time), so that one gap
+ // closes to the same 6px the rail keeps everywhere else.
+ ok('identical head rhythm in all three states',JSON.stringify(L0.gaps.slice(0,5))===JSON.stringify(L1.gaps.slice(0,5))&&JSON.stringify(L1.gaps.slice(0,5))===JSON.stringify(L2.gaps.slice(0,5)),JSON.stringify(L2.gaps.slice(0,5)));
+ ok('badges → rail identical before Served; closes to 6px once the wait line is dropped',L0.gaps[5]===L1.gaps[5]&&L2.gaps[5]===6,L0.gaps[5]+' / '+L1.gaps[5]+' / '+L2.gaps[5]);
+ ok('badges (severity + cross-contact) present after Served',/ANAPHYLAXIS/.test(t2)&&/CROSS-CONTACT/.test(t2));
+ ok('served: no context line repeating the rail time',!sh().querySelector('.vfy-el')&&!/Served at/.test(t2));
  ok('context line before Served: the owed step',/Mark Served waiting /.test(t1));
 }catch(e){T.push('THREW '+e.message+'\n'+(e.stack||''))}
  T.push(''); T.push(fail===0?('ALL '+pass+' CHECKS PASS'):(pass+' pass, '+fail+' FAIL'));

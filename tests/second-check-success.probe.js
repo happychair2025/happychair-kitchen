@@ -61,9 +61,9 @@ function deliverUpdate(rowObj){ // exactly what postgres_changes delivers: table
  ok('identity: P4 · Terrace / Tom / Fish', /P4 · Terrace/.test(t)&&/Tom/.test(t)&&sheet().querySelector('.vfy-al').textContent==='Fish');
  ok('rail: Second Check complete (check mark)', railDone('Second Check'));
  ok('rail: Served NOT complete', !railDone('Served'));
- ok('Ready to Serve heading', /Ready to Serve/i.test(t));
- ok('explanatory copy', /The second check has been recorded\. The next Kitchen step is to mark this allergy record served when the dish leaves the kitchen\./.test(t));
- ok('device-not-person disclosure', /authenticated to Happy Bistro, but it does not identify the person who performed the check/.test(t));
+ ok('one instruction for the next step', /Mark served when the dish leaves the kitchen\./.test(t) && !/Ready to Serve/i.test(t));
+ ok('no explanatory paragraph restating the rail', !/The second check has been recorded/.test(t));
+ ok('short provenance line: display, not person', /Kitchen Display · Happy Bistro — records the display, not the person\./.test(t));
  ok('no personal / different-person claim', !/(checked|verified|confirmed) by|independent/i.test(t));
  const ms=sheet().querySelector('.vfy-go'), back=sheet().querySelector('.vfy-back');
  ok('Mark Served offered as the primary (hold) action', !!ms && /Mark Served/.test(ms.textContent) && ms.classList.contains('hold-btn'));
@@ -109,7 +109,7 @@ function deliverUpdate(rowObj){ // exactly what postgres_changes delivers: table
  sbv.from=function(){return {update:function(v){W().push(Object.assign({__fail:1},v));return {eq:function(){return Promise.resolve({error:{message:'refused'}})}}}}};
  openRecord(C); await w(200); await hold(sheet().querySelector('.vfy-go'),1400); await w(300);
  ok('refused write: no success state', !/Second Check Recorded/.test(sheetTxt()));
- ok('refused write: back on the review with the hold, error shown', /Hold to Record Second Check/.test(sheetTxt()) && /Couldn.t verify/.test(sheetTxt()));
+ ok('refused write: back on the review with the hold, error shown', /Hold to Record Second Check/.test(sheetTxt()) && /Second Check NOT recorded/.test(sheetTxt()));
  ok('refused write: C verified_at reverted', !cards[C].verified_at);
  closeRecord(); delete cards[C]._error; await w(100);
  sbv.from=function(){return {update:function(v){W().push(Object.assign({__hang:1},v));return {eq:function(){return new Promise(function(){})}}}}};

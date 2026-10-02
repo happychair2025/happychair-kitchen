@@ -1,10 +1,10 @@
-      ordinary C        gaps [6,12,2,8,8,8,8,6]  h=717
-      Second Check Rec. gaps [6,12,2,8,8,8,8,6]  h=642
-      Served Recorded   gaps [6,12,2,8,8,8,8,6]  h=556
+      ordinary C        gaps [6,12,2,8,8,31]  h=654
+      Second Check Rec. gaps [6,12,2,8,8,31]  h=693
+      Served Recorded   gaps [6,12,2,8,8,6]  h=459
 ──── 1 · COMPLETED RAIL READS COMPLETED ────
 PASS  Served Recorded: all four stages complete   → Received✓ Confirmed✓ Second Check✓ Served✓
 PASS  ...none grey/disabled
-PASS  ...every stage keeps its timestamp   → 06:51 PM | 08:15 PM | 02:15 PM | 02:15 PM
+PASS  ...every stage keeps its timestamp   → 04:02 PM | 05:26 PM | 11:26 AM | 11:26 AM
 PASS  ...connectors between completed stages use the success class
 PASS  Second Check Recorded: three complete, Served pending (not green)
 PASS  ordinary record: completed stages green, owed ones neutral
@@ -13,17 +13,18 @@ PASS  no new colour: completed = existing --ok
 ──── 1 · SERVED STATE KEEPS EVERYTHING ────
 PASS  ✓ Served Recorded
 PASS  REHEARSAL · NOT A GUEST
-PASS  Kitchen Steps Complete
-PASS  display-not-person disclosure
+PASS  one closing line: Kitchen steps complete
+PASS  provenance line: display, not person
 PASS  Back to Kitchen Board, no auto-close
 PASS  still open after a real poll
 
 ──── 2 · ONE COMPONENT, THREE STATES ────
-PASS  same blocks present in all three   → [true,true,true,true,true,true,true,true,true]
+PASS  same blocks present in all three   → [true,true,true,true,true,true,true]
 PASS  same top-to-bottom order in all three
-PASS  identical vertical gaps between shared blocks
+PASS  identical head rhythm in all three states   → [6,12,2,8,8]
+PASS  badges → rail identical before Served; closes to 6px once the wait line is dropped   → 31 / 31 / 6
 PASS  badges (severity + cross-contact) present after Served
-PASS  context line: Served at <time>
+PASS  served: no context line repeating the rail time
 PASS  context line before Served: the owed step
 
-ALL 19 CHECKS PASS
+ALL 20 CHECKS PASS

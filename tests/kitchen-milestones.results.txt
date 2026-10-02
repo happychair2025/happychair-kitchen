@@ -23,12 +23,12 @@ PASS  a single tap writes nothing
 PASS  early release writes nothing
 PASS  leaving the button cancels
 PASS  blur cancels a keyboard hold
-PASS  progress visible mid-hold   → 25.5564%
+PASS  progress visible mid-hold   → 25.4691%
 PASS  a poll mid-hold does not replace the control
 PASS  completed hold = exactly one write   → 1
 PASS  ...protocol_confirmed_at/by only, to A
 PASS  lockout confirms in place: Received ✓ + Prep Area Cleared ✓
-PASS  names the next Kitchen step, no action performed for them
+PASS  names the next step briefly, no action performed for them
 PASS  context + REHEARSAL kept
 PASS  poll + token refresh + live update: survives
 PASS  Back to Kitchen Board closes it, zero writes
@@ -51,7 +51,7 @@ PASS  Mark Served: exactly one write, served_at + status
 PASS  sheet did NOT auto-close
 PASS  title: Served Recorded
 PASS  rail: all four complete
-PASS  Kitchen Steps Complete + copy
+PASS  one closing line: Kitchen steps complete
 PASS  names the authenticated display, never a person
 PASS  no guest-delivery, safety or closure claim
 PASS  REHEARSAL kept

@@ -1,0 +1,102 @@
+
+──── RECEIVED ────
+PASS  title is the current step / state   → Confirm Received
+PASS  REHEARSAL marker
+PASS  cross-contact stated exactly once (chip)
+PASS  no section heading for a single instruction
+PASS  exactly one instruction line   → Confirm the kitchen has received this allergy.
+PASS  exactly one provenance line, display not person
+PASS  provenance is subordinate (smaller than the instruction)
+PASS  wait line names the owed step
+PASS  Avoid all + guest notes present
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 46 76 114 149 177 218 251 274 353 564 598 631 693
+PASS  one action: Hold to Confirm Allergy Received
+PASS  no prohibited claims
+
+──── PREP (after Received) ────
+PASS  title is the current step / state   → Prep Confirmation
+PASS  REHEARSAL marker
+PASS  cross-contact stated exactly once (chip)
+PASS  no section heading for a single instruction
+PASS  exactly one instruction line   → Clear and separate the prep area, utensils and surfaces.
+PASS  exactly one provenance line, display not person
+PASS  provenance is subordinate (smaller than the instruction)
+PASS  wait line names the owed step
+PASS  Avoid all + guest notes present
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 43 73 161 196 224 265 298 321 400 611 645 678 740
+PASS  one action: Hold to Confirm Prep Area Cleared
+PASS  no prohibited claims
+PASS  Received confirmation shown once, in place
+
+──── SECOND CHECK (after Prep) ────
+PASS  title is the current step / state   → Second Check
+PASS  REHEARSAL marker
+PASS  cross-contact stated exactly once (chip)
+PASS  no section heading for a single instruction
+PASS  exactly one instruction line   → Have another team member check the allergy preparation.
+PASS  exactly one provenance line, display not person
+PASS  provenance is subordinate (smaller than the instruction)
+PASS  wait line names the owed step
+PASS  Avoid all + guest notes present
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 43 73 161 196 224 265 298 321 400 611 645 678 740
+PASS  one action: Hold to Record Second Check
+PASS  no prohibited claims
+
+──── SECOND CHECK RECORDED ────
+PASS  title is the current step / state   → Second Check Recorded
+PASS  REHEARSAL marker
+PASS  cross-contact stated exactly once (chip)
+PASS  no section heading for a single instruction
+PASS  exactly one instruction line   → Mark served when the dish leaves the kitchen.
+PASS  exactly one provenance line, display not person
+PASS  provenance is subordinate (smaller than the instruction)
+PASS  wait line names the owed step
+PASS  Avoid all + guest notes present
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 43 73 111 146 174 215 248 271 364 575 609 642 704
+PASS  one action: Hold to Mark Served
+PASS  Back to Kitchen Board
+PASS  no prohibited claims
+
+──── SERVED RECORDED ────
+PASS  title is the current step / state   → Served Recorded
+PASS  REHEARSAL marker
+PASS  cross-contact stated exactly once (chip)
+PASS  no section heading for a single instruction
+PASS  exactly one instruction line   → Kitchen steps complete.
+PASS  exactly one provenance line, display not person
+PASS  provenance is subordinate (smaller than the instruction)
+PASS  no wait line once served
+PASS  reference lists gone once served
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .prog → .vfy-do → .vfy-prov   → 172 202 240 275 303 344 375 476 509
+PASS  Back to Kitchen Board
+PASS  no prohibited claims
+PASS  served: rail carries the served time (not repeated as prose)
+PASS  a served record reopened later shows the same completed state
+PASS  walk wrote exactly the four milestones, to X only   → 4
+
+──── LOCKOUT ACK ────
+PASS  REHEARSAL first
+PASS  one instruction line   → Confirm the kitchen has received this allergy.
+PASS  guest notes shown verbatim
+PASS  Avoid all kept
+PASS  provenance line, display not person
+PASS  no prohibited claims
+
+──── LOCKOUT PREP ────
+PASS  REHEARSAL first
+PASS  one instruction line   → Clear and separate the prep area, utensils and surfaces.
+PASS  guest notes shown verbatim
+PASS  Avoid all kept
+PASS  provenance line, display not person
+PASS  no prohibited claims
+
+──── LOCKOUT DONE ────
+PASS  REHEARSAL first
+PASS  one instruction line   → Next: Second Check.
+PASS  guest notes shown verbatim
+PASS  Avoid all kept
+PASS  provenance line, display not person
+PASS  no prohibited claims
+PASS  board rows still carry the REHEARSAL badge
+
+ALL 84 CHECKS PASS

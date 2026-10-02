@@ -66,12 +66,12 @@ function dn(){return document.querySelectorAll('.exp, .r-multi, .pos-d').length}
   P(''); P('──── 4 · THE SHEET CARRIES THE SAFETY INFORMATION ────');
   var t=sheetTxt();
   [['service point',/P4/],['guest',/Tom/],['allergens',/Fish, Tree Nuts/],
-   ['stated severity',/ANAPHYLAXIS/],['cross-contact request',/CROSS-CONTACT REQUIRED/],
-   ['cross-contact sentence',/asked for cross-contact/],['elapsed time (owed step)',/Second Check waiting \d/],
+   ['stated severity',/ANAPHYLAXIS/],['cross-contact chip',/CROSS-CONTACT/],
+   ['cross-contact stated once (chip only)',{test:function(t){return (t.match(/CROSS-CONTACT/g)||[]).length===1&&!/asked for cross-contact/.test(t)}}],['elapsed time (owed step)',/Second Check waiting \d/],
    ['Received stage',/Received/],['Confirmed stage \\(prep\\)',/Confirmed/],
    ['Second Check stage',/Second Check/],['Served stage',/Served/],
-   ['Avoid all block',/Avoid all/i],['what the check is for',/before it leaves the kitchen/],
-   ['device-not-person honesty line',/does not identify the person who performed the check/]].forEach(function(p){
+   ['Avoid all block',/Avoid all/i],['one instruction for the step',/Have another team member check the allergy preparation\./],
+   ['provenance line: display, not person',/records the display, not the person\./]].forEach(function(p){
     ok('sheet shows '+p[0],p[1].test(t))});
   ok('rehearsal stated',/REHEARSAL/.test(document.getElementById('verifyContent').innerText));
   ok('no food-safety claim',!/\bsafe\b|allergy-safe|risk-free/i.test(t),'');

@@ -174,3 +174,16 @@ and the three states share the same blocks, in the same order, with identical ve
 (REHEARSAL → title → service point → guest → allergens → badges → note → context → rail).
 Against a7eaf42 the served rail failed every completion check and the success states were
 missing the badges and context line. 19 checks.
+
+## Phase 1 copy contract (`kitchen-copy.*`) and renders (`renders/phase1/`)
+
+`kitchen-copy.probe.js` walks one fixture record through every Record Sheet state (Received,
+Prep, Second Check, Second Check Recorded, Served Recorded, reopened served) and every lockout
+stage, asserting the same hierarchy each time — REHEARSAL → current step → service point →
+guest → allergens → chips → wait → rail → Avoid all → guest notes → ONE instruction → hold →
+ONE small provenance line — plus the redundancy rules: cross-contact once, no section heading
+over a single instruction, no wait line or "Served at" prose once served, no prohibited claims.
+84 checks.
+
+`renders/phase1/before/` (cd08f57) and `after/` are screenshots of the same walk, produced by
+`renders/phase1/walk.probe.js` under a DevTools-enabled copy of the offline harness.

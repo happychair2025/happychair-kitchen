@@ -1,11 +1,11 @@
 ──── 2 · SECOND CHECK, NOT INDEPENDENT CHECK ────
 PASS  title reads Second Check
 PASS  "Independent Check" appears nowhere on the page
-PASS  instruction kept
-PASS  identity disclosure kept
+PASS  one instruction kept
+PASS  provenance kept: display, not person
 PASS  row button aria no longer says independent
 PASS  old unauthenticated claim is gone
-PASS  disclosure: authenticated to the venue, person not identified (fallback before venue read)
+PASS  provenance falls back to "this venue" before the venue read
 PASS  no personal-identity or different-person claim
 PASS  venue name comes from the device-credential read   → Happy Bistro
 PASS  venue name not set from the query string
@@ -15,7 +15,7 @@ PASS  rehearsal sits ABOVE the title
 PASS  rehearsal is a compact status, smaller than the title   → 13px < 22px
 PASS  rehearsal still boxed, bold, purple
 PASS  big lockout-style rehearsal block no longer on the sheet
-PASS  order: REHEARSAL → Second Check → P4 · Terrace → Tom → allergens   → 43 < 73 < 111 < 146 < 174
+PASS  order: REHEARSAL → Second Check → P4 · Terrace → Tom → allergens   → 91 < 121 < 159 < 194 < 222
 PASS  service point line reads P4 · Terrace   → P4 · Terrace
 PASS  close button still reachable in the header
 ──── 4 · ACTION COLOUR ────

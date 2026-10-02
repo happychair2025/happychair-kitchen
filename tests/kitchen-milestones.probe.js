@@ -87,7 +87,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('completed hold = exactly one write',W().length===n+1,W().length-n);
  ok('...protocol_confirmed_at/by only, to A',keys(W()[W().length-1])==='protocol_confirmed_at,protocol_confirmed_by'&&W()[W().length-1].__target===A);
  ok('lockout confirms in place: Received ✓ + Prep Area Cleared ✓',lkOn()&&lockoutId===A&&lkDone().join('|')==='ALLERGY RECEIVED|PREP AREA CLEARED');
- ok('names the next Kitchen step, no action performed for them',/Next Kitchen step: Second Check/.test(lkTxt())&&!lkBtn());
+ ok('names the next step briefly, no action performed for them',/Next: Second Check\./.test(lkTxt())&&!lkBtn());
  ok('context + REHEARSAL kept',/CLOSURE T\./.test(lkTxt())&&/REHEARSAL · NOT A GUEST/.test(lkTxt()));
  echo(A); await churn();
  ok('poll + token refresh + live update: survives',lkOn()&&lkDone().join('|')==='ALLERGY RECEIVED|PREP AREA CLEARED');
@@ -110,7 +110,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
 
  H('2 · SECOND CHECK (preserved) THEN SERVED ON D');
  n=W().length; await hold(shBtn(),1400);
- ok('Second Check: one write, success sheet unchanged',W().length===n+1&&/Second Check Recorded/.test(shTxt())&&/Ready to Serve/i.test(shTxt()));
+ ok('Second Check: one write, success sheet unchanged',W().length===n+1&&/Second Check Recorded/.test(shTxt())&&/Mark served when the dish leaves the kitchen\./.test(shTxt()));
  echo(D); await w(200);
  await hold(shBtn(),300); ok('Mark Served early release = zero writes',W().length===n+1);
  await hold(shBtn(),1400);
@@ -118,8 +118,8 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('sheet did NOT auto-close',shOn()&&recordOpenId===D);
  ok('title: Served Recorded',sh().querySelector('.vfy-t').textContent.trim()==='Served Recorded');
  ok('rail: all four complete',['Received','Confirmed','Second Check','Served'].every(railDone));
- ok('Kitchen Steps Complete + copy',/Kitchen Steps Complete/i.test(shTxt())&&/The Kitchen workflow for this allergy record has been completed\./.test(shTxt()));
- ok('names the authenticated display, never a person',/on Kitchen Display, a display authenticated to Happy Bistro\. It does not identify the person who marked this served\./.test(shTxt()));
+ ok('one closing line: Kitchen steps complete',/Kitchen steps complete\./.test(shTxt())&&!/The Kitchen workflow/.test(shTxt()));
+ ok('names the authenticated display, never a person',/Kitchen Display · Happy Bistro — records the display, not the person\./.test(shTxt()));
  ok('no guest-delivery, safety or closure claim',!/\bsafe|delivered|guest (received|ate|was served)|closed|protected|guarantee/i.test(shTxt()));
  ok('REHEARSAL kept',/REHEARSAL · NOT A GUEST/.test(shTxt()));
  ok('only exit is Back to Kitchen Board',!shBtn()&&/Back to Kitchen Board/.test(sh().querySelector('.vfy-back').textContent));
@@ -148,13 +148,13 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('lockout prep hung: never claims Prep Area Cleared',lkDone().join('|')==='ALLERGY RECEIVED'&&/Hold to Confirm Prep Area Cleared/.test(lkTxt()));
  sbv.from=realFrom; closeLockout();
  openRecord(G); await w(200); refuse(); await hold(shBtn(),1400);
- ok('sheet ack refused: no banner, error shown, ack hold still offered',!sh().querySelector('.vfy-ok')&&/Couldn.t acknowledge/.test(shTxt())&&/Hold to Confirm Allergy Received/.test(shTxt()));
+ ok('sheet ack refused: no banner, error shown, ack hold still offered',!sh().querySelector('.vfy-ok')&&/Received NOT recorded/.test(shTxt())&&/Hold to Confirm Allergy Received/.test(shTxt()));
  ok('...no lockout popped',!lkOn());
  delete cards[G]._error; closeRecord(); openRecord(G); await w(150); hang(); await hold(shBtn(),1400); await w(500);
  ok('sheet ack hung: no banner, never offers the next step',!sh().querySelector('.vfy-ok')&&!/Prep Area Cleared/.test(shTxt())&&/Hold to Confirm Allergy Received/.test(shTxt()));
  sbv.from=realFrom; closeRecord();
  openRecord(Hh); await w(200); refuse(); await hold(shBtn(),1400);
- ok('Mark Served refused: no Served Recorded, error shown, hold still offered',!/Served Recorded/.test(shTxt())&&/Couldn.t mark served/.test(shTxt())&&/Hold to Mark Served/.test(shTxt()));
+ ok('Mark Served refused: no Served Recorded, error shown, hold still offered',!/Served Recorded/.test(shTxt())&&/Served NOT recorded/.test(shTxt())&&/Hold to Mark Served/.test(shTxt()));
  ok('...served_at reverted',!cards[Hh].served_at);
  delete cards[Hh]._error; closeRecord(); openRecord(Hh); await w(150); hang(); await hold(shBtn(),1400); await w(500);
  ok('Mark Served hung: never claims Served Recorded',!/Served Recorded/.test(shTxt())&&shOn());

@@ -212,6 +212,10 @@ body.dimmed .summary{opacity:.3}
       border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.08);font-size:17px;font-weight:700;color:var(--t1)}
     .vfy-ok svg{color:var(--ok);flex-shrink:0}.vfy-ok-t{margin-left:auto;font-size:13px;font-weight:500;color:var(--t2)}
     .vfy-back--only{margin-top:16px}
+    .vfy-do{margin-top:16px;font-size:17px;font-weight:600;line-height:1.4;color:var(--t1)}
+    .vfy-prov{margin-top:10px;font-size:12.5px;line-height:1.4;color:var(--t3);text-align:center}
+    .lockout .vfy-prov{max-width:500px;width:100%;margin-top:14px;font-size:14px}
+    .lk-notes{max-width:500px;width:100%;text-align:left;margin:4px 0 8px}
     .lk-ok{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;color:var(--ok);
       letter-spacing:.02em;margin-bottom:10px;text-transform:uppercase}
     .lk-err{max-width:500px;width:100%;margin-bottom:14px;padding:10px 14px;border-radius:8px;text-align:center;
@@ -864,8 +868,8 @@ async function doAck(id,origin){
   delete c._writing;
   // Rejection clears the attempt and nothing needs reverting — no safety field was ever
   // mutated. Escalation resumes on the next 1s tick with no manual intervention.
-  if(error){console.error('[kitchen] acknowledge failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();showRowError(id,"Couldn't acknowledge — try again");
-    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'ack',"Couldn't confirm — the allergy was NOT recorded as received. Try again.");return}
+  if(error){console.error('[kitchen] acknowledge failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();showRowError(id,"Received NOT recorded — try again");
+    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'ack',"Received NOT recorded — try again");return}
   // Accepted. Only now is this confirmed truth.
   c.kitchen_ack_at=ackAt;c.kitchen_ack_by=ackBy;c.status='acknowledged';
   delete c._ackPending;
@@ -894,8 +898,8 @@ async function confirmProtocol(id,origin){
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] protocol confirm failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Couldn't confirm prep area — try again");
-    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'prep',"Couldn't confirm — prep area NOT recorded as cleared. Try again.");return}
+  if(error){console.error('[kitchen] protocol confirm failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Prep NOT recorded — try again");
+    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'prep',"Prep NOT recorded — try again");return}
   delete c._error;
   chimeAck();
   // Confirmed in place; the operator leaves when they choose. It used to closeLockout() here —
@@ -916,7 +920,7 @@ async function verifyDish(id,origin){
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] verify failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Couldn't verify — try again");return}
+  if(error){console.error('[kitchen] verify failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Second Check NOT recorded — try again");return}
   delete c._error;
   chimeAck();
   // Confirm IN PLACE. The sheet used to close here, so a deliberate safety hold ended with
@@ -938,7 +942,7 @@ async function markServed(id,origin){
   renderCards();
   var {error}=await sbv.from('allergen_declarations').update({served_at:c.served_at,status:'resolved'}).eq('id',id);
   delete c._writing;
-  if(error){console.error('[kitchen] mark served failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Couldn't mark served — try again");return}
+  if(error){console.error('[kitchen] mark served failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,"Served NOT recorded — try again");return}
   delete c._error;
   chimeAck();
   // From the sheet: confirm in place (Served Recorded) instead of vanishing. From a board row
@@ -1182,67 +1186,32 @@ function recordHeadHtml(c,title,done,okA){
     h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
   h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
   h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+esc((c.severity||'unknown').toUpperCase())+'</span>'
-    +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT REQUIRED</span>':'')+'</div>';
-  if(c.cross_contact)h+='<div class="vfy-note">The guest asked for cross-contact precautions.</div>';
+    +(c.cross_contact?'<span class="vfy-xc">CROSS-CONTACT</span>':'')+'</div>';
+  // Cross-contact is stated ONCE, as the chip. The sentence repeating it is gone.
   var owed=owedStep(c);
-  h+='<div class="vfy-el">'+(isSrv||!owed?'Served at ':esc(owed.label)+' waiting ')+'<span id="timer-'+esc(id)+'">'
-    +(isSrv||!owed?fmtTime(c.served_at):fmtTimer(owed.since))+'</span></div>';
+  if(owed&&!isSrv)h+='<div class="vfy-el">'+esc(owed.label)+' waiting <span id="timer-'+esc(id)+'">'
+    +fmtTimer(owed.since)+'</span></div>';
   return h;
 }
 
-// Draws (or re-asserts) the sheet from state. Called by openRecord AND at the end of every
-// renderCards(), so a board refresh can never leave the operator somewhere they did not ask
-// to be.
-function renderRecord(){
-  if(!recordOpenId)return;
-  var lk=document.getElementById('verify'),lc=document.getElementById('verifyContent');
-  if(!lk||!lc)return;
-  lk.classList.add('on');            // always re-assert: cheap and idempotent
-  if(recordHolding)return;           // never rebuild under a running gesture
+// What the operator must do at each step — one sentence, imperative, no rationale.
+var STEP_DO={ack:'Confirm the kitchen has received this allergy.',
+             prep:'Clear and separate the prep area, utensils and surfaces.',
+             verify:'Have another team member check the allergy preparation.',
+             serve:'Mark served when the dish leaves the kitchen.'};
 
-  var c=cards[recordOpenId];
-  if(!c){
-    // The declaration left the board while the sheet was open — served elsewhere, closed, or
-    // the service ended. Say so explicitly instead of silently dropping the operator back to
-    // the board with no idea why.
-    if(recordSig==='gone')return;
-    recordSig='gone';
-    lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">No longer on the board</div>'
-      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>'
-      +'<div class="vfy-body">This allergy is no longer current work for this kitchen. It may '
-      +'have been served, closed, or handled on another display. Nothing was recorded here.</div>'
-      +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
-      +'onclick="closeRecord()"><span class="hold-lbl">Back to the board</span></button>';
-    return;
-  }
+// Provenance, stated once and small: the display records, never a person. Same line on every
+// state and on the lockout.
+function provHtml(){
+  return '<div class="vfy-prov">'+esc((vdIdentity&&vdIdentity.display_name)||'This display')+' &middot; '
+    +esc(vdVenueName||'this venue')+' &mdash; records the display, not the person.</div>';
+}
 
-  if(recordFlow&&recordFlow.id!==recordOpenId)recordFlow=null;
-  if(recordFlow&&recordFlow.phase==='saving')return;   // never show the next step before the write lands
-  if(recordFlow&&recordFlow.phase==='done'&&recordFlow.a==='verify'&&c.verified_at&&!c.served_at){renderSecondCheckDone(c,lc);return}
-  if(recordFlow&&recordFlow.phase==='done'&&recordFlow.a==='serve'&&c.served_at){renderServedDone(c,lc);return}
-  // Received / Prep confirmed from the sheet: the ordinary record, now showing the NEXT
-  // requirement, with the completed milestone stated at the top. No extra click.
-  var okA=(recordFlow&&recordFlow.phase==='done'&&(recordFlow.a==='ack'&&c.kitchen_ack_at||recordFlow.a==='prep'&&c.protocol_confirmed_at))?recordFlow.a:'';
-  var id=c.id,an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
-  var acked=isAcked(c),proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
-  var act=recordAction(c);
-  // Everything the sheet renders, and nothing it does not. The elapsed time is deliberately
-  // absent: it is updated in place by the one-second tick, so putting created_at here would
-  // be harmless but putting the formatted value here would rebuild the sheet every second.
-  var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
-           c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
-           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA].join('|');
-  if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
-  recordSig=sig;
-
+// The safety reference a cook prepares from: Avoid all / Check ingredients, then guest notes.
+// Shown at every stage until the record is served.
+function referenceHtml(c){
+  var an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase(),isSrv=!!c.served_at,h='';
   var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
-  var h=recordHeadHtml(c,(act&&act.check?'Second Check':'Allergy Record'),false,okA);
-
-  // The four stages with their recorded times. This replaces a separate "Already recorded"
-  // pair that listed two of the same timestamps in a second format — the rail says when the
-  // kitchen received it and when the prep area was confirmed, labelled, in one place.
-  h+=railHtml(c);
-
   // Avoid all — one block per declared allergen, hit or miss. Severity gates prominence
   // (.low), never existence: an allergen with no derivative list is the one most likely to be
   // mishandled, so it must never be the one we omit. This is the information a cook prepares
@@ -1268,27 +1237,78 @@ function renderRecord(){
   // sat in operator-instruction position and the guest's words read as the system's own.
   if(c.notes&&!isSrv)h+='<div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div>';
 
-  if(act&&act.check){
-    h+='<div class="vfy-sec">What this check is for</div>';
-    h+='<div class="vfy-body">Another team member should check the allergy preparation before it '
-      +'leaves the kitchen.</div>';
-    // The display IS authenticated — to the venue, as venue-owned hardware. It still carries
-    // no personal identity, so nothing here may imply who checked or that it was someone else.
-    h+='<div class="vfy-honest">This records that a second check happened. This display is '
-      +'authenticated to '+esc(vdVenueName||'this venue')+', but it does not identify the person '
-      +'who performed the check.</div>';
+  return h;
+}
+
+// The bottom of every actionable state: one instruction, the hold, the provenance line.
+function actionTailHtml(c,act){
+  if(!act)return provHtml();
+  return '<div class="vfy-do">'+esc(STEP_DO[act.a])+'</div>'
+    +'<button type="button" class="hold-btn '+act.cls+' vfy-go" aria-label="'+esc(act.aria)+'" '
+    +(act.cls?'':'style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" ')
+    +HOLD_ATTRS(c.id,act.a)
+    +'><div class="hold-fill"></div><span class="hold-lbl">'+esc(act.label)+'</span></button>'
+    +provHtml();
+}
+
+// Draws (or re-asserts) the sheet from state. Called by openRecord AND at the end of every
+// renderCards(), so a board refresh can never leave the operator somewhere they did not ask
+// to be.
+function renderRecord(){
+  if(!recordOpenId)return;
+  var lk=document.getElementById('verify'),lc=document.getElementById('verifyContent');
+  if(!lk||!lc)return;
+  lk.classList.add('on');            // always re-assert: cheap and idempotent
+  if(recordHolding)return;           // never rebuild under a running gesture
+
+  var c=cards[recordOpenId];
+  if(!c){
+    // The declaration left the board while the sheet was open — served elsewhere, closed, or
+    // the service ended. Say so explicitly instead of silently dropping the operator back to
+    // the board with no idea why.
+    if(recordSig==='gone')return;
+    recordSig='gone';
+    lc.innerHTML='<div class="vfy-hd"><div class="vfy-t">No longer on the board</div>'
+      +'<button type="button" class="vfy-x" aria-label="Close" onclick="closeRecord()">&times;</button></div>'
+      +'<div class="vfy-do">This allergy is no longer current work here. Nothing was recorded on this display.</div>'
+      +'<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">Back to Kitchen Board</button>';
+    return;
   }
 
-  if(act){
-    h+='<button type="button" class="hold-btn '+act.cls+' vfy-go" aria-label="'+esc(act.aria)+'" '
-      +(act.cls?'':'style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" ')
-      +HOLD_ATTRS(id,act.a)
-      +'><div class="hold-fill"></div><span class="hold-lbl">'+esc(act.label)+'</span></button>';
-  }else{
-    h+='<div class="vfy-note">Served at '+esc(fmtTime(c.served_at))+'. Nothing further to record.</div>'
-      +'<button type="button" class="hold-btn vfy-go" style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" '
-      +'onclick="closeRecord()"><span class="hold-lbl">Back to the board</span></button>';
-  }
+  if(recordFlow&&recordFlow.id!==recordOpenId)recordFlow=null;
+  if(recordFlow&&recordFlow.phase==='saving')return;   // never show the next step before the write lands
+  if(recordFlow&&recordFlow.phase==='done'&&recordFlow.a==='verify'&&c.verified_at&&!c.served_at){renderSecondCheckDone(c,lc);return}
+  // A served record — just served here, or reopened later — is the completed state. It used to
+  // fall through to "Served at … Nothing further to record.", which repeated the rail.
+  if(c.served_at){renderServedDone(c,lc);return}
+  // Received / Prep confirmed from the sheet: the ordinary record, now showing the NEXT
+  // requirement, with the completed milestone stated at the top. No extra click.
+  var okA=(recordFlow&&recordFlow.phase==='done'&&(recordFlow.a==='ack'&&c.kitchen_ack_at||recordFlow.a==='prep'&&c.protocol_confirmed_at))?recordFlow.a:'';
+  var id=c.id,an=isAnaph(c.severity),sv=(c.severity||'').toLowerCase();
+  var acked=isAcked(c),proto=!!c.protocol_confirmed_at,verified=!!c.verified_at,isSrv=!!c.served_at;
+  var act=recordAction(c);
+  // Everything the sheet renders, and nothing it does not. The elapsed time is deliberately
+  // absent: it is updated in place by the one-second tick, so putting created_at here would
+  // be harmless but putting the formatted value here would rebuild the sheet every second.
+  var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
+           c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
+           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA].join('|');
+  if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
+  recordSig=sig;
+
+  var sevCol=an?'var(--danger)':sv==='severe'?'var(--warn)':sv==='discomfort'?'var(--cyan)':'var(--t2)';
+  var owedNow=owedStep(c);
+  var h=recordHeadHtml(c,owedNow?owedNow.label:'Allergy Record',false,okA);
+
+  // The four stages with their recorded times. This replaces a separate "Already recorded"
+  // pair that listed two of the same timestamps in a second format — the rail says when the
+  // kitchen received it and when the prep area was confirmed, labelled, in one place.
+  h+=railHtml(c);
+
+  h+=referenceHtml(c);
+  // ONE instruction for the step, the hold, and one short provenance line. The heading, the
+  // explanatory paragraph and the two-sentence disclosure were operational reading.
+  h+=actionTailHtml(c,act);
   lc.innerHTML=h;
 }
 
@@ -1300,19 +1320,14 @@ function renderRecord(){
 var CK_DONE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
 function renderSecondCheckDone(c,lc){
   var id=c.id;
-  var sig=['done',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c._assetLabel,
+  var sig=['done',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
            c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||''].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
   var h=recordHeadHtml(c,'Second Check Recorded',true,'');
   h+=railHtml(c);
-  h+='<div class="vfy-sec">Ready to Serve</div>';
-  h+='<div class="vfy-body">The second check has been recorded. The next Kitchen step is to mark '
-    +'this allergy record served when the dish leaves the kitchen.</div>';
-  h+='<div class="vfy-honest">This display is authenticated to '+esc(vdVenueName||'this venue')
-    +', but it does not identify the person who performed the check.</div>';
-  h+='<button type="button" class="hold-btn act vfy-go" aria-label="Hold to mark served" '
-    +HOLD_ATTRS(id,'serve')+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Mark Served</span></button>';
+  h+=referenceHtml(c);
+  h+=actionTailHtml(c,{a:'serve',label:'Hold to Mark Served',cls:'act',aria:'Hold to mark served'});
   h+='<button type="button" class="vfy-back" onclick="closeRecord()">Back to Kitchen Board</button>';
   lc.innerHTML=h;
 }
@@ -1325,13 +1340,10 @@ function renderServedDone(c,lc){
            c.served_at,c.service_kind,vdVenueName||'',(vdIdentity&&vdIdentity.display_name)||''].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
-  var disp=(vdIdentity&&vdIdentity.display_name)||'this display';
   var h=recordHeadHtml(c,'Served Recorded',true,'');
   h+=railHtml(c);
-  h+='<div class="vfy-sec">Kitchen Steps Complete</div>';
-  h+='<div class="vfy-body">The Kitchen workflow for this allergy record has been completed.</div>';
-  h+='<div class="vfy-honest">Recorded at '+esc(fmtTime(c.served_at))+' on '+esc(disp)+', a display authenticated to '
-    +esc(vdVenueName||'this venue')+'. It does not identify the person who marked this served.</div>';
+  h+='<div class="vfy-do">Kitchen steps complete.</div>';
+  h+=provHtml();
   h+='<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">Back to Kitchen Board</button>';
   lc.innerHTML=h;
 }
@@ -1360,13 +1372,17 @@ function renderLockout(id,stage,err){
   var done=stage==='ack'?'':'<div class="lk-ok" role="status">'+CK_DONE+'Allergy Received</div>'
     +(stage==='done'?'<div class="lk-ok" role="status">'+CK_DONE+'Prep Area Cleared</div>':'');
   var tail=stage==='ack'
-    ?'<div class="lockout-sub">This allergy must be confirmed and prep area cleared</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm allergy received" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>'
+    ?'<div class="lockout-sub">'+STEP_DO.ack+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm allergy received" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Allergy Received</span></button>'
     :stage==='prep'
     // Was a plain <div onclick>: ONE TAP wrote protocol_confirmed_at. Now the same hold as
     // every other safety milestone — same HOLD_MS, fill, cancel-on-release/leave/blur, keys.
-    ?'<div class="lockout-sub">Confirm prep area, utensils, and surfaces are separated</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm prep area cleared" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Prep Area Cleared</span></button>'
-    :'<div class="lockout-sub">Next Kitchen step: Second Check before the dish leaves the kitchen.</div><button type="button" class="lockout-back" onclick="closeLockout()">Back to Kitchen Board</button>';
-  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')+done+(err?'<div class="lk-err" role="alert">'+esc(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">CROSS-CONTACT</div>':'')+'</div>'+avoidHtml+tail;
+    ?'<div class="lockout-sub">'+STEP_DO.prep+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="Hold to confirm prep area cleared" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">Hold to Confirm Prep Area Cleared</span></button>'
+    :'<div class="lockout-sub">Next: Second Check.</div><button type="button" class="lockout-back" onclick="closeLockout()">Back to Kitchen Board</button>';
+  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">REHEARSAL &middot; NOT A GUEST</div>':'')+done+(err?'<div class="lk-err" role="alert">'+esc(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||'TABLE')+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">ANAPHYLAXIS</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">CROSS-CONTACT</div>':'')+'</div>'+avoidHtml
+    // Guest notes were missing from the lockout entirely. Verbatim, esc()'d, labelled — the
+    // same rule as the record sheet.
+    +(c.notes?'<div class="lk-notes"><div class="al-notes-h">Guest notes</div><div class="al-notes">'+esc(c.notes)+'</div></div>':'')
+    +tail+provHtml();
   lockoutId=id;
   lk.classList.add('on');
 }
