@@ -15,7 +15,7 @@ PASS  rehearsal sits ABOVE the title
 PASS  rehearsal is a compact status, smaller than the title   → 13px < 22px
 PASS  rehearsal still boxed, bold, purple
 PASS  big lockout-style rehearsal block no longer on the sheet
-PASS  order: REHEARSAL → Second Check → P4 · Terrace → Tom → allergens   → 91 < 121 < 159 < 194 < 222
+PASS  order: REHEARSAL → Second Check → P4 · Terrace → Tom → allergens   → 118 < 148 < 186 < 221 < 249
 PASS  service point line reads P4 · Terrace   → P4 · Terrace
 PASS  close button still reachable in the header
 ──── 4 · ACTION COLOUR ────

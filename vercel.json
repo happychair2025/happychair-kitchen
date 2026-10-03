@@ -1,4 +1,4 @@
 {
-  "buildCommand": "echo skip",
+  "buildCommand": "node tests/i18n/check-catalog.js",
   "outputDirectory": "."
 }

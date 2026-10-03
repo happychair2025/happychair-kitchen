@@ -1,0 +1,272 @@
+════ viewport 1280×800 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+PASS  [received] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is reachable (scrolls fully into view inside the card)   → 762 / 788
+PASS  [received] nothing covers the guest notes
+PASS  [received] hold label fully inside its button   → 21/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+PASS  [received] rail stages aligned on one line   → 326,326,326,326
+PASS  [received] no English interface text
+PASS  [prep] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [prep] REHEARSAL marker visible
+PASS  [prep] the action is reachable (scrolls fully into view inside the card)   → 787 / 788
+PASS  [prep] nothing covers the guest notes
+PASS  [prep] hold label fully inside its button   → 43/59
+PASS  [prep] hold button at least 52px tall   → 59
+PASS  [prep] rail labels do not collide
+PASS  [prep] rail stages aligned on one line   → 376,376,376,376
+PASS  [prep] no English interface text
+PASS  [second check] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [second check] REHEARSAL marker visible
+PASS  [second check] the action is reachable (scrolls fully into view inside the card)   → 787 / 788
+PASS  [second check] nothing covers the guest notes
+PASS  [second check] hold label fully inside its button   → 21/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+PASS  [second check] rail stages aligned on one line   → 376,376,376,376
+PASS  [second check] no English interface text
+PASS  [second check recorded] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is reachable (scrolls fully into view inside the card)   → 776 / 788
+PASS  [second check recorded] nothing covers the guest notes
+PASS  [second check recorded] hold label fully inside its button   → 21/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+PASS  [second check recorded] rail stages aligned on one line   → 326,326,326,326
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 198 vs 53
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is reachable (scrolls fully into view inside the card)   → 632 / 655
+PASS  [served recorded] nothing covers the guest notes
+PASS  [served recorded] rail labels do not collide
+PASS  [served recorded] rail stages aligned on one line   → 433,433,433,433
+PASS  [served recorded] no English interface text
+PASS  [lockout received] lockout has its own EN | ES, inside the viewport
+PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout received] lockout action in view without scrolling   → 726 / 800
+PASS  [lockout received] hold label fully inside its button   → 43/60
+PASS  [lockout received] hold button at least 52px tall   → 60
+PASS  [lockout received] no English interface text
+PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
+PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout prep] lockout action in view without scrolling   → 726 / 800
+PASS  [lockout prep] hold label fully inside its button   → 43/60
+PASS  [lockout prep] hold button at least 52px tall   → 60
+PASS  [lockout prep] no English interface text
+PASS  [lockout done] lockout has its own EN | ES, inside the viewport
+PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout done] lockout action in view without scrolling   → 726 / 800
+PASS  [lockout done] no English interface text
+
+ALL 65 CHECKS PASS
+════ viewport 1024×768 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+PASS  [received] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is reachable (scrolls fully into view inside the card)   → 755 / 756
+PASS  [received] nothing covers the guest notes
+PASS  [received] hold label fully inside its button   → 21/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+PASS  [received] rail stages aligned on one line   → 326,326,326,326
+PASS  [received] no English interface text
+PASS  [prep] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [prep] REHEARSAL marker visible
+PASS  [prep] the action is reachable (scrolls fully into view inside the card)   → 755 / 756
+PASS  [prep] nothing covers the guest notes
+PASS  [prep] hold label fully inside its button   → 43/59
+PASS  [prep] hold button at least 52px tall   → 59
+PASS  [prep] rail labels do not collide
+PASS  [prep] rail stages aligned on one line   → 376,376,376,376
+PASS  [prep] no English interface text
+PASS  [second check] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [second check] REHEARSAL marker visible
+PASS  [second check] the action is reachable (scrolls fully into view inside the card)   → 755 / 756
+PASS  [second check] nothing covers the guest notes
+PASS  [second check] hold label fully inside its button   → 21/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+PASS  [second check] rail stages aligned on one line   → 376,376,376,376
+PASS  [second check] no English interface text
+PASS  [second check recorded] sheet starts below the header (EN | ES reachable)   → 65 vs 53
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is reachable (scrolls fully into view inside the card)   → 755 / 756
+PASS  [second check recorded] nothing covers the guest notes
+PASS  [second check recorded] hold label fully inside its button   → 21/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+PASS  [second check recorded] rail stages aligned on one line   → 326,326,326,326
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 182 vs 53
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is reachable (scrolls fully into view inside the card)   → 616 / 639
+PASS  [served recorded] nothing covers the guest notes
+PASS  [served recorded] rail labels do not collide
+PASS  [served recorded] rail stages aligned on one line   → 417,417,417,417
+PASS  [served recorded] no English interface text
+PASS  [lockout received] lockout has its own EN | ES, inside the viewport
+PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout received] lockout action in view without scrolling   → 694 / 768
+PASS  [lockout received] hold label fully inside its button   → 43/60
+PASS  [lockout received] hold button at least 52px tall   → 60
+PASS  [lockout received] no English interface text
+PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
+PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout prep] lockout action in view without scrolling   → 694 / 768
+PASS  [lockout prep] hold label fully inside its button   → 43/60
+PASS  [lockout prep] hold button at least 52px tall   → 60
+PASS  [lockout prep] no English interface text
+PASS  [lockout done] lockout has its own EN | ES, inside the viewport
+PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout done] lockout action in view without scrolling   → 694 / 768
+PASS  [lockout done] no English interface text
+
+ALL 65 CHECKS PASS
+════ viewport 820×1180 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+PASS  [received] sheet starts below the header (EN | ES reachable)   → 262 vs 91
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is reachable (scrolls fully into view inside the card)   → 959 / 1009
+PASS  [received] nothing covers the guest notes
+PASS  [received] hold label fully inside its button   → 21/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+PASS  [received] rail stages aligned on one line   → 522,522,522,522
+PASS  [received] no English interface text
+PASS  [prep] sheet starts below the header (EN | ES reachable)   → 222 vs 91
+PASS  [prep] REHEARSAL marker visible
+PASS  [prep] the action is reachable (scrolls fully into view inside the card)   → 999 / 1049
+PASS  [prep] nothing covers the guest notes
+PASS  [prep] hold label fully inside its button   → 43/59
+PASS  [prep] hold button at least 52px tall   → 59
+PASS  [prep] rail labels do not collide
+PASS  [prep] rail stages aligned on one line   → 532,532,532,532
+PASS  [prep] no English interface text
+PASS  [second check] sheet starts below the header (EN | ES reachable)   → 225 vs 91
+PASS  [second check] REHEARSAL marker visible
+PASS  [second check] the action is reachable (scrolls fully into view inside the card)   → 996 / 1046
+PASS  [second check] nothing covers the guest notes
+PASS  [second check] hold label fully inside its button   → 21/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+PASS  [second check] rail stages aligned on one line   → 535,535,535,535
+PASS  [second check] no English interface text
+PASS  [second check recorded] sheet starts below the header (EN | ES reachable)   → 226 vs 91
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is reachable (scrolls fully into view inside the card)   → 937 / 1045
+PASS  [second check recorded] nothing covers the guest notes
+PASS  [second check recorded] hold label fully inside its button   → 21/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+PASS  [second check recorded] rail stages aligned on one line   → 486,486,486,486
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 407 vs 91
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is reachable (scrolls fully into view inside the card)   → 841 / 864
+PASS  [served recorded] nothing covers the guest notes
+PASS  [served recorded] rail labels do not collide
+PASS  [served recorded] rail stages aligned on one line   → 642,642,642,642
+PASS  [served recorded] no English interface text
+PASS  [lockout received] lockout has its own EN | ES, inside the viewport
+PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout received] lockout action in view without scrolling   → 938 / 1180
+PASS  [lockout received] hold label fully inside its button   → 43/60
+PASS  [lockout received] hold button at least 52px tall   → 60
+PASS  [lockout received] no English interface text
+PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
+PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout prep] lockout action in view without scrolling   → 967 / 1180
+PASS  [lockout prep] hold label fully inside its button   → 43/60
+PASS  [lockout prep] hold button at least 52px tall   → 60
+PASS  [lockout prep] no English interface text
+PASS  [lockout done] lockout has its own EN | ES, inside the viewport
+PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout done] lockout action in view without scrolling   → 969 / 1180
+PASS  [lockout done] no English interface text
+
+ALL 65 CHECKS PASS
+════ viewport 390×844 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+PASS  [received] sheet starts below the header (EN | ES reachable)   → 169 vs 157
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is reachable (scrolls fully into view inside the card)   → 831 / 832
+PASS  [received] nothing covers the guest notes
+PASS  [received] hold label fully inside its button   → 64/80
+PASS  [received] hold button at least 52px tall   → 80
+PASS  [received] rail labels do not collide
+PASS  [received] rail stages aligned on one line   → 446,446,446,446
+PASS  [received] no English interface text
+PASS  [prep] sheet starts below the header (EN | ES reachable)   → 169 vs 157
+PASS  [prep] REHEARSAL marker visible
+PASS  [prep] the action is reachable (scrolls fully into view inside the card)   → 831 / 832
+PASS  [prep] nothing covers the guest notes
+PASS  [prep] hold label fully inside its button   → 64/80
+PASS  [prep] hold button at least 52px tall   → 80
+PASS  [prep] rail labels do not collide
+PASS  [prep] rail stages aligned on one line   → 559,559,559,559
+PASS  [prep] no English interface text
+PASS  [second check] sheet starts below the header (EN | ES reachable)   → 169 vs 157
+PASS  [second check] REHEARSAL marker visible
+PASS  [second check] the action is reachable (scrolls fully into view inside the card)   → 831 / 832
+PASS  [second check] nothing covers the guest notes
+PASS  [second check] hold label fully inside its button   → 43/61
+PASS  [second check] hold button at least 52px tall   → 61
+PASS  [second check] rail labels do not collide
+PASS  [second check] rail stages aligned on one line   → 536,536,536,536
+PASS  [second check] no English interface text
+PASS  [second check recorded] sheet starts below the header (EN | ES reachable)   → 169 vs 157
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is reachable (scrolls fully into view inside the card)   → 831 / 832
+PASS  [second check recorded] nothing covers the guest notes
+PASS  [second check recorded] hold label fully inside its button   → 43/61
+PASS  [second check recorded] hold button at least 52px tall   → 61
+PASS  [second check recorded] rail labels do not collide
+PASS  [second check recorded] rail stages aligned on one line   → 472,472,472,472
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 248 vs 157
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is reachable (scrolls fully into view inside the card)   → 730 / 753
+PASS  [served recorded] nothing covers the guest notes
+PASS  [served recorded] rail labels do not collide
+PASS  [served recorded] rail stages aligned on one line   → 500,500,500,500
+PASS  [served recorded] no English interface text
+PASS  [lockout received] lockout has its own EN | ES, inside the viewport
+PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout received] lockout action in view without scrolling   → 751 / 844
+PASS  [lockout received] hold label fully inside its button   → 43/60
+PASS  [lockout received] hold button at least 52px tall   → 60
+PASS  [lockout received] no English interface text
+PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
+PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout prep] lockout action in view without scrolling   → 751 / 844
+PASS  [lockout prep] hold label fully inside its button   → 43/60
+PASS  [lockout prep] hold button at least 52px tall   → 60
+PASS  [lockout prep] no English interface text
+PASS  [lockout done] lockout has its own EN | ES, inside the viewport
+PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
+PASS  [lockout done] lockout action in view without scrolling   → 751 / 844
+PASS  [lockout done] no English interface text
+
+ALL 65 CHECKS PASS

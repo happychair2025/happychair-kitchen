@@ -13,11 +13,12 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSyst
 :root{--bg:#0d1117;--s1:#141d2b;--s2:#1a2535;--b:#1e2d3d;--b2:#2d3f54;--b-soft:rgba(30,45,61,.3);--cyan:#22d3ee;--warn:#f59e0b;--danger:#ef4444;--ok:#10b981;--t1:#e2e8f0;--t2:#94a3b8;--t3:#636e7b;--t4:#4a5568}
 body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(51,51,51,.3);--danger:#f33;--warn:#fc0;--ok:#0f0;--cyan:#0ff;--t1:#fff;--t2:#ccc;--t3:#999;--t4:#777}
 #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.hdr{height:52px;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 20px;flex-shrink:0;z-index:100}
+.hdr{min-height:52px;background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;flex-wrap:wrap;row-gap:6px;padding:6px 20px;flex-shrink:0;z-index:100}
 .hdr-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--cyan),#0891b2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--bg);margin-right:10px;flex-shrink:0}
-.hdr-venue{font-size:16px;font-weight:700;color:var(--t1);flex:1}
-.hdr-clock{font-size:13px;color:var(--t2);font-weight:500;margin-right:14px}
-.hdr-right{display:flex;align-items:center;gap:12px}
+.hdr-venue{font-size:16px;font-weight:700;color:var(--t1);flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-clock{font-size:13px;color:var(--t2);font-weight:500;margin-right:14px;white-space:nowrap}
+.hdr-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;row-gap:6px}
+@media (max-width:900px){.hdr-right{flex-basis:100%}}
 .hb{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .hb.ok{background:var(--ok);animation:hbP 2s ease infinite}
 .hb.off{background:var(--danger);animation:hbP .5s ease infinite}
@@ -67,8 +68,8 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .vd-st.ok{border-color:rgba(16,185,129,.5);color:var(--ok)}
 .pair-in{width:100%;margin-top:16px;padding:16px;font-size:34px;letter-spacing:.34em;text-align:center;
   border:1px solid var(--b2);border-radius:12px;background:var(--bg);color:var(--t1);font-family:inherit}
-.vfy{position:fixed;inset:0;z-index:95;background:rgba(5,9,14,.93);display:none;
-  align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.vfy{position:fixed;inset:0;top:var(--hdr-h,52px);z-index:95;background:rgba(5,9,14,.93);display:none;
+  align-items:center;justify-content:center;padding:12px 20px;overflow-y:auto}
 .vfy.on{display:flex}
 .vfy-card{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:22px 24px;
   width:100%;max-width:560px;max-height:100%;overflow-y:auto}
@@ -139,17 +140,17 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .r-tm{font-size:18px;font-weight:600;color:#fff;min-width:80px;text-align:right;font-variant-numeric:tabular-nums}
 .stg svg{width:9px;height:9px}
 .row-err{padding:10px 14px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:8px;color:var(--danger);font-size:14px;font-weight:600;margin:8px 0;text-align:center}
-.prog{display:flex;align-items:center;padding:10px 0}
-.ps{display:flex;flex-direction:column;align-items:center;flex:1}
+.prog{display:flex;align-items:flex-start;padding:10px 0}
+.ps{display:flex;flex-direction:column;align-items:center;flex:1 1 0;min-width:0}
 .pd{width:18px;height:18px;border-radius:50%;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;z-index:2}
 .pd.da{border-color:var(--warn);background:var(--warn)}
 .pd.dv{border-color:var(--ok);background:var(--ok)}
 .pd.dg{border-color:var(--t3);background:var(--t3)}
 .pd svg{width:10px;height:10px}
-.plbl{font-size:12px;font-weight:600;margin-top:3px;color:var(--t4)}
+.plbl{font-size:12px;font-weight:600;margin-top:3px;color:var(--t4);text-align:center;line-height:1.2}
 .plbl.a{color:var(--warn)}.plbl.v{color:var(--ok)}.plbl.g{color:var(--t3)}
 .ptm{font-size:11px;color:var(--t2);margin-top:1px}
-.pln{flex:1;height:2px;background:var(--b);margin:0 -2px;z-index:1}
+.pln{flex:.5 1 8px;height:2px;background:var(--b);margin:8px -2px 0;z-index:1}
 .pln.a{background:var(--warn)}.pln.v{background:var(--ok)}.pln.g{background:var(--t3)}
 .avoid{border-left:3px solid;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0}
 .avoid-t{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
@@ -162,7 +163,7 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .avoid.low .avoid-l{font-size:14px}
 .al-notes-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--t3);margin:10px 0 2px;padding-top:10px;border-top:1px solid var(--b)}
 .al-notes{font-size:16px;color:var(--t2);font-weight:500;margin:0 0 6px}
-.hold-btn{position:relative;overflow:hidden;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;cursor:pointer;border:none;width:100%;user-select:none;-webkit-user-select:none;touch-action:none;margin-top:10px}
+.hold-btn{position:relative;overflow:hidden;min-height:52px;padding:8px 14px;line-height:1.25;text-align:center;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;cursor:pointer;border:none;width:100%;user-select:none;-webkit-user-select:none;touch-action:none;margin-top:10px}
 .hold-btn.red{background:var(--danger);color:#fff}
 .hold-btn.amber{background:var(--warn);color:var(--bg)}
 .hold-btn.green{background:var(--ok);color:#fff}
@@ -172,19 +173,20 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .hold-btn.act{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
 .hold-btn.act .hold-fill{background:rgba(226,232,240,.18)}
 .hold-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,0,0,.25);border-radius:10px}
-.hold-lbl{position:relative;z-index:1;display:flex;align-items:center;gap:6px}
+.hold-lbl{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
 .ghost-tabs{position:fixed;right:0;top:52px;bottom:40px;width:36px;display:flex;flex-direction:column;gap:4px;padding:8px 0;z-index:50}
 .ghost-tab{width:36px;min-height:80px;border-radius:8px 0 0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;writing-mode:vertical-lr;text-orientation:mixed}
 .ghost-tab.amber{background:rgba(245,158,11,.6)}
 .ghost-tab.red{background:rgba(239,68,68,.7)}
-.summary{height:40px;background:var(--s1);border-top:1px solid var(--b);display:flex;align-items:center;justify-content:center;gap:14px;font-size:14px;font-weight:600;color:var(--t2);flex-shrink:0}
-.summary .w{color:#fff}.summary .rd{color:var(--danger);font-weight:700}
+.summary{min-height:40px;flex-wrap:wrap;row-gap:2px;padding:6px 12px;background:var(--s1);border-top:1px solid var(--b);display:flex;align-items:center;justify-content:center;gap:14px;font-size:14px;font-weight:600;color:var(--t2);flex-shrink:0}
+.summary span{white-space:nowrap}.summary .w{color:#fff}.summary .rd{color:var(--danger);font-weight:700}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:.5}
 .empty svg{margin-bottom:20px}
 .empty-text{font-size:24px;font-weight:600;color:var(--t2)}
 .audio-prompt{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
 .audio-prompt-btn{padding:24px 48px;background:var(--s1);border:2px solid var(--warn);border-radius:16px;font-size:22px;font-weight:700;color:var(--warn);cursor:pointer;font-family:inherit}
-.lockout{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);padding:40px;overflow-y:auto}
+.lockout{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);padding:64px 40px 40px;overflow-y:auto}
+@media (max-width:600px){.lockout{padding:64px 16px 40px}}
 .lockout.on{display:flex;flex-direction:column}
 .lockout .lockout-card{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center}
 .lockout-title{font-size:32px;font-weight:800;color:var(--danger);margin-bottom:12px;text-align:center}
@@ -238,6 +240,16 @@ body.dimmed .summary{opacity:.3}
     .lang-msg{position:absolute;top:100%;right:0;margin-top:4px;font-size:12px;font-weight:600;color:var(--warn);white-space:nowrap}
     .ref-untr{font-size:12.5px;color:var(--t3);margin:2px 0 6px}
     .lockout .ref-untr{font-size:14px;text-align:left}
+    /* Lockout: the instruction, the hold and the provenance stay in view however long the
+       reference lists are. A cook must never have to scroll to find the one action. */
+    .lk-act{position:sticky;bottom:-40px;max-width:500px;width:100%;display:flex;flex-direction:column;align-items:center;
+      background:var(--bg);padding:10px 0 40px;box-shadow:0 -14px 14px -10px var(--bg);z-index:2}
+    .lk-act .lockout-sub{margin-bottom:12px}
+    .lk-lang{position:fixed;top:14px;right:18px;z-index:201}.lk-lang .lang-sw{margin-right:0}
+    /* Record sheet: natural order, never sticky. A footer pinned over a long record would
+       cover the guest notes; the sheet is not blocking, so it scrolls to the action instead. */
+    .vfy-act{display:block}
+    .lk-chips{flex-wrap:wrap;justify-content:center}.lk-chips>div{white-space:nowrap}
     .i18n-fail{position:fixed;top:0;left:0;right:0;z-index:999;background:#7f1d1d;color:#fff;font:600 14px/1.4 system-ui;padding:8px 12px}
   </style>
 </head>
@@ -252,7 +264,7 @@ body.dimmed .summary{opacity:.3}
 <!-- Starts DEGRADED. At page load nothing has been read, so healthy would be a claim the
      board has not earned. reconcile() promotes it on the first successful read. -->
 <div class="lang-sw" id="langSw" role="group" aria-label="Display language" data-i18n-aria="lang.label"><button type="button" class="lang-b" data-l="en" onpointerdown="event.preventDefault()" onclick="switchLocale('en')">EN</button><button type="button" class="lang-b" data-l="es" onpointerdown="event.preventDefault()" onclick="switchLocale('es')">ES</button><span class="lang-msg" id="langMsg" role="status" aria-live="polite"></span></div>
-<button type="button" class="vd-st" id="vdStatus" onclick="openPair()" title="Pair this display" data-i18n-title="status.pair_title">Not paired</button>
+<button type="button" class="vd-st" id="vdStatus" onclick="openPair()" title="Pair this display" data-i18n-title="status.pair_title" data-i18n="status.not_paired">Not paired</button>
 <div class="hb off" id="heartbeat"></div>
 <div class="vol-ctrl" id="volCtrl">
 <div class="vol-icon" onclick="toggleMute()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path class="vw1" d="M14.5 9.5a3.5 3.5 0 0 1 0 5"/><path class="vw2" d="M17 7a7 7 0 0 1 0 10"/><path class="vw3" d="M19.5 4.5a10.5 10.5 0 0 1 0 15"/></svg></div>
@@ -267,7 +279,7 @@ body.dimmed .summary{opacity:.3}
 <div class="vfy" id="pair"><div class="vfy-card" id="pairContent"></div></div>
 <div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text" data-i18n="board.empty">No Active Allergies</div></div></div>
 <div class="ghost-tabs" id="ghostTabs"></div>
-<div class="summary" id="summaryBar"><span class="w">0 Tables</span> · <span class="w">0 Allergies</span></div>
+<div class="summary" id="summaryBar"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -515,7 +527,7 @@ var I18N={
   'ref.avoid_all':'Avoid all — {allergen}',
   'ref.check_ingredients':'{allergen} — Check ingredients',
   'ref.no_list':'No reference list is available. Confirm ingredients before preparation.',
-  'ref.untranslated':'',
+  'ref.untranslated':'Allergen names and reference lists are shown in English (untranslated).',
   'notes.heading':'Guest notes',
   'prov.line':'{display} · {venue} — records the display, not the person.',
   'prov.this_display':'This display',
@@ -643,6 +655,9 @@ var I18N={
  }
 };
 var KITCHEN_LOCALES=['en','es'];
+// The language the allergy DATA is stored in (allergen names, reference lists). Interface strings
+// are translated; this data is not, and the board says so whenever the two differ.
+var DATA_LOCALE='en';
 var LOCALE_TAG={en:'en-US',es:'es-US'};
 var locale='en';
 // Development surfaces (offline fixtures, localhost, ?i18ncheck=1) show a missing string as
@@ -677,6 +692,11 @@ function tt(key,p){
 }
 // Catalog parity: every key in every locale, with identical placeholders. Run at boot; in
 // development a failure is put on screen, not only in the console.
+// The record sheet and pairing overlays start below the header so EN | ES stays reachable.
+function syncHeaderHeight(){var h=document.querySelector('.hdr');if(h)document.documentElement.style.setProperty('--hdr-h',h.offsetHeight+'px')}
+if(window.ResizeObserver){new ResizeObserver(syncHeaderHeight).observe(document.querySelector('.hdr'))}
+window.addEventListener('resize',syncHeaderHeight);
+
 function i18nParity(){
   var bad=[],en=I18N.en;
   KITCHEN_LOCALES.forEach(function(l){
@@ -709,14 +729,25 @@ function localeCacheSet(l,synced){try{if(vdToken)localStorage.setItem(LOCALE_K,J
 function holdInProgress(){return !!recordHolding||Object.keys(holdTimers).length>0}
 function writeInFlight(){return !!(recordFlow&&recordFlow.phase==='saving')||Object.keys(cards).some(function(id){return cards[id]._writing})}
 var langMsgTimer=null;
-function langMsg(key){var el=document.getElementById('langMsg');if(!el)return;
-  el.textContent=key?tt(key):'';clearTimeout(langMsgTimer);if(key)langMsgTimer=setTimeout(function(){el.textContent=''},2500)}
+function langMsg(key){
+  document.querySelectorAll('.lang-msg').forEach(function(el){el.textContent=key?tt(key):''});
+  clearTimeout(langMsgTimer);
+  if(key)langMsgTimer=setTimeout(function(){document.querySelectorAll('.lang-msg').forEach(function(el){el.textContent=''})},2500)}
+// The same EN | ES control, for surfaces that cover the header (the anaphylaxis lockout). A cook
+// facing a blocking modal in the wrong language must be able to change it there.
+function langSwitchHtml(){
+  return '<div class="lang-sw" role="group" aria-label="'+th('lang.label')+'">'
+    +KITCHEN_LOCALES.map(function(l){var on=l===locale;
+      return '<button type="button" class="lang-b'+(on?' on':'')+'" data-l="'+l+'" aria-pressed="'+on+'" '
+        +'onpointerdown="event.preventDefault()" onclick="switchLocale(\''+l+'\')">'+l.toUpperCase()+'</button>'}).join('')
+    +'<span class="lang-msg" role="status" aria-live="polite"></span></div>';
+}
 function applyStatic(){
   document.documentElement.lang=locale;
   document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=tt(el.getAttribute('data-i18n'))});
   document.querySelectorAll('[data-i18n-title]').forEach(function(el){el.title=tt(el.getAttribute('data-i18n-title'))});
   document.querySelectorAll('[data-i18n-aria]').forEach(function(el){el.setAttribute('aria-label',tt(el.getAttribute('data-i18n-aria')))});
-  document.querySelectorAll('#langSw .lang-b').forEach(function(b){var on=b.getAttribute('data-l')===locale;
+  document.querySelectorAll('.lang-b').forEach(function(b){var on=b.getAttribute('data-l')===locale;
     b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false')});
   if(hdrVenue)document.getElementById('venueName').textContent=tt('hdr.kitchen',{venue:hdrVenue});
   vdRenderStatus();
@@ -1583,7 +1614,7 @@ function referenceHtml(c){
     });
     // Say so when the reference data is not in the display's language, rather than let an
     // English list sit under a translated heading as though it had been translated.
-    if((c.allergens||[]).length&&tRaw('ref.untranslated'))h+='<div class="ref-untr">'+th('ref.untranslated')+'</div>';
+    if((c.allergens||[]).length&&locale!==DATA_LOCALE)h+='<div class="ref-untr">'+th('ref.untranslated')+'</div>';
   }
 
   // ⚠ MUST STAY WRAPPED IN esc(). `notes` is guest-authored free text arriving through an
@@ -1599,14 +1630,15 @@ function referenceHtml(c){
 }
 
 // The bottom of every actionable state: one instruction, the hold, the provenance line.
-function actionTailHtml(c,act){
-  if(!act)return provHtml();
-  return '<div class="vfy-do">'+stepDo(act.a)+'</div>'
+function actionTailHtml(c,act,back){
+  if(!act)return '<div class="vfy-act">'+provHtml()+'</div>';
+  return '<div class="vfy-act"><div class="vfy-do">'+stepDo(act.a)+'</div>'
     +'<button type="button" class="hold-btn '+act.cls+' vfy-go" aria-label="'+esc(act.aria)+'" '
     +(act.cls?'':'style="background:var(--s2);border:1px solid var(--b2);color:var(--t1)" ')
     +HOLD_ATTRS(c.id,act.a)
     +'><div class="hold-fill"></div><span class="hold-lbl">'+esc(act.label)+'</span></button>'
-    +provHtml();
+    +provHtml()
+    +(back?'<button type="button" class="vfy-back" onclick="closeRecord()">'+th('nav.back')+'</button>':'')+'</div>';
 }
 
 // Draws (or re-asserts) the sheet from state. Called by openRecord AND at the end of every
@@ -1685,8 +1717,7 @@ function renderSecondCheckDone(c,lc){
   var h=recordHeadHtml(c,'title.second_check_done',true,'');
   h+=railHtml(c);
   h+=referenceHtml(c);
-  h+=actionTailHtml(c,{a:'serve',label:tt('hold.serve'),cls:'act',aria:tt('hold.serve')});
-  h+='<button type="button" class="vfy-back" onclick="closeRecord()">'+th('nav.back')+'</button>';
+  h+=actionTailHtml(c,{a:'serve',label:tt('hold.serve'),cls:'act',aria:tt('hold.serve')},true);
   lc.innerHTML=h;
 }
 
@@ -1700,9 +1731,8 @@ function renderServedDone(c,lc){
   recordSig=sig;
   var h=recordHeadHtml(c,'title.served_done',true,'');
   h+=railHtml(c);
-  h+='<div class="vfy-do">'+th('do.complete')+'</div>';
-  h+=provHtml();
-  h+='<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">'+th('nav.back')+'</button>';
+  h+='<div class="vfy-act"><div class="vfy-do">'+th('do.complete')+'</div>'+provHtml()
+    +'<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">'+th('nav.back')+'</button></div>';
   lc.innerHTML=h;
 }
 
@@ -1730,21 +1760,22 @@ function renderLockout(id,stage,err){
   // Completed milestones sit directly under the rehearsal marker, above the record they
   // belong to, so confirmation never costs the cook the table, guest or allergens.
   lockoutStage=stage;lockoutErr=err||null;
-  if((c.allergens||[]).length&&tRaw('ref.untranslated'))avoidHtml+='<div class="ref-untr" style="max-width:500px;width:100%">'+th('ref.untranslated')+'</div>';
+  if((c.allergens||[]).length&&locale!==DATA_LOCALE)avoidHtml+='<div class="ref-untr" style="max-width:500px;width:100%">'+th('ref.untranslated')+'</div>';
   var done=stage==='ack'?'':'<div class="lk-ok" role="status">'+CK_DONE+th('ok.ack')+'</div>'
     +(stage==='done'?'<div class="lk-ok" role="status">'+CK_DONE+th('ok.prep')+'</div>':'');
   var tail=stage==='ack'
-    ?'<div class="lockout-sub">'+stepDo('ack')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="'+th('hold.ack')+'" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.ack')+'</span></button>'
+    ?'<div class="lockout-sub">'+stepDo('ack')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;min-height:60px" aria-label="'+th('hold.ack')+'" '+HOLD_ATTRS(id)+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.ack')+'</span></button>'
     :stage==='prep'
     // Was a plain <div onclick>: ONE TAP wrote protocol_confirmed_at. Now the same hold as
     // every other safety milestone — same HOLD_MS, fill, cancel-on-release/leave/blur, keys.
-    ?'<div class="lockout-sub">'+stepDo('prep')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;height:60px" aria-label="'+th('hold.prep')+'" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.prep')+'</span></button>'
+    ?'<div class="lockout-sub">'+stepDo('prep')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;min-height:60px" aria-label="'+th('hold.prep')+'" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.prep')+'</span></button>'
     :'<div class="lockout-sub">'+th('lock.next')+'</div><button type="button" class="lockout-back" onclick="closeLockout()">'+th('nav.back')+'</button>';
-  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
+  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div class="lk-chips" style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
     // Guest notes were missing from the lockout entirely. Verbatim, esc()'d, labelled — the
     // same rule as the record sheet.
     +(c.notes?'<div class="lk-notes"><div class="al-notes-h">'+th('notes.heading')+'</div><div class="al-notes">'+esc(c.notes)+'</div></div>':'')
-    +tail+provHtml();
+    +'<div class="lk-act">'+tail+provHtml()+'</div>'
+    +'<div class="lk-lang">'+langSwitchHtml()+'</div>';
   lockoutId=id;
   lk.classList.add('on');
 }

@@ -1,0 +1,212 @@
+════ viewport 1280×800 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+FAIL  [received] sheet starts below the header (EN | ES reachable)   → 26 vs 52
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is in view without scrolling   → 724 / 774
+PASS  [received] hold label fully inside its button   → 20/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+FAIL  [received] rail stages aligned on one line   → 287,294,286,294
+PASS  [received] no English interface text
+FAIL  [prep] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [prep] REHEARSAL marker visible
+FAIL  [prep] the action is in view without scrolling   → 792 / 780
+PASS  [prep] hold label fully inside its button   → 40/52
+PASS  [prep] hold button at least 52px tall   → 52
+PASS  [prep] rail labels do not collide
+FAIL  [prep] rail stages aligned on one line   → 331,331,331,338
+PASS  [prep] no English interface text
+FAIL  [second check] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [second check] REHEARSAL marker visible
+FAIL  [second check] the action is in view without scrolling   → 792 / 780
+PASS  [second check] hold label fully inside its button   → 20/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+FAIL  [second check] rail stages aligned on one line   → 331,331,331,338
+PASS  [second check] no English interface text
+FAIL  [second check recorded] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is in view without scrolling   → 732 / 780
+PASS  [second check recorded] hold label fully inside its button   → 20/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+FAIL  [second check recorded] rail stages aligned on one line   → 288,288,281,295
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 171 vs 52
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is in view without scrolling   → 606 / 629
+PASS  [served recorded] rail labels do not collide
+FAIL  [served recorded] rail stages aligned on one line   → 414,414,406,414
+PASS  [served recorded] no English interface text
+FAIL  [lockout received] lockout has its own EN | ES, inside the viewport
+THREW Cannot read properties of null (reading 'getBoundingClientRect')
+TypeError: Cannot read properties of null (reading 'getBoundingClientRect')
+    at R (http://127.0.0.1:54835/?inst=1&fixture=1:2184:14)
+    at lockoutChecks (http://127.0.0.1:54835/?inst=1&fixture=1:2222:81)
+    at http://127.0.0.1:54835/?inst=1&fixture=1:2252:4
+
+33 pass, 12 FAIL
+════ viewport 1024×768 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+FAIL  [received] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is in view without scrolling   → 718 / 748
+PASS  [received] hold label fully inside its button   → 20/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+FAIL  [received] rail stages aligned on one line   → 281,288,281,288
+PASS  [received] no English interface text
+FAIL  [prep] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [prep] REHEARSAL marker visible
+FAIL  [prep] the action is in view without scrolling   → 792 / 748
+PASS  [prep] hold label fully inside its button   → 40/52
+PASS  [prep] hold button at least 52px tall   → 52
+PASS  [prep] rail labels do not collide
+FAIL  [prep] rail stages aligned on one line   → 331,331,331,338
+PASS  [prep] no English interface text
+FAIL  [second check] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [second check] REHEARSAL marker visible
+FAIL  [second check] the action is in view without scrolling   → 792 / 748
+PASS  [second check] hold label fully inside its button   → 20/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+FAIL  [second check] rail stages aligned on one line   → 331,331,331,338
+PASS  [second check] no English interface text
+FAIL  [second check recorded] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is in view without scrolling   → 732 / 748
+PASS  [second check recorded] hold label fully inside its button   → 20/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+FAIL  [second check recorded] rail stages aligned on one line   → 288,288,281,295
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 155 vs 52
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is in view without scrolling   → 590 / 613
+PASS  [served recorded] rail labels do not collide
+FAIL  [served recorded] rail stages aligned on one line   → 398,398,390,398
+PASS  [served recorded] no English interface text
+FAIL  [lockout received] lockout has its own EN | ES, inside the viewport
+THREW Cannot read properties of null (reading 'getBoundingClientRect')
+TypeError: Cannot read properties of null (reading 'getBoundingClientRect')
+    at R (http://127.0.0.1:54896/?inst=1&fixture=1:2184:14)
+    at lockoutChecks (http://127.0.0.1:54896/?inst=1&fixture=1:2222:81)
+    at http://127.0.0.1:54896/?inst=1&fixture=1:2252:4
+
+33 pass, 12 FAIL
+════ viewport 820×1180 ════
+PASS  [board] header: every control inside the viewport
+PASS  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+PASS  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+PASS  [received] sheet starts below the header (EN | ES reachable)   → 216 vs 52
+PASS  [received] REHEARSAL marker visible
+PASS  [received] the action is in view without scrolling   → 914 / 964
+PASS  [received] hold label fully inside its button   → 20/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+FAIL  [received] rail stages aligned on one line   → 477,484,476,484
+PASS  [received] no English interface text
+PASS  [prep] sheet starts below the header (EN | ES reachable)   → 179 vs 52
+PASS  [prep] REHEARSAL marker visible
+PASS  [prep] the action is in view without scrolling   → 951 / 1001
+PASS  [prep] hold label fully inside its button   → 40/52
+PASS  [prep] hold button at least 52px tall   → 52
+PASS  [prep] rail labels do not collide
+FAIL  [prep] rail stages aligned on one line   → 490,490,489,497
+PASS  [prep] no English interface text
+PASS  [second check] sheet starts below the header (EN | ES reachable)   → 179 vs 52
+PASS  [second check] REHEARSAL marker visible
+PASS  [second check] the action is in view without scrolling   → 951 / 1001
+PASS  [second check] hold label fully inside its button   → 20/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+FAIL  [second check] rail stages aligned on one line   → 490,490,489,497
+PASS  [second check] no English interface text
+PASS  [second check recorded] sheet starts below the header (EN | ES reachable)   → 180 vs 52
+PASS  [second check recorded] REHEARSAL marker visible
+PASS  [second check recorded] the action is in view without scrolling   → 892 / 1000
+PASS  [second check recorded] hold label fully inside its button   → 20/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+FAIL  [second check recorded] rail stages aligned on one line   → 448,448,440,455
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 361 vs 52
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is in view without scrolling   → 796 / 819
+PASS  [served recorded] rail labels do not collide
+FAIL  [served recorded] rail stages aligned on one line   → 604,604,596,604
+PASS  [served recorded] no English interface text
+FAIL  [lockout received] lockout has its own EN | ES, inside the viewport
+THREW Cannot read properties of null (reading 'getBoundingClientRect')
+TypeError: Cannot read properties of null (reading 'getBoundingClientRect')
+    at R (http://127.0.0.1:54954/?inst=1&fixture=1:2184:14)
+    at lockoutChecks (http://127.0.0.1:54954/?inst=1&fixture=1:2222:81)
+    at http://127.0.0.1:54954/?inst=1&fixture=1:2252:4
+
+39 pass, 6 FAIL
+════ viewport 390×844 ════
+FAIL  [board] header: every control inside the viewport   → vd-st ok,hb ok,vol-ctrl,hdr-btn
+FAIL  [board] header: venue name on one line, not clipped vertically
+PASS  [board] header: controls do not overlap
+PASS  [board] no English interface text
+FAIL  [board] summary items never split mid-phrase
+PASS  [board] row actions fully inside their rows
+FAIL  [received] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [received] REHEARSAL marker visible
+FAIL  [received] the action is in view without scrolling   → 866 / 824
+PASS  [received] hold label fully inside its button   → 40/52
+PASS  [received] hold button at least 52px tall   → 52
+PASS  [received] rail labels do not collide
+FAIL  [received] rail stages aligned on one line   → 297,310,303,310
+PASS  [received] no English interface text
+FAIL  [prep] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [prep] REHEARSAL marker visible
+FAIL  [prep] the action is in view without scrolling   → 1003 / 824
+PASS  [prep] hold label fully inside its button   → 40/52
+PASS  [prep] hold button at least 52px tall   → 52
+PASS  [prep] rail labels do not collide
+FAIL  [prep] rail stages aligned on one line   → 410,416,416,423
+PASS  [prep] no English interface text
+FAIL  [second check] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [second check] REHEARSAL marker visible
+FAIL  [second check] the action is in view without scrolling   → 956 / 824
+PASS  [second check] hold label fully inside its button   → 40/52
+PASS  [second check] hold button at least 52px tall   → 52
+PASS  [second check] rail labels do not collide
+FAIL  [second check] rail stages aligned on one line   → 387,393,393,400
+PASS  [second check] no English interface text
+FAIL  [second check recorded] sheet starts below the header (EN | ES reachable)   → 20 vs 52
+PASS  [second check recorded] REHEARSAL marker visible
+FAIL  [second check recorded] the action is in view without scrolling   → 907 / 824
+PASS  [second check recorded] hold label fully inside its button   → 40/52
+PASS  [second check recorded] hold button at least 52px tall   → 52
+PASS  [second check recorded] rail labels do not collide
+FAIL  [second check recorded] rail stages aligned on one line   → 330,337,323,344
+PASS  [second check recorded] no English interface text
+PASS  [served recorded] sheet starts below the header (EN | ES reachable)   → 169 vs 52
+PASS  [served recorded] REHEARSAL marker visible
+PASS  [served recorded] the action is in view without scrolling   → 652 / 675
+PASS  [served recorded] rail labels do not collide
+FAIL  [served recorded] rail stages aligned on one line   → 428,435,421,428
+PASS  [served recorded] no English interface text
+FAIL  [lockout received] lockout has its own EN | ES, inside the viewport
+THREW Cannot read properties of null (reading 'getBoundingClientRect')
+TypeError: Cannot read properties of null (reading 'getBoundingClientRect')
+    at R (http://127.0.0.1:55024/?inst=1&fixture=1:2184:14)
+    at lockoutChecks (http://127.0.0.1:55024/?inst=1&fixture=1:2222:81)
+    at http://127.0.0.1:55024/?inst=1&fixture=1:2252:4
+
+28 pass, 17 FAIL

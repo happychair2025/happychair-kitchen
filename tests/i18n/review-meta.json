@@ -1,0 +1,584 @@
+{
+ "brand": {
+  "group": "general",
+  "where": "Header, before the venue loads",
+  "meaning": "Product name.",
+  "concern": null
+ },
+ "app.activate": {
+  "group": "general",
+  "where": "Full-screen prompt when the display first opens",
+  "meaning": "Tap once so the display is allowed to play alert sounds.",
+  "concern": "Brand \"HC Kitchen\" stays in English."
+ },
+ "hdr.kitchen": {
+  "group": "general",
+  "where": "Header",
+  "meaning": "\"<Venue> · Kitchen\" — which venue this screen belongs to.",
+  "concern": null
+ },
+ "hdr.contrast": {
+  "group": "general",
+  "where": "Header button tooltip",
+  "meaning": "Switch to high-contrast colours.",
+  "concern": null
+ },
+ "lang.label": {
+  "group": "general",
+  "where": "EN | ES control (screen readers)",
+  "meaning": "Name of the language switch.",
+  "concern": null
+ },
+ "lang.blocked": {
+  "group": "errors",
+  "where": "Under the EN | ES control",
+  "meaning": "Language did not change because a hold or a save is in progress. Finish that first.",
+  "concern": null
+ },
+ "lang.not_saved": {
+  "group": "errors",
+  "where": "Under the EN | ES control",
+  "meaning": "Language changed on this screen but was not saved to the display; it will retry.",
+  "concern": null
+ },
+ "status.paired": {
+  "group": "general",
+  "where": "Header status pill",
+  "meaning": "\"<Display name> · Paired\" — this screen is signed in to the venue.",
+  "concern": null
+ },
+ "status.not_paired": {
+  "group": "errors",
+  "where": "Header status pill",
+  "meaning": "This screen is not signed in to any venue and shows no allergies.",
+  "concern": null
+ },
+ "status.pair_title": {
+  "group": "general",
+  "where": "Header status pill tooltip",
+  "meaning": "Open pairing.",
+  "concern": null
+ },
+ "offline.banner": {
+  "group": "errors",
+  "where": "Banner across the board",
+  "meaning": "The screen has lost its connection and new allergy alerts are NOT arriving.",
+  "concern": null
+ },
+ "board.empty": {
+  "group": "status",
+  "where": "Board when there is nothing to show",
+  "meaning": "No open allergy records for this service.",
+  "concern": null
+ },
+ "board.needs": {
+  "group": "status",
+  "where": "Board section heading",
+  "meaning": "Records the kitchen has not yet confirmed receiving — act now.",
+  "concern": "Deliberately not literal (\"Te necesita\"); \"Requiere acción\" chosen for clarity."
+ },
+ "board.working": {
+  "group": "status",
+  "where": "Board section heading",
+  "meaning": "Records received and in the kitchen workflow.",
+  "concern": null
+ },
+ "board.done": {
+  "group": "status",
+  "where": "Board section heading",
+  "meaning": "Records marked served in this service.",
+  "concern": null
+ },
+ "board.earlier": {
+  "group": "status",
+  "where": "Board section heading",
+  "meaning": "Records from before the current service.",
+  "concern": null
+ },
+ "board.show": {
+  "group": "general",
+  "where": "Earlier section toggle",
+  "meaning": "Show the earlier records.",
+  "concern": null
+ },
+ "board.hide": {
+  "group": "general",
+  "where": "Earlier section toggle",
+  "meaning": "Hide the earlier records.",
+  "concern": null
+ },
+ "board.earlier_note": {
+  "group": "status",
+  "where": "Under the Earlier heading",
+  "meaning": "These are not part of the service running now; review them in the Shift Record (an Admin page).",
+  "concern": "\"Shift Record\" kept in English: it is the name of the Admin page, which is in English."
+ },
+ "summary.tables.one": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "Count of tables with open records — singular.",
+  "concern": null
+ },
+ "summary.tables.other": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "Count of tables with open records — plural.",
+  "concern": null
+ },
+ "summary.allergies.one": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "Count of declared allergies — singular.",
+  "concern": null
+ },
+ "summary.allergies.other": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "Count of declared allergies — plural.",
+  "concern": null
+ },
+ "summary.anaphylaxis": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "How many open records are anaphylaxis severity.",
+  "concern": "\"{n} con anafilaxia\" = n records with anaphylaxis severity. Confirm it reads as a count of records, not of people with a diagnosis."
+ },
+ "summary.need_action.one": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "One record not yet confirmed by the kitchen.",
+  "concern": null
+ },
+ "summary.need_action.other": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "Several records not yet confirmed by the kitchen.",
+  "concern": null
+ },
+ "summary.all_confirmed": {
+  "group": "status",
+  "where": "Summary bar (bottom)",
+  "meaning": "Every open record has been confirmed received.",
+  "concern": "\"All Confirmed\" means all RECEIVED — not that anything is safe. \"Todas confirmadas\" agrees with \"alergias\"."
+ },
+ "row.rehearsal": {
+  "group": "rehearsal",
+  "where": "Badge on every rehearsal row",
+  "meaning": "This record is from a practice run, not a real guest.",
+  "concern": null
+ },
+ "row.updated": {
+  "group": "status",
+  "where": "Badge on a row",
+  "meaning": "The guest changed this allergy record; this is the newer version.",
+  "concern": null
+ },
+ "row.open": {
+  "group": "general",
+  "where": "Row (screen readers)",
+  "meaning": "Open this allergy record.",
+  "concern": null
+ },
+ "row.confirm_received": {
+  "group": "actions",
+  "where": "Row button (hold)",
+  "meaning": "Hold to confirm the kitchen has received this allergy.",
+  "concern": null
+ },
+ "row.confirm_prep": {
+  "group": "actions",
+  "where": "Row button (hold)",
+  "meaning": "Hold to confirm the prep area has been cleared and separated.",
+  "concern": null
+ },
+ "row.second_check": {
+  "group": "actions",
+  "where": "Row button (opens the record)",
+  "meaning": "Open the Second Check for this record.",
+  "concern": null
+ },
+ "row.second_check_aria": {
+  "group": "general",
+  "where": "Row button (screen readers)",
+  "meaning": "Open the Second Check.",
+  "concern": null
+ },
+ "row.mark_served": {
+  "group": "actions",
+  "where": "Row button (hold)",
+  "meaning": "Hold to record that this dish has left the kitchen.",
+  "concern": null
+ },
+ "sev.anaphylaxis": {
+  "group": "safety",
+  "where": "Severity badge — row, record, lockout",
+  "meaning": "The guest stated anaphylaxis: the most severe reaction.",
+  "concern": "Medical term \"ANAFILAXIA\". Confirm kitchen staff recognise it; if not, pair it with a plain word without weakening it."
+ },
+ "sev.severe": {
+  "group": "safety",
+  "where": "Severity badge",
+  "meaning": "The guest stated a severe reaction.",
+  "concern": null
+ },
+ "sev.discomfort": {
+  "group": "safety",
+  "where": "Severity badge",
+  "meaning": "The guest stated discomfort: the mildest stated severity.",
+  "concern": "\"MALESTAR\" — confirm it reads as neither more nor less serious than \"discomfort\"."
+ },
+ "sev.unsure": {
+  "group": "safety",
+  "where": "Severity badge",
+  "meaning": "The guest did not say how severe the reaction is. Treat the allergy as real.",
+  "concern": "NOT \"NO SEGURO\": \"seguro\" also means \"safe\", so \"no seguro\" reads as \"not safe\". \"GRAVEDAD NO INDICADA\" = severity not stated. Confirm."
+ },
+ "sev.unknown": {
+  "group": "safety",
+  "where": "Severity badge",
+  "meaning": "The record has no severity value.",
+  "concern": null
+ },
+ "chip.cross_contact": {
+  "group": "safety",
+  "where": "Badge — row, record, lockout",
+  "meaning": "The guest asked for CROSS-CONTACT precautions: prevent any trace of the allergen reaching their food through shared surfaces, utensils, oil, gloves or hands — not only bacterial contamination.",
+  "concern": "\"CONTACTO CRUZADO\" (allergen-specific) vs \"contaminación cruzada\" (common kitchen term that usually means microbial cross-contamination, a different concept). Do not choose \"contaminación cruzada\" just because it is familiar; the allergen meaning must survive."
+ },
+ "reh.full": {
+  "group": "rehearsal",
+  "where": "Top of the record and the lockout",
+  "meaning": "This whole record is a practice run. There is no real guest at this table.",
+  "concern": "GUEST = \"huésped\" (also in notes.heading, misc.guest). In a restaurant \"comensal\" or \"cliente\" may read more naturally; \"huésped\" leans hotel. Choose one word and use it everywhere."
+ },
+ "step.ack": {
+  "group": "safety",
+  "where": "Record title + wait line",
+  "meaning": "Current step: the kitchen confirms it has received the allergy.",
+  "concern": null
+ },
+ "step.prep": {
+  "group": "safety",
+  "where": "Record title + wait line",
+  "meaning": "Current step: confirm the prep area, utensils and surfaces are cleared and separated.",
+  "concern": "\"Confirmación de preparación\" can read as \"the dish was prepared\". The step is confirming the PREP AREA was cleared. (The English has the same ambiguity.)"
+ },
+ "step.verify": {
+  "group": "safety",
+  "where": "Record title + wait line + rail",
+  "meaning": "Current step: another team member checks the allergy preparation before the dish leaves.",
+  "concern": "\"Segunda revisión\", deliberately NOT \"verificación\": \"verificado\" reads as \"verified safe\", a stronger claim than \"Second Check\"."
+ },
+ "step.serve": {
+  "group": "safety",
+  "where": "Record title + wait line",
+  "meaning": "Current step: record that the dish has left the kitchen.",
+  "concern": "Agreement: \"servida\" agrees with \"la alergia\" (the record). If it reads as the dish it should be \"servido\" (el plato). Decide once — it recurs in row.mark_served, hold.serve, rail.served, err.serve, title.served_done."
+ },
+ "step.waiting": {
+  "group": "status",
+  "where": "Record, under the badges",
+  "meaning": "How long the current step has been waiting.",
+  "concern": null
+ },
+ "hold.ack": {
+  "group": "actions",
+  "where": "Main hold button — record and lockout",
+  "meaning": "Press and hold to record that the kitchen received this allergy.",
+  "concern": "\"Mantén presionado\" (Latin America) vs \"Mantén pulsado\" (Spain); informal \"tú\" throughout — confirm the register for kitchen staff."
+ },
+ "hold.prep": {
+  "group": "actions",
+  "where": "Main hold button — record and lockout",
+  "meaning": "Press and hold to record that the prep area was cleared and separated.",
+  "concern": "\"despejada\" = cleared of things. Must NOT drift toward \"limpia/libre de alérgenos\" (a claim). Confirm a cook reads it as \"cleared and separated\"."
+ },
+ "hold.verify": {
+  "group": "actions",
+  "where": "Main hold button — record",
+  "meaning": "Press and hold to record that the Second Check happened.",
+  "concern": "See step.verify — no \"verificación\"."
+ },
+ "hold.serve": {
+  "group": "actions",
+  "where": "Main hold button — record",
+  "meaning": "Press and hold to record that the dish left the kitchen.",
+  "concern": null
+ },
+ "do.ack": {
+  "group": "safety",
+  "where": "One-line instruction — record and lockout",
+  "meaning": "Confirm the kitchen has received this allergy.",
+  "concern": null
+ },
+ "do.prep": {
+  "group": "safety",
+  "where": "One-line instruction — record and lockout",
+  "meaning": "Clear and separate the prep area, utensils and surfaces.",
+  "concern": "Same concern as hold.prep."
+ },
+ "do.verify": {
+  "group": "safety",
+  "where": "One-line instruction — record",
+  "meaning": "Have a different team member check the allergy preparation. (The display cannot prove who did.)",
+  "concern": null
+ },
+ "do.serve": {
+  "group": "safety",
+  "where": "One-line instruction — record",
+  "meaning": "Record served when the dish leaves the kitchen.",
+  "concern": null
+ },
+ "do.complete": {
+  "group": "status",
+  "where": "Served record",
+  "meaning": "All four Kitchen steps are recorded. It says nothing about the guest or the plate.",
+  "concern": null
+ },
+ "do.gone": {
+  "group": "status",
+  "where": "Record that left the board",
+  "meaning": "This record is no longer current work here; nothing was recorded on this screen.",
+  "concern": null
+ },
+ "title.record": {
+  "group": "general",
+  "where": "Record title (fallback)",
+  "meaning": "An allergy record with no current step.",
+  "concern": null
+ },
+ "title.second_check_done": {
+  "group": "status",
+  "where": "Record title after the hold",
+  "meaning": "The Second Check was recorded.",
+  "concern": "See step.verify."
+ },
+ "title.served_done": {
+  "group": "status",
+  "where": "Record title after the hold",
+  "meaning": "Served was recorded.",
+  "concern": "Awkward (\"Servida: registrado\"). Needs a native phrasing that says only \"served was recorded\", and must not imply the guest received or ate it."
+ },
+ "title.gone": {
+  "group": "status",
+  "where": "Record title",
+  "meaning": "This record is no longer on the board.",
+  "concern": null
+ },
+ "ok.ack": {
+  "group": "status",
+  "where": "Confirmation banner — record and lockout",
+  "meaning": "The \"received\" step was recorded.",
+  "concern": null
+ },
+ "ok.prep": {
+  "group": "status",
+  "where": "Confirmation banner — record and lockout",
+  "meaning": "The \"prep area cleared\" step was recorded.",
+  "concern": "Same concern as hold.prep."
+ },
+ "ok.recorded": {
+  "group": "status",
+  "where": "Confirmation banner",
+  "meaning": "\"Recorded <time>\".",
+  "concern": null
+ },
+ "rail.received": {
+  "group": "status",
+  "where": "Progress rail",
+  "meaning": "Stage 1 — the allergy reached the kitchen.",
+  "concern": null
+ },
+ "rail.confirmed": {
+  "group": "status",
+  "where": "Progress rail",
+  "meaning": "Stage 2 — the kitchen confirmed it.",
+  "concern": null
+ },
+ "rail.second_check": {
+  "group": "status",
+  "where": "Progress rail",
+  "meaning": "Stage 3 — Second Check recorded.",
+  "concern": null
+ },
+ "rail.served": {
+  "group": "status",
+  "where": "Progress rail",
+  "meaning": "Stage 4 — served recorded.",
+  "concern": null
+ },
+ "ref.avoid_all": {
+  "group": "safety",
+  "where": "Heading above each reference list",
+  "meaning": "\"Avoid all — <allergen>\": ingredients that contain or derive from this allergen.",
+  "concern": "Infinitive \"Evitar todo\" (sign style) vs imperative \"Evita todo\". The allergen name after the dash is English data until a canonical allergen vocabulary exists, so the heading is mixed-language by design."
+ },
+ "ref.check_ingredients": {
+  "group": "safety",
+  "where": "Heading when no reference list exists",
+  "meaning": "There is no list for this allergen; check the ingredients yourself.",
+  "concern": null
+ },
+ "ref.no_list": {
+  "group": "safety",
+  "where": "Under that heading",
+  "meaning": "No reference list exists; confirm ingredients before preparing.",
+  "concern": null
+ },
+ "ref.untranslated": {
+  "group": "safety",
+  "where": "Under the reference lists (Spanish only)",
+  "meaning": "Tells the cook the allergen names and lists are in English and were NOT translated.",
+  "concern": "Must state plainly that this data is untranslated. It is shown only when the screen language is not English."
+ },
+ "notes.heading": {
+  "group": "safety",
+  "where": "Above the guest's own words",
+  "meaning": "What the guest wrote, verbatim.",
+  "concern": "See reh.full on \"huésped\". \"(sin traducir)\" is deliberate: guest text is never machine-translated."
+ },
+ "prov.line": {
+  "group": "safety",
+  "where": "Small line under the action",
+  "meaning": "\"<Display> · <Venue> — records the display, not the person.\" The screen knows which display acted, never which person.",
+  "concern": null
+ },
+ "prov.this_display": {
+  "group": "general",
+  "where": "Inside prov.line (fallback)",
+  "meaning": "\"This display\" when the display name is not known yet.",
+  "concern": null
+ },
+ "prov.this_venue": {
+  "group": "general",
+  "where": "Inside prov.line (fallback)",
+  "meaning": "\"this venue\" before the venue name loads.",
+  "concern": "\"este local\" vs \"este restaurante\" / \"este establecimiento\"."
+ },
+ "nav.back": {
+  "group": "general",
+  "where": "Button — record and lockout",
+  "meaning": "Return to the board.",
+  "concern": null
+ },
+ "nav.close": {
+  "group": "general",
+  "where": "Close (×) button, screen readers",
+  "meaning": "Close this screen.",
+  "concern": null
+ },
+ "lock.next": {
+  "group": "safety",
+  "where": "Lockout after prep",
+  "meaning": "The next Kitchen step for this record is the Second Check.",
+  "concern": null
+ },
+ "misc.table": {
+  "group": "general",
+  "where": "Fallback label",
+  "meaning": "\"Table\" when a record has no service point.",
+  "concern": null
+ },
+ "misc.guest": {
+  "group": "general",
+  "where": "Fallback label",
+  "meaning": "\"Guest\" when no name was given.",
+  "concern": "See reh.full."
+ },
+ "err.not_paired": {
+  "group": "errors",
+  "where": "Record, after a hold",
+  "meaning": "Nothing was recorded: this screen is not paired. Pair it in Set Up (Admin).",
+  "concern": "\"Set Up\" kept in English: it is the Admin menu label."
+ },
+ "err.ack": {
+  "group": "errors",
+  "where": "Record / lockout, after a hold",
+  "meaning": "\"Received\" was NOT recorded. Hold again.",
+  "concern": null
+ },
+ "err.prep": {
+  "group": "errors",
+  "where": "Record / lockout, after a hold",
+  "meaning": "\"Prep\" was NOT recorded. Hold again.",
+  "concern": null
+ },
+ "err.verify": {
+  "group": "errors",
+  "where": "Record, after a hold",
+  "meaning": "\"Second Check\" was NOT recorded. Hold again.",
+  "concern": null
+ },
+ "err.serve": {
+  "group": "errors",
+  "where": "Record, after a hold",
+  "meaning": "\"Served\" was NOT recorded. Hold again.",
+  "concern": null
+ },
+ "err.minimize": {
+  "group": "errors",
+  "where": "Record",
+  "meaning": "Hidden on this screen but not saved.",
+  "concern": null
+ },
+ "pair.title": {
+  "group": "general",
+  "where": "Pairing screen",
+  "meaning": "Pair this display.",
+  "concern": null
+ },
+ "pair.body": {
+  "group": "general",
+  "where": "Pairing screen",
+  "meaning": "Where to get the 6-digit code in Admin.",
+  "concern": null
+ },
+ "pair.button": {
+  "group": "actions",
+  "where": "Pairing screen",
+  "meaning": "Submit the code.",
+  "concern": null
+ },
+ "pair.need_code": {
+  "group": "errors",
+  "where": "Pairing screen",
+  "meaning": "The code must be 6 digits.",
+  "concern": null
+ },
+ "pair.pairing": {
+  "group": "general",
+  "where": "Pairing screen",
+  "meaning": "Working.",
+  "concern": null
+ },
+ "pair.failed": {
+  "group": "errors",
+  "where": "Pairing screen",
+  "meaning": "The code was refused.",
+  "concern": null
+ },
+ "pair.unreachable": {
+  "group": "errors",
+  "where": "Pairing screen",
+  "meaning": "No connection to Happy Chair.",
+  "concern": null
+ },
+ "pair.done_title": {
+  "group": "general",
+  "where": "Pairing screen",
+  "meaning": "Pairing succeeded.",
+  "concern": null
+ },
+ "pair.done_body": {
+  "group": "general",
+  "where": "Pairing screen",
+  "meaning": "This display is signed in to the venue; it identifies the display, not the person.",
+  "concern": null
+ },
+ "pair.this_venue": {
+  "group": "general",
+  "where": "Pairing screen (fallback)",
+  "meaning": "\"This venue\" before the name loads.",
+  "concern": null
+ }
+}

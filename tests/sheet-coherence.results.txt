@@ -1,10 +1,10 @@
-      ordinary C        gaps [6,12,2,8,8,31]  h=654
-      Second Check Rec. gaps [6,12,2,8,8,31]  h=693
-      Served Recorded   gaps [6,12,2,8,8,6]  h=459
+      ordinary C        gaps [6,12,2,8,8,31]  h=652
+      Second Check Rec. gaps [6,12,2,8,8,31]  h=677
+      Served Recorded   gaps [6,12,2,8,8,6]  h=443
 ──── 1 · COMPLETED RAIL READS COMPLETED ────
 PASS  Served Recorded: all four stages complete   → Received✓ Confirmed✓ Second Check✓ Served✓
 PASS  ...none grey/disabled
-PASS  ...every stage keeps its timestamp   → 10:35 PM | 11:59 PM | 06:00 PM | 06:00 PM
+PASS  ...every stage keeps its timestamp   → 03:04 PM | 04:28 PM | 10:28 AM | 10:28 AM
 PASS  ...connectors between completed stages use the success class
 PASS  Second Check Recorded: three complete, Served pending (not green)
 PASS  ordinary record: completed stages green, owed ones neutral

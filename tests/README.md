@@ -207,3 +207,30 @@ verified; provenance written to the database stays "Kitchen Display".
 `kitchen-i18n-boot.probe.js` (5 per display): run with `?devlocale=es` and `?devlocale=en` in
 fresh profiles — each display starts in its own stored language, writes nothing to read it, and
 caches it for first paint.
+
+## Release gate — string catalog (`i18n/check-catalog.js`) — runs as the Vercel build
+
+`vercel.json` runs `node tests/i18n/check-catalog.js` as the build command, so a release with a
+broken Kitchen catalog does not deploy. It fails on: a missing or orphaned key in any supported
+locale, an empty value, mismatched {placeholders}, code referencing an unknown key, a Spanish
+value claiming safe / allergen-free / verified / guaranteed / certified / protected, or a
+user-visible string in the markup or render code that bypasses the catalog without being
+classified in its DATA allowlist (each entry says why it is shown verbatim).
+`check-catalog.mutations.txt`: eight deliberate breakages, each one blocked.
+
+## Spanish review material (`i18n/`)
+
+`review-meta.json` (where each string appears, what it means operationally, the review concern)
+plus the catalog generate, via `build-review.js`, both `KITCHEN_STRINGS_EN_ES.md` and the
+reviewer page (`review-page.template.html`). Neither can drift from the code. Spanish is NOT
+approved for pilot until a native speaker who knows restaurant kitchens has reviewed it;
+Cross-contact is explicitly unresolved.
+
+## Layout QA (`kitchen-layout.*`, `renders/i18n-es-qa/`)
+
+Spanish, at 1280×800, 1024×768, 820×1180 and 390×844: header fits and never clips, hold labels
+inside their buttons and ≥52px, the record sheet starts below the header (EN | ES reachable)
+and scrolls to its action without covering guest notes, the lockout keeps its action in view
+and has its own EN | ES, rail stages aligned and labels never collide, rehearsal visible, no
+English interface text. 65 checks per viewport. `kitchen-layout.before-18dd941.txt` is the
+same walk (earlier probe revision) against the previous release.

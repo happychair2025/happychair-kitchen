@@ -9,7 +9,7 @@ PASS  exactly one provenance line, display not person
 PASS  provenance is subordinate (smaller than the instruction)
 PASS  wait line names the owed step
 PASS  Avoid all + guest notes present
-PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 46 76 114 149 177 218 251 274 353 564 598 631 693
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 88 118 156 191 219 260 293 316 393 604 638 672 734
 PASS  one action: Hold to Confirm Allergy Received
 PASS  no prohibited claims
 
@@ -23,7 +23,7 @@ PASS  exactly one provenance line, display not person
 PASS  provenance is subordinate (smaller than the instruction)
 PASS  wait line names the owed step
 PASS  Avoid all + guest notes present
-PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 43 73 161 196 224 265 298 321 400 611 645 678 740
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 88 118 206 241 269 310 343 366 443 654 688 722 784
 PASS  one action: Hold to Confirm Prep Area Cleared
 PASS  no prohibited claims
 PASS  Received confirmation shown once, in place
@@ -38,7 +38,7 @@ PASS  exactly one provenance line, display not person
 PASS  provenance is subordinate (smaller than the instruction)
 PASS  wait line names the owed step
 PASS  Avoid all + guest notes present
-PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 43 73 161 196 224 265 298 321 400 611 645 678 740
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 88 118 206 241 269 310 343 366 443 654 688 722 784
 PASS  one action: Hold to Record Second Check
 PASS  no prohibited claims
 
@@ -52,7 +52,7 @@ PASS  exactly one provenance line, display not person
 PASS  provenance is subordinate (smaller than the instruction)
 PASS  wait line names the owed step
 PASS  Avoid all + guest notes present
-PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 43 73 111 146 174 215 248 271 364 575 609 642 704
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .vfy-el → .prog → .avoid → .al-notes → .vfy-do → .vfy-go → .vfy-prov   → 88 118 156 191 219 260 293 316 393 604 638 672 734
 PASS  one action: Hold to Mark Served
 PASS  Back to Kitchen Board
 PASS  no prohibited claims
@@ -67,7 +67,7 @@ PASS  exactly one provenance line, display not person
 PASS  provenance is subordinate (smaller than the instruction)
 PASS  no wait line once served
 PASS  reference lists gone once served
-PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .prog → .vfy-do → .vfy-prov   → 172 202 240 275 303 344 375 476 509
+PASS  hierarchy order: .vfy-reh → .vfy-t → .vfy-tbl → .vfy-guest → .vfy-al → .vfy-marks → .prog → .vfy-do → .vfy-prov   → 206 236 274 309 337 378 409 494 528
 PASS  Back to Kitchen Board
 PASS  no prohibited claims
 PASS  served: rail carries the served time (not repeated as prose)

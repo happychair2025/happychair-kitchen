@@ -1,0 +1,308 @@
+<title>Kitchen Spanish Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column of string "tickets" — English beside Spanish, the meaning under
+   them, the decision at the foot of each — grouped by how the kitchen uses them. */
+:root{
+  --ink:#16202b; --ink-2:#465566; --ink-3:#6b7a8b;
+  --paper:#f5f7f9; --card:#ffffff; --rule:#d9e0e7; --rule-2:#c3ccd6;
+  --accent:#1f4f8a; --accent-ink:#ffffff; --accent-soft:#e3ecf7;
+  --ok:#17784a; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --crit:#b3261e; --crit-soft:#fbe7e5; --reh:#6d4fc2;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --ink:#e6ecf2; --ink-2:#aab6c3; --ink-3:#8593a2;
+  --paper:#0f151c; --card:#16202a; --rule:#26323f; --rule-2:#34424f;
+  --accent:#7fb0ec; --accent-ink:#0f151c; --accent-soft:#1b2b3f;
+  --ok:#5fcf97; --ok-soft:#14291f; --warn:#f0b35a; --warn-soft:#2b2214;
+  --crit:#ff8a80; --crit-soft:#341b1a; --reh:#b9a3ff;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ink:#e6ecf2; --ink-2:#aab6c3; --ink-3:#8593a2;
+  --paper:#0f151c; --card:#16202a; --rule:#26323f; --rule-2:#34424f;
+  --accent:#7fb0ec; --accent-ink:#0f151c; --accent-soft:#1b2b3f;
+  --ok:#5fcf97; --ok-soft:#14291f; --warn:#f0b35a; --warn-soft:#2b2214;
+  --crit:#ff8a80; --crit-soft:#341b1a; --reh:#b9a3ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--body);padding-inline:16px}
+.wrap{max-width:980px;margin:0 auto;padding-block:36px 80px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.5vw,40px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:700;margin-block:44px 6px}
+.lede{max-width:68ch;color:var(--ink-2);margin:10px 0 0}
+.lede strong{color:var(--ink)}
+.status{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:6px 12px;border-radius:999px;
+  background:var(--crit-soft);color:var(--crit);font:700 13px/1 var(--display);letter-spacing:.06em;text-transform:uppercase}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:22px}
+.rule{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 16px}
+.rule b{display:block;font-family:var(--display);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.meter{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);margin-top:26px;padding-block:12px;border-bottom:1px solid var(--rule)}
+.meter-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+.bar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--rule);flex:1 1 220px;min-width:160px}
+.bar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0;background:var(--c)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.filters button{font:600 14px var(--body);border:1px solid var(--rule-2);background:var(--card);color:var(--ink-2);border-radius:999px;padding:5px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.who{font-size:14px;color:var(--ink-3);margin-left:auto}
+.untr{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+.untr-wrap{overflow-x:auto}
+.untr th,.untr td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.untr th{font:700 12px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.untr td:nth-child(2){font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+.sec-sub{color:var(--ink-2);margin:0 0 14px;max-width:68ch}
+.str{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:16px 18px;margin-top:12px}
+.str.unresolved{border-color:var(--crit);box-shadow:0 0 0 1px var(--crit)}
+.str-hd{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.key{font:400 12.5px var(--mono);color:var(--ink-3)}
+.where{font-size:14px;color:var(--ink-2)}
+.pill{margin-left:auto;font:700 12px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;padding:5px 9px;border-radius:6px;background:var(--rule);color:var(--ink-2)}
+.pill.approved{background:var(--ok-soft);color:var(--ok)}
+.pill.changed{background:var(--accent-soft);color:var(--accent)}
+.pill.discuss{background:var(--warn-soft);color:var(--warn)}
+.pill.unres{background:var(--crit-soft);color:var(--crit)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+@media (max-width:640px){.pair{grid-template-columns:1fr}}
+.lbl{font:700 11.5px var(--display);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.txt{font-size:18px;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.txt .ph{font-family:var(--mono);font-size:.82em;font-weight:400;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:0 4px}
+.txt.empty{color:var(--ink-3);font-weight:400;font-style:italic}
+.meaning{margin:12px 0 0;color:var(--ink-2);font-size:15px}
+.meaning b{color:var(--ink)}
+.concern{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--warn-soft);color:var(--ink);font-size:15px}
+.concern b{color:var(--warn)}
+.unresolved .concern{background:var(--crit-soft)}
+.unresolved .concern b{color:var(--crit)}
+.decide{margin-top:14px;padding-top:12px;border-top:1px dashed var(--rule-2);display:grid;gap:8px}
+.decide label{font:700 11.5px var(--display);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.decide textarea,.decide input{width:100%;font:16px/1.45 var(--body);color:var(--ink);background:var(--paper);border:1px solid var(--rule-2);border-radius:8px;padding:8px 10px}
+.decide textarea{min-height:44px;resize:vertical}
+.decide textarea:focus-visible,.decide input:focus-visible,.acts button:focus-visible,.filters button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{font-size:13px;color:var(--ink-3)}
+.err{font-size:14px;color:var(--crit);font-weight:600}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.acts button{font:600 15px var(--body);border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid var(--rule-2);background:var(--card);color:var(--ink)}
+.acts .b-ok{background:var(--ok);border-color:var(--ok);color:var(--card)}
+.acts .b-mine{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.acts .b-disc{border-color:var(--warn);color:var(--warn)}
+.acts button:disabled{opacity:.5;cursor:default}
+.foot{font-size:13px;color:var(--ink-3)}
+.foot.stale{color:var(--crit);font-weight:600}
+.ro{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--accent-soft);color:var(--ink);font-size:15px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.str{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+  <h1>Kitchen Spanish Review</h1>
+  <p class="lede">Every word the Happy Chair <strong>Kitchen Display</strong> shows a cook, in English and in the current draft Spanish. Cooks read this screen at a distance, during service, sometimes during an anaphylaxis alert. Please judge each line by one question: <strong>would a Spanish-speaking cook do exactly the right thing after reading it?</strong></p>
+  <div class="status">Spanish is a draft · not approved for pilot</div>
+
+  <div class="rules">
+    <div class="rule"><b>Never say more than the English</b>The Spanish must not claim food is safe, allergen-free, verified, guaranteed, certified or protected. The screen only records steps; it cannot prove a plate is safe.</div>
+    <div class="rule"><b>Keep the allergen meaning</b>“Cross-contact” means a trace of the allergen reaching the food through shared surfaces, utensils, oil, gloves or hands. It is not only bacterial contamination.</div>
+    <div class="rule"><b>Keep the placeholders</b>Text in <span class="key">{braces}</span> is filled in by the system (a number, a name, a time). Keep each one, in any position the Spanish needs.</div>
+  </div>
+
+  <div class="meter" id="meter">
+    <div class="meter-row">
+      <div class="bar" id="bar" aria-hidden="true"></div>
+      <div class="legend" id="legend"></div>
+      <div class="who" id="who"></div>
+    </div>
+    <div class="filters" role="group" aria-label="Show">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="open" aria-pressed="false">Not reviewed</button>
+      <button type="button" data-f="discuss" aria-pressed="false">Needs discussion</button>
+      <button type="button" data-f="flagged" aria-pressed="false">Flagged only</button>
+    </div>
+  </div>
+
+  <div id="ro" class="ro" hidden></div>
+
+  <h2>Shown in English on purpose</h2>
+  <p class="sec-sub">This data is not translated in this phase. In Spanish mode the screen says so (“sin traducir”). Please do not translate these.</p>
+  <div class="untr-wrap"><table class="untr" id="untr"><thead><tr><th>Data</th><th>Example</th><th>Why it stays as it is</th></tr></thead><tbody></tbody></table></div>
+
+  <div id="sections"></div>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const CLAIM = /segur|libre de|sin al[eé]rgenos|garantiz|certificad|protegid|verificad|apto para/i;
+const PH = s => (String(s).match(/\{\w+\}/g) || []).sort().join(',');
+const LABEL = { approved: 'Approved', changed: 'Approved with changes', discuss: 'Needs discussion' };
+const reviews = {};          // key -> stored decision
+let db = null, canWrite = true, myId = null, user = null, filter = 'all';
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+}
+// Show {placeholders} as marked tokens, everything else as plain text.
+function phText(s) {
+  const f = document.createDocumentFragment();
+  String(s).split(/(\{\w+\})/).forEach(p => f.append(/^\{\w+\}$/.test(p) ? el('span', { class: 'ph', text: p }) : document.createTextNode(p)));
+  return f;
+}
+function stateOf(r) {
+  const v = reviews[r.key];
+  if (!v) return DATA.unresolved.includes(r.key) ? 'unres' : 'open';
+  return v.decision;
+}
+
+function card(r) {
+  const unres = DATA.unresolved.includes(r.key);
+  const a = el('article', { class: 'str' + (unres ? ' unresolved' : ''), id: 'k-' + r.key, 'data-key': r.key });
+  const pill = el('span', { class: 'pill' });
+  a.append(el('div', { class: 'str-hd' }, el('span', { class: 'key', text: r.key }), el('span', { class: 'where', text: r.where }), pill));
+  const es = el('div', { class: 'txt' + (r.es ? '' : ' empty') }); es.append(r.es ? phText(r.es) : 'missing');
+  const en = el('div', { class: 'txt' }); en.append(phText(r.en));
+  a.append(el('div', { class: 'pair' },
+    el('div', {}, el('div', { class: 'lbl', text: 'English' }), en),
+    el('div', {}, el('div', { class: 'lbl', text: 'Current Spanish' }), es)));
+  const m = el('p', { class: 'meaning' }); m.append(el('b', { text: 'Operational meaning. ' }), r.meaning); a.append(m);
+  if (r.concern) {
+    const c = el('div', { class: 'concern' });
+    c.append(el('b', { text: unres ? 'Unresolved — needs approval by a native speaker who knows restaurant kitchens. ' : 'Review concern. ' }), r.concern);
+    a.append(c);
+  }
+  const ta = el('textarea', { id: 'ap-' + r.key, rows: '2', placeholder: 'Leave empty to approve the current Spanish as it is' });
+  const note = el('input', { id: 'nt-' + r.key, type: 'text', placeholder: 'Optional note for the team' });
+  const err = el('div', { class: 'err', role: 'alert' });
+  const bOk = el('button', { type: 'button', class: 'b-ok', text: 'Approve current Spanish' });
+  const bMine = el('button', { type: 'button', class: 'b-mine', text: 'Approve my wording' });
+  const bDisc = el('button', { type: 'button', class: 'b-disc', text: 'Needs discussion' });
+  const phs = PH(r.en);
+  const d = el('div', { class: 'decide' },
+    el('label', { for: 'ap-' + r.key, text: 'Reviewer-approved Spanish' }), ta,
+    phs ? el('div', { class: 'hint', text: 'Keep: ' + phs.split(',').join(' ') }) : null,
+    el('label', { for: 'nt-' + r.key, text: 'Note' }), note, err,
+    el('div', { class: 'acts' }, bOk, bMine, bDisc));
+  const foot = el('div', { class: 'foot' });
+  a.append(d, foot);
+  bOk.onclick = () => save(r, 'approved', r.es, note.value, err);
+  bMine.onclick = () => save(r, 'changed', ta.value.trim(), note.value, err);
+  bDisc.onclick = () => save(r, 'discuss', ta.value.trim(), note.value, err);
+  a._ui = { pill, ta, note, err, foot, btns: [bOk, bMine, bDisc] };
+  return a;
+}
+
+async function save(r, decision, text, noteText, err) {
+  err.textContent = '';
+  if (decision === 'changed') {
+    if (!text) { err.textContent = 'Type the Spanish you approve, or use “Approve current Spanish”.'; return }
+    if (PH(text) !== PH(r.en)) { err.textContent = 'The wording must keep exactly these placeholders: ' + (PH(r.en) || 'none') + '.'; return }
+  }
+  if (decision !== 'discuss' && CLAIM.test(text)) { err.textContent = 'This wording claims more than the English (safe, allergen-free, verified, guaranteed, certified or protected). The screen cannot prove that.'; return }
+  if (!db || !canWrite) { err.textContent = 'Your access to this page is view-only, so decisions cannot be saved.'; return }
+  const body = { decision, approved_es: decision === 'approved' ? r.es : text, note: noteText.trim(),
+    reviewed_es: r.es, reviewed_en: r.en, by: myId, at: new Date().toISOString() };
+  const ui = document.getElementById('k-' + r.key)._ui; ui.btns.forEach(b => b.disabled = true);
+  try { await db.collection('reviews').doc(r.key).set(body) }
+  catch (e) {
+    if (e && e.code === 'invalid_argument') { canWrite = false; showReadOnly() }
+    err.textContent = e && e.code === 'invalid_argument' ? 'Your access to this page is view-only, so decisions cannot be saved.' : 'That did not save. Check your connection and try again.';
+  } finally { ui.btns.forEach(b => b.disabled = !canWrite) }
+}
+
+async function paintCard(r) {
+  const a = document.getElementById('k-' + r.key); if (!a) return;
+  const ui = a._ui, v = reviews[r.key], st = stateOf(r);
+  ui.pill.className = 'pill ' + (st === 'open' ? '' : st);
+  ui.pill.textContent = st === 'open' ? 'Not reviewed' : st === 'unres' ? 'Unresolved' : LABEL[st];
+  if (v) {
+    if (document.activeElement !== ui.ta) ui.ta.value = v.decision === 'approved' ? '' : (v.approved_es || '');
+    if (document.activeElement !== ui.note) ui.note.value = v.note || '';
+    let name = 'a reviewer';
+    if (v.by && v.by === myId) name = 'you';
+    else if (v.by && user) { const ps = await user.profiles([v.by]); name = (ps[v.by] && ps[v.by].name) || 'a reviewer' }
+    const stale = v.reviewed_es !== r.es || v.reviewed_en !== r.en;
+    ui.foot.className = 'foot' + (stale ? ' stale' : '');
+    ui.foot.textContent = (stale ? 'The string changed after this review — please look again. ' : '')
+      + LABEL[v.decision] + ' by ' + name + ' · ' + new Date(v.at).toLocaleString();
+  } else { ui.foot.className = 'foot'; ui.foot.textContent = '' }
+}
+
+function paintMeter() {
+  const c = { approved: 0, changed: 0, discuss: 0, open: 0 };
+  DATA.rows.forEach(r => { const s = stateOf(r); c[s === 'unres' ? 'open' : s]++ });
+  const n = DATA.rows.length, colors = { approved: 'var(--ok)', changed: 'var(--accent)', discuss: 'var(--warn)', open: 'var(--rule-2)' };
+  const bar = document.getElementById('bar'); bar.innerHTML = '';
+  for (const k of ['approved', 'changed', 'discuss']) if (c[k]) bar.append(el('i', { style: `width:${100 * c[k] / n}%;background:${colors[k]}` }));
+  const lg = document.getElementById('legend'); lg.innerHTML = '';
+  [['approved', 'approved'], ['changed', 'approved with changes'], ['discuss', 'need discussion'], ['open', 'not reviewed']]
+    .forEach(([k, t]) => lg.append(el('span', { style: '--c:' + colors[k], text: c[k] + ' ' + t })));
+}
+
+function applyFilter() {
+  document.querySelectorAll('.str').forEach(a => {
+    const r = DATA.rows.find(x => x.key === a.dataset.key), st = stateOf(r);
+    a.hidden = !(filter === 'all' || (filter === 'open' && (st === 'open' || st === 'unres')) || (filter === 'discuss' && st === 'discuss') || (filter === 'flagged' && r.concern));
+  });
+  document.querySelectorAll('section[data-g]').forEach(s => { s.hidden = !s.querySelector('.str:not([hidden])') });
+}
+
+function showReadOnly() {
+  const ro = document.getElementById('ro');
+  ro.hidden = false;
+  ro.textContent = db ? 'You can read this page but not record decisions. Ask the owner for Contributor access to review.'
+                      : 'Decisions cannot be saved in this view. You can still read every string.';
+  document.querySelectorAll('.decide').forEach(d => d.querySelectorAll('textarea,input,button').forEach(x => x.disabled = true));
+}
+
+function build() {
+  const tb = document.querySelector('#untr tbody');
+  DATA.untranslated.forEach(u => tb.append(el('tr', {}, ...u.map(t => el('td', { text: t })))));
+  const S = document.getElementById('sections');
+  const sec = (id, title, sub, list) => {
+    const s = el('section', { 'data-g': id }, el('h2', { text: title + ' (' + list.length + ')' }), sub ? el('p', { class: 'sec-sub', text: sub }) : null);
+    list.forEach(r => s.append(card(r))); S.append(s);
+  };
+  sec('flagged', 'Needs your judgement', 'Flagged for review: a term with more than one reasonable Spanish reading, a register question, or a risk of saying more than the English. Cross-contact is first and stays unresolved until approved.',
+    DATA.flagged.map(k => DATA.rows.find(r => r.key === k)));
+  DATA.groups.forEach(([g, label]) => {
+    const list = DATA.rows.filter(r => !r.concern && r.group === g);
+    if (list.length) sec(g, label, null, list);
+  });
+  DATA.rows.forEach(paintCard); paintMeter();
+  document.querySelectorAll('.filters button').forEach(b => b.onclick = () => {
+    filter = b.dataset.f;
+    document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    applyFilter();
+  });
+}
+
+build();
+(async () => {
+  const c = window.claude;
+  if (!c || !c.use) { showReadOnly(); return }
+  [db, user] = await Promise.all([c.use('db'), c.use('user')]);
+  if (!db) { showReadOnly(); return }
+  if (user) {
+    myId = await user.id();
+    const w = await user.can('data.write');
+    if (w === false) { canWrite = false; showReadOnly() }
+    const me = await user.me();
+    document.getElementById('who').textContent = me.name ? 'Reviewing as ' + me.name : '';
+  }
+  db.collection('reviews').onSnapshot(snap => {
+    for (const k of Object.keys(reviews)) delete reviews[k];
+    snap.docs.forEach(d => { if (d.exists) reviews[d.id] = d.data() });
+    DATA.rows.forEach(paintCard); paintMeter(); applyFilter();
+  }, () => {});
+})();
+</script>
