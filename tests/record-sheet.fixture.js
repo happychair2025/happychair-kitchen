@@ -40,7 +40,7 @@ if(location.search.indexOf('inst=1')>=0){
     then:function(r,j){return Promise.resolve(v).then(r,j)}};return o};
   // This display's stored language (venue_devices.display_locale) — ?devlocale=es starts the
   // board as a display whose default is Spanish. set_own_display_locale is recorded, not sent.
-  window.__DEVICE_LOCALE=(location.search.match(/devlocale=([a-z]+)/)||[])[1]||'en';
+  window.__DEVICE_LOCALE=(location.search.match(/devlocale=([A-Za-z-]+)/)||[])[1]||'en';
   window.__LOCALE_RPC=[];
   var stub={ rpc:function(fn,args){ __L('net.rpc',fn);
       if(fn==='set_own_display_locale'){window.__LOCALE_RPC.push(args);

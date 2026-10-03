@@ -1,2 +1,2 @@
-Kitchen catalog: 97 keys × 2 locales (en, es); 94 keys referenced by code; 8 data strings classified.
+Kitchen catalog: 97 keys × 3 locales (en, es, zh-CN); 94 keys referenced by code; 8 data strings classified.
 ✓ every supported locale is complete, consistent and claim-free; no visible string bypasses the catalog.

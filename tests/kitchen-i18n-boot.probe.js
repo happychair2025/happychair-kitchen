@@ -7,10 +7,10 @@ const w=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{try{
  for(let i=0;i<80&&document.querySelectorAll('.row').length<3;i++)await w(100);
  await w(500);
- const want=(location.search.match(/devlocale=([a-z]+)/)||[])[1];
+ const want=(location.search.match(/devlocale=([A-Za-z-]+)/)||[])[1];
  T.push('      display stored default: '+want);
  ok('board started in this display\'s stored language',locale===want&&document.documentElement.lang===want);
- ok('board text matches',want==='es'?/Requiere acción|En curso/i.test(document.getElementById('cardArea').innerText):/Needs You|In Progress/i.test(document.getElementById('cardArea').innerText));
+ ok('board text matches',({es:/Requiere acción|En curso/i,'zh-CN':/需要处理|进行中/,en:/Needs You|In Progress/i})[want].test(document.getElementById('cardArea').innerText));
  ok('EN | ES control shows it',document.querySelector('#langSw .lang-b[data-l="'+want+'"]').getAttribute('aria-pressed')==='true');
  ok('reading the default wrote nothing (no locale save, no AllergyShield write)',window.__LOCALE_RPC.length===0&&window.__W__.length===0);
  const c=JSON.parse(localStorage.getItem('hc_k_locale')||'null');

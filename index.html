@@ -10,6 +10,10 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+/* Simplified Chinese: the platform's SC face first, so no glyph falls back to a Japanese or
+   Traditional form; tracking off, since letter-spacing breaks CJK text apart. */
+:lang(zh-CN) body,body:lang(zh-CN),.lang-b:lang(zh-CN){font-family:-apple-system,'PingFang SC','Noto Sans SC','Noto Sans CJK SC','Source Han Sans SC','Microsoft YaHei','Hiragino Sans GB',sans-serif}
+html:lang(zh-CN) *{letter-spacing:0!important}
 :root{--bg:#0d1117;--s1:#141d2b;--s2:#1a2535;--b:#1e2d3d;--b2:#2d3f54;--b-soft:rgba(30,45,61,.3);--cyan:#22d3ee;--warn:#f59e0b;--danger:#ef4444;--ok:#10b981;--t1:#e2e8f0;--t2:#94a3b8;--t3:#636e7b;--t4:#4a5568}
 body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(51,51,51,.3);--danger:#f33;--warn:#fc0;--ok:#0f0;--cyan:#0ff;--t1:#fff;--t2:#ccc;--t3:#999;--t4:#777}
 #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
@@ -35,7 +39,9 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .hdr-btn{width:40px;height:40px;border-radius:8px;background:var(--s2);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:.15s}
 .hdr-btn:hover{background:var(--s2);border-color:var(--b2)}
 .hdr-btn.on{border-color:var(--cyan);color:var(--cyan)}
-.offline-banner{display:none;position:fixed;top:52px;left:0;right:0;background:rgba(239,68,68,.15);border-bottom:2px solid var(--danger);padding:14px 20px;z-index:90;text-align:center;color:var(--danger);font-size:20px;font-weight:700}
+/* In the page flow, between the header and the board: it pushes the board down rather than
+   lying over the cards it is warning about. */
+.offline-banner{display:none;position:relative;flex-shrink:0;background:#2a1418;border-bottom:2px solid var(--danger);padding:14px 20px;text-align:center;color:var(--danger);font-size:20px;font-weight:700}
 .offline-banner.on{display:block}
 .main{flex:1;overflow-y:auto;padding:12px 16px;position:relative}
 .sec-l{font-size:13px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 6px 4px;display:flex;align-items:center;gap:8px}
@@ -263,7 +269,7 @@ body.dimmed .summary{opacity:.3}
 <div class="hdr-right">
 <!-- Starts DEGRADED. At page load nothing has been read, so healthy would be a claim the
      board has not earned. reconcile() promotes it on the first successful read. -->
-<div class="lang-sw" id="langSw" role="group" aria-label="Display language" data-i18n-aria="lang.label"><button type="button" class="lang-b" data-l="en" onpointerdown="event.preventDefault()" onclick="switchLocale('en')">EN</button><button type="button" class="lang-b" data-l="es" onpointerdown="event.preventDefault()" onclick="switchLocale('es')">ES</button><span class="lang-msg" id="langMsg" role="status" aria-live="polite"></span></div>
+<div class="lang-sw" id="langSw" role="group" aria-label="Display language" data-i18n-aria="lang.label"><button type="button" class="lang-b" data-l="en" lang="en" onpointerdown="event.preventDefault()" onclick="switchLocale('en')">EN</button><button type="button" class="lang-b" data-l="es" lang="es" onpointerdown="event.preventDefault()" onclick="switchLocale('es')">ES</button><button type="button" class="lang-b" data-l="zh-CN" lang="zh-CN" onpointerdown="event.preventDefault()" onclick="switchLocale('zh-CN')">中文</button><span class="lang-msg" id="langMsg" role="status" aria-live="polite"></span></div>
 <button type="button" class="vd-st" id="vdStatus" onclick="openPair()" title="Pair this display" data-i18n-title="status.pair_title" data-i18n="status.not_paired">Not paired</button>
 <div class="hb off" id="heartbeat"></div>
 <div class="vol-ctrl" id="volCtrl">
@@ -453,7 +459,7 @@ function esc(v){
 //   * Every key exists in every locale with the same {placeholders}. tests/kitchen-i18n.probe.js
 //     fails if not; at runtime a missing string shows ⟦locale:key⟧ in development and falls
 //     back to the English string in production (meaning preserved, logged).
-//   * Spanish is a DRAFT for native-speaker review — see tests/i18n/KITCHEN_STRINGS_EN_ES.md.
+//   * Spanish is a DRAFT for native-speaker review — see tests/i18n/KITCHEN_STRINGS_EN_ES_ZH.md.
 var I18N={
  en:{
   'brand':'HC Kitchen',
@@ -652,13 +658,114 @@ var I18N={
   'pair.done_title':'Pantalla vinculada',
   'pair.done_body':'Esta pantalla ya está autenticada en este local. Identifica la pantalla, no a la persona que la usa.',
   'pair.this_venue':'Este local'
+ },
+ 'zh-CN':{
+  'brand':'HC Kitchen',
+  'app.activate':'点按以启用 · HC Kitchen',
+  'hdr.kitchen':'{venue} · 厨房',
+  'hdr.contrast':'对比度',
+  'lang.label':'显示语言',
+  'lang.blocked':'请先完成当前步骤',
+  'lang.not_saved':'语言未保存到此显示屏',
+  'status.paired':'{display} · 已配对',
+  'status.not_paired':'未配对',
+  'status.pair_title':'配对此显示屏',
+  'offline.banner':'已离线 — 收不到新的过敏提醒',
+  'board.empty':'当前没有过敏记录',
+  'board.needs':'需要处理',
+  'board.working':'进行中',
+  'board.done':'本餐段已完成',
+  'board.earlier':'更早的记录',
+  'board.show':'显示',
+  'board.hide':'隐藏',
+  'board.earlier_note':'不属于当前餐段。请在 Shift Record 中查看。',
+  'summary.tables.one':'{n} 桌',
+  'summary.tables.other':'{n} 桌',
+  'summary.allergies.one':'{n} 项过敏',
+  'summary.allergies.other':'{n} 项过敏',
+  'summary.anaphylaxis':'{n} 项过敏性休克',
+  'summary.need_action.one':'{n} 项需要处理',
+  'summary.need_action.other':'{n} 项需要处理',
+  'summary.all_confirmed':'全部已确认收到',
+  'row.rehearsal':'演练',
+  'row.updated':'已更新',
+  'row.open':'打开此过敏记录',
+  'row.confirm_received':'确认已收到',
+  'row.confirm_prep':'确认备餐区',
+  'row.second_check':'二次检查 →',
+  'row.second_check_aria':'打开二次检查',
+  'row.mark_served':'标记已出餐',
+  'sev.anaphylaxis':'过敏性休克',
+  'sev.severe':'严重',
+  'sev.discomfort':'不适',
+  'sev.unsure':'严重程度未说明',
+  'sev.unknown':'未知',
+  'chip.cross_contact':'交叉接触',
+  'reh.full':'演练 · 不是真实顾客',
+  'step.ack':'确认已收到',
+  'step.prep':'备餐区确认',
+  'step.verify':'二次检查',
+  'step.serve':'标记已出餐',
+  'step.waiting':'{step}：已等待 {time}',
+  'hold.ack':'长按以确认已收到过敏信息',
+  'hold.prep':'长按以确认备餐区已清理并分开',
+  'hold.verify':'长按以记录二次检查',
+  'hold.serve':'长按以标记已出餐',
+  'do.ack':'确认厨房已收到此过敏信息。',
+  'do.prep':'清理并分开备餐区、器具和台面。',
+  'do.verify':'请另一位同事检查这份过敏餐的准备。',
+  'do.serve':'菜品离开厨房时，标记已出餐。',
+  'do.complete':'厨房步骤已全部记录。',
+  'do.gone':'此过敏记录已不是这里的当前工作。此显示屏没有记录任何内容。',
+  'title.record':'过敏记录',
+  'title.second_check_done':'已记录二次检查',
+  'title.served_done':'已记录出餐',
+  'title.gone':'已不在看板上',
+  'ok.ack':'已收到过敏信息',
+  'ok.prep':'备餐区已清理并分开',
+  'ok.recorded':'记录于 {time}',
+  'rail.received':'已收到',
+  'rail.confirmed':'已确认',
+  'rail.second_check':'二次检查',
+  'rail.served':'已出餐',
+  'ref.avoid_all':'全部避开 — {allergen}',
+  'ref.check_ingredients':'{allergen} — 请核对配料',
+  'ref.no_list':'没有参考清单。备餐前请确认配料。',
+  'ref.untranslated':'过敏原名称和参考清单以英文显示（未翻译）。',
+  'notes.heading':'顾客备注（未翻译）',
+  'prov.line':'{display} · {venue} — 记录的是显示屏，不是人员。',
+  'prov.this_display':'此显示屏',
+  'prov.this_venue':'本店',
+  'nav.back':'返回厨房看板',
+  'nav.close':'关闭',
+  'lock.next':'下一步：二次检查。',
+  'misc.table':'餐桌',
+  'misc.guest':'顾客',
+  'err.not_paired':'显示屏未配对 — 请在 Set Up 中配对。',
+  'err.ack':'未记录“已收到” — 请重试',
+  'err.prep':'未记录备餐区确认 — 请重试',
+  'err.verify':'未记录二次检查 — 请重试',
+  'err.serve':'未记录出餐 — 请重试',
+  'err.minimize':'已在此屏隐藏，但未同步 — 请重试',
+  'pair.title':'配对此显示屏',
+  'pair.body':'在 Happy Chair 中打开 {path}，点按 {action}，然后输入显示的 6 位数字代码。',
+  'pair.button':'配对显示屏',
+  'pair.need_code':'请输入 6 位数字代码。',
+  'pair.pairing':'正在配对…',
+  'pair.failed':'无法配对。请检查代码后重试。',
+  'pair.unreachable':'无法连接 Happy Chair。',
+  'pair.done_title':'显示屏已配对',
+  'pair.done_body':'此显示屏已与本店绑定。它识别的是显示屏，而不是使用它的人。',
+  'pair.this_venue':'本店'
  }
 };
-var KITCHEN_LOCALES=['en','es'];
+var KITCHEN_LOCALES=['en','es','zh-CN'];
+// What the EN | ES | 中文 control shows — each language named in itself, never a flag.
+var LANG_BTN={en:'EN',es:'ES','zh-CN':'中文'};
 // The language the allergy DATA is stored in (allergen names, reference lists). Interface strings
 // are translated; this data is not, and the board says so whenever the two differ.
 var DATA_LOCALE='en';
-var LOCALE_TAG={en:'en-US',es:'es-US'};
+var LOCALE_TAG={en:'en-US',es:'es-US','zh-CN':'zh-CN'};
 var locale='en';
 // Development surfaces (offline fixtures, localhost, ?i18ncheck=1) show a missing string as
 // ⟦locale:key⟧ so it cannot ship unnoticed. Production falls back to the English string —
@@ -739,7 +846,7 @@ function langSwitchHtml(){
   return '<div class="lang-sw" role="group" aria-label="'+th('lang.label')+'">'
     +KITCHEN_LOCALES.map(function(l){var on=l===locale;
       return '<button type="button" class="lang-b'+(on?' on':'')+'" data-l="'+l+'" aria-pressed="'+on+'" '
-        +'onpointerdown="event.preventDefault()" onclick="switchLocale(\''+l+'\')">'+l.toUpperCase()+'</button>'}).join('')
+        +'lang="'+l+'" onpointerdown="event.preventDefault()" onclick="switchLocale(\''+l+'\')">'+LANG_BTN[l]+'</button>'}).join('')
     +'<span class="lang-msg" role="status" aria-live="polite"></span></div>';
 }
 function applyStatic(){

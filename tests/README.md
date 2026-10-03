@@ -191,7 +191,7 @@ over a single instruction, no wait line or "Served at" prose once served, no pro
 ## Localization — EN | ES (`kitchen-i18n.*`, `kitchen-i18n-boot.*`, `i18n/`, `renders/i18n-es/`)
 
 One catalog (`I18N` in `index.html`), one UI, one state machine: a locale changes which string
-is drawn, never which state is drawn or what a control does. `i18n/KITCHEN_STRINGS_EN_ES.md` is
+is drawn, never which state is drawn or what a control does. `i18n/KITCHEN_STRINGS_EN_ES_ZH.md` is
 the full EN → ES inventory, generated from the catalog, with every term flagged for review.
 
 `kitchen-i18n.probe.js` (57): EN → ES with the board open (same records, states, order, zero
@@ -221,12 +221,12 @@ classified in its DATA allowlist (each entry says why it is shown verbatim).
 ## Spanish review material (`i18n/`)
 
 `review-meta.json` (where each string appears, what it means operationally, the review concern)
-plus the catalog generate, via `build-review.js`, both `KITCHEN_STRINGS_EN_ES.md` and the
+plus the catalog generate, via `build-review.js`, both `KITCHEN_STRINGS_EN_ES_ZH.md` and the
 reviewer page (`review-page.template.html`). Neither can drift from the code. Spanish is NOT
 approved for pilot until a native speaker who knows restaurant kitchens has reviewed it;
 Cross-contact is explicitly unresolved.
 
-## Layout QA (`kitchen-layout.*`, `renders/i18n-es-qa/`)
+## Layout QA (`kitchen-layout.*`, `renders/kitchen-qa/`)
 
 Spanish, at 1280×800, 1024×768, 820×1180 and 390×844: header fits and never clips, hold labels
 inside their buttons and ≥52px, the record sheet starts below the header (EN | ES reachable)
@@ -234,3 +234,26 @@ and scrolls to its action without covering guest notes, the lockout keeps its ac
 and has its own EN | ES, rail stages aligned and labels never collide, rehearsal visible, no
 English interface text. 65 checks per viewport. `kitchen-layout.before-18dd941.txt` is the
 same walk (earlier probe revision) against the previous release.
+
+
+## Pilot languages: en, es (Mexican / U.S. kitchens), zh-CN
+
+One catalog, three locales (`I18N.en`, `I18N.es`, `I18N['zh-CN']`); one UI and one workflow. The
+release gate requires every key in all three, a claim pattern per language, and catches
+hard-coded Latin OR Chinese text (`check-catalog.mutations.txt`: 13 breakages, all blocked).
+
+`kitchen-i18n-cycle.probe.js` (98): EN → ES → 中文 → EN with the board open, the Record Sheet
+open with Second Check owed, Second Check Recorded, Mark Served owed, and the anaphylaxis
+lockout open (switched from the lockout's own control), during an active rehearsal — at every
+transition the same declaration, the same state, the same open surface, zero writes.
+
+`kitchen-i18n-boot` runs three displays at once (en / es / zh-CN defaults), each starting in its
+own language. Database isolation between two displays is proven in SQL (rolled back).
+
+`kitchen-layout` runs per language (`?qalocale=`) at 1280×800, 1180×820, 1024×768, 820×1180 and
+390×844 (94–95 checks each): adds long allergen combinations on board / sheet / lockout, minimum
+text size, NOT-recorded errors, offline and pairing. `renders/kitchen-qa/<lang>-1280x800/` holds
+the 14-state walk (`renders/walk-qa.probe.js`) in each language.
+
+Review matrix: `i18n/KITCHEN_STRINGS_EN_ES_ZH.md` (+ review page), highest-risk terms first.
+Spanish and Chinese stay DRAFT until native speakers who know U.S. restaurant kitchens review them.

@@ -1,0 +1,112 @@
+PASS  a rehearsal is active (every card is rehearsal)
+
+──── 1 · BOARD OPEN ────
+PASS  board: → es applied
+PASS  board: → es same open record + state   → card:ba65384b-cccc,card:cyc0001-l,card:56a859b5-aaaa,card:7784ff89-bbbb,card:cyc0000-x
+PASS  board: → es every record unchanged
+PASS  board: → es zero AllergyShield writes   → 0
+PASS  board: → es surface drawn in es
+PASS  board: → es rehearsal still marked
+PASS  board: → zh-CN applied
+PASS  board: → zh-CN same open record + state   → card:ba65384b-cccc,card:cyc0001-l,card:56a859b5-aaaa,card:7784ff89-bbbb,card:cyc0000-x
+PASS  board: → zh-CN every record unchanged
+PASS  board: → zh-CN zero AllergyShield writes   → 0
+PASS  board: → zh-CN surface drawn in zh-CN
+PASS  board: → zh-CN rehearsal still marked
+PASS  board: → en applied
+PASS  board: → en same open record + state   → card:ba65384b-cccc,card:cyc0001-l,card:56a859b5-aaaa,card:7784ff89-bbbb,card:cyc0000-x
+PASS  board: → en every record unchanged
+PASS  board: → en zero AllergyShield writes   → 0
+PASS  board: → en surface drawn in en
+PASS  board: → en rehearsal still marked
+
+──── 2 · RECORD SHEET OPEN — SECOND CHECK OWED (C, opened only) ────
+PASS  C owes Second Check
+PASS  sheet / second check owed: → es applied
+PASS  sheet / second check owed: → es same open record + state   → 7784ff89-bbbb|step.verify|-
+PASS  sheet / second check owed: → es every record unchanged
+PASS  sheet / second check owed: → es zero AllergyShield writes   → 0
+PASS  sheet / second check owed: → es surface drawn in es
+PASS  sheet / second check owed: → es rehearsal still marked
+PASS  sheet / second check owed: → zh-CN applied
+PASS  sheet / second check owed: → zh-CN same open record + state   → 7784ff89-bbbb|step.verify|-
+PASS  sheet / second check owed: → zh-CN every record unchanged
+PASS  sheet / second check owed: → zh-CN zero AllergyShield writes   → 0
+PASS  sheet / second check owed: → zh-CN surface drawn in zh-CN
+PASS  sheet / second check owed: → zh-CN rehearsal still marked
+PASS  sheet / second check owed: → en applied
+PASS  sheet / second check owed: → en same open record + state   → 7784ff89-bbbb|step.verify|-
+PASS  sheet / second check owed: → en every record unchanged
+PASS  sheet / second check owed: → en zero AllergyShield writes   → 0
+PASS  sheet / second check owed: → en surface drawn in en
+PASS  sheet / second check owed: → en rehearsal still marked
+
+──── 3 · SECOND CHECK RECORDED (fixture X — one deliberate hold, before the cycle) ────
+PASS  X shows Second Check Recorded
+PASS  second check recorded: → es applied
+PASS  second check recorded: → es same open record + state   → cyc0000-x|step.serve|verify:done
+PASS  second check recorded: → es every record unchanged
+PASS  second check recorded: → es zero AllergyShield writes   → 0
+PASS  second check recorded: → es surface drawn in es
+PASS  second check recorded: → es rehearsal still marked
+PASS  second check recorded: → zh-CN applied
+PASS  second check recorded: → zh-CN same open record + state   → cyc0000-x|step.serve|verify:done
+PASS  second check recorded: → zh-CN every record unchanged
+PASS  second check recorded: → zh-CN zero AllergyShield writes   → 0
+PASS  second check recorded: → zh-CN surface drawn in zh-CN
+PASS  second check recorded: → zh-CN rehearsal still marked
+PASS  second check recorded: → en applied
+PASS  second check recorded: → en same open record + state   → cyc0000-x|step.serve|verify:done
+PASS  second check recorded: → en every record unchanged
+PASS  second check recorded: → en zero AllergyShield writes   → 0
+PASS  second check recorded: → en surface drawn in en
+PASS  second check recorded: → en rehearsal still marked
+
+──── 4 · MARK SERVED OWED (X reopened) ────
+PASS  X owes Mark Served
+PASS  mark served owed: → es applied
+PASS  mark served owed: → es same open record + state   → cyc0000-x|step.serve|-
+PASS  mark served owed: → es every record unchanged
+PASS  mark served owed: → es zero AllergyShield writes   → 0
+PASS  mark served owed: → es surface drawn in es
+PASS  mark served owed: → es rehearsal still marked
+PASS  mark served owed: → zh-CN applied
+PASS  mark served owed: → zh-CN same open record + state   → cyc0000-x|step.serve|-
+PASS  mark served owed: → zh-CN every record unchanged
+PASS  mark served owed: → zh-CN zero AllergyShield writes   → 0
+PASS  mark served owed: → zh-CN surface drawn in zh-CN
+PASS  mark served owed: → zh-CN rehearsal still marked
+PASS  mark served owed: → en applied
+PASS  mark served owed: → en same open record + state   → cyc0000-x|step.serve|-
+PASS  mark served owed: → en every record unchanged
+PASS  mark served owed: → en zero AllergyShield writes   → 0
+PASS  mark served owed: → en surface drawn in en
+PASS  mark served owed: → en rehearsal still marked
+
+──── 5 · ANAPHYLAXIS LOCKOUT OPEN (L) — switched from the lockout's own control ────
+PASS  lockout up, received owed
+PASS  lockout: → es applied
+PASS  lockout: → es same open record + state   → cyc0001-l|ack
+PASS  lockout: → es every record unchanged
+PASS  lockout: → es zero AllergyShield writes   → 0
+PASS  lockout: → es surface drawn in es
+PASS  lockout: → es rehearsal still marked
+PASS  lockout: → zh-CN applied
+PASS  lockout: → zh-CN same open record + state   → cyc0001-l|ack
+PASS  lockout: → zh-CN every record unchanged
+PASS  lockout: → zh-CN zero AllergyShield writes   → 0
+PASS  lockout: → zh-CN surface drawn in zh-CN
+PASS  lockout: → zh-CN rehearsal still marked
+PASS  lockout: → en applied
+PASS  lockout: → en same open record + state   → cyc0001-l|ack
+PASS  lockout: → en every record unchanged
+PASS  lockout: → en zero AllergyShield writes   → 0
+PASS  lockout: → en surface drawn in en
+PASS  lockout: → en rehearsal still marked
+PASS  the lockout was never closed or replaced
+
+──── 6 · STAND-INS ────
+PASS  B and C: zero writes
+PASS  only X written, exactly once (the deliberate Second Check)
+
+ALL 98 CHECKS PASS

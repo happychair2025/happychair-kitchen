@@ -4,5 +4,10 @@
   BLOCKED  es placeholder mismatch  (exit 1)  - es: step.waiting placeholders {{step}} ≠ en {{step},{time}}
   BLOCKED  code uses unknown key  (exit 1)  - code uses unknown key nope.missing
   BLOCKED  Spanish claim  (exit 1)  - es: do.complete makes a claim the English does not: "Plato seguro para servir."
-  BLOCKED  hard-coded English in render  (exit 1)  - hard-coded visible string (line ~1534): "Hold to Serve Now" — move it to the catalog or classify it in DATA
+  BLOCKED  hard-coded English in render  (exit 1)  - hard-coded visible string (line ~1540): "Hold to Serve Now" — move it to the catalog or classify it in DATA
+  BLOCKED  zh-CN missing key  (exit 1)  - zh-CN: missing key step.verify
+  BLOCKED  zh-CN blank value  (exit 1)  - zh-CN: empty value for hold.verify
+  BLOCKED  zh-CN claim (安全 = safe)  (exit 1)  - zh-CN: do.complete makes a claim the English does not: "菜品安全，可以出餐。"
+  BLOCKED  zh-CN orphaned key  (exit 1)  - zh-CN: orphaned key zh.only (not in en)
+  BLOCKED  hard-coded Chinese in render  (exit 1)  - hard-coded visible string (line ~1540): "厨房完成" — move it to the catalog or classify it in DATA
   BLOCKED  en empty value  (exit 1)  - en: empty value for ok.ack

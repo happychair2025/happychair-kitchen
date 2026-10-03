@@ -1,4 +1,4 @@
-// Spanish layout QA, run once per viewport (VW/VH) by the DevTools harness. Walks one fixture
+// Layout QA, run once per viewport (VW/VH) and per language (?qalocale=en|es|zh-CN) by the DevTools harness. Walks one fixture
 // record through every Record Sheet state and every lockout stage, and checks each one for the
 // failures found in visual review: header overflow, clipped labels, an off-screen action, a
 // hidden rehearsal marker, colliding rail labels, and English interface text leaking through.
@@ -14,7 +14,8 @@ async function hold(b){b.dispatchEvent(new MouseEvent('mousedown',{bubbles:true}
 function echo(id){const r=window.__ROWS.find(x=>x.id===id),c=cards[id];['kitchen_ack_at','kitchen_ack_by','protocol_confirmed_at','protocol_confirmed_by','verified_at','verified_by','served_at','status'].forEach(k=>{if(c[k]!==undefined)r[k]=c[k]})}
 // English interface strings that must not appear in Spanish mode. Data is not in the catalog,
 // so it is never matched; strings identical in both languages are skipped.
-const EN_ONLY=Object.keys(I18N.en).map(k=>[k,I18N.en[k]]).filter(([k,v])=>v&&v.length>3&&v!==I18N.es[k]&&!/\{/.test(v));
+const LOC=(location.search.match(/qalocale=([A-Za-z-]+)/)||[])[1]||'es';
+const EN_ONLY=LOC==='en'?[]:Object.keys(I18N.en).map(k=>[k,I18N.en[k]]).filter(([k,v])=>v&&v.length>3&&v!==I18N[LOC][k]&&!/\{/.test(v));
 function leaks(root){const t=root.innerText;return EN_ONLY.filter(([k,v])=>t.includes(v)).map(([k])=>k)}
 function headerChecks(tag){
   const hdr=document.querySelector('.hdr'),hr=R(hdr);
@@ -62,8 +63,8 @@ function lockoutChecks(tag){
 (async()=>{try{
  for(let i=0;i<80&&document.querySelectorAll('.row').length<3;i++)await w(100);
  await window.__realLoadVenue(); document.getElementById('audioPrompt').click(); await w(200);
- switchLocale('es'); await w(300);
- T.push('════ viewport '+VW+'×'+VH+' ════');
+ if(LOC!=='en')switchLocale(LOC); await w(300);
+ T.push('════ '+LOC+' · viewport '+VW+'×'+VH+' ════');
  headerChecks('[board]');
  ok('[board] no English interface text',leaks(document.getElementById('cardArea')).length===0&&leaks(document.querySelector('.hdr')).length===0&&leaks(document.getElementById('summaryBar')).length===0);
  ok('[board] summary items never split mid-phrase',[...document.querySelectorAll('#summaryBar span')].every(s=>R(s).height<=24));
@@ -85,6 +86,57 @@ function lockoutChecks(tag){
  for(const tag of ['[lockout received]','[lockout prep]','[lockout done]']){
    lockoutChecks(tag); const b=lk().querySelector('.hold-btn'); if(b){await hold(b);echo(L2)}
  }
+ closeLockout(); await w(150);
+ // ── long allergen combination: every name visible, nothing clipped, on board, sheet and lockout
+ const G='lay0002-long', LONG=['Milk','Eggs','Fish','Shellfish','Tree Nuts','Peanuts','Wheat','Soy','Sesame'];
+ window.__ROWS.push(Object.assign({},window.__ROWS.find(x=>x.id===X),{id:G,table_label:'T12',zone_name:'Main Dining',
+   guest_name:'Bartholomew Fitzwilliam-Harrington',allergens:LONG,served_at:null,verified_at:null,protocol_confirmed_at:null,kitchen_ack_at:null,status:'pending',
+   notes:'Severe reaction to all of these — please use separate pans and fresh gloves, and check sauces and dressings.'}));
+ await reconcile(); await w(300);
+ // Clipped = text actually hidden: overflow that hides it, an ellipsis, or text running past
+ // its container. Glyphs overshooting a visible-overflow box by a pixel or two (CJK line
+ // metrics) hide nothing and are not clipping.
+ const notClipped=e=>{if(!e)return false;const cs=getComputedStyle(e),par=e.parentElement;
+   const hides=cs.overflow!=='visible'&&(e.scrollWidth>e.clientWidth+1||e.scrollHeight>e.clientHeight+1);
+   return !hides&&cs.textOverflow!=='ellipsis'&&R(e).right<=R(par).right+1&&R(e).left>=R(par).left-1};
+ const gRow=document.querySelector('[data-k="card:'+G+'"] .row'), gAl=gRow&&gRow.querySelector('.r-al');
+ ok('[long allergens] board: all nine names shown, not clipped',!!gAl&&LONG.every(a=>gAl.textContent.includes(a))&&notClipped(gAl));
+ ok('[long allergens] board: action still fully inside the row',inside(R(gRow.querySelector('.r-act .hold-lbl')),R(gRow.querySelector('.r-act')),2));
+ openRecord(G); await w(300);
+ const sAl=sh().querySelector('.vfy-al');
+ ok('[long allergens] sheet: all nine names shown, not clipped',LONG.every(a=>sAl.textContent.includes(a))&&notClipped(sAl));
+ sheetChecks('[long allergens sheet]');
+ const tiny=root=>[...root.querySelectorAll('*')].filter(e=>e.childNodes.length&&[...e.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())&&e.offsetParent)
+   .filter(e=>parseFloat(getComputedStyle(e).fontSize)<11).map(e=>e.className+':'+getComputedStyle(e).fontSize);
+ ok('[long allergens sheet] no visible text under 11px',tiny(sh()).length===0,tiny(sh()).slice(0,3).join(','));
+ const realFrom=sbv.from;
+ sbv.from=function(){return {update:function(v){return {eq:function(){return Promise.resolve({error:{message:'refused'}})}}}}};
+ await hold(sh().querySelector('.vfy-go')); await w(200);
+ const er=sh().querySelector('.row-err');
+ ok('[error] the NOT-recorded error is shown in the sheet, not clipped',!!er&&notClipped(er)&&R(er).right<=R(document.querySelector('#verify .vfy-card')).right+1);
+ ok('[error] in the display language',LOC==='en'||!leaks(er).length);
+ sbv.from=realFrom; delete cards[G]._error; closeRecord(); await w(150);
+ showLockout(G); await w(250);
+ const lAl=[...lk().children].find(e=>e.textContent.includes('Sesame')&&e.textContent.includes('Milk')&&!e.querySelector('.avoid-t,[style*=uppercase]'));
+ ok('[long allergens] lockout: all nine names shown, not clipped',!!lAl&&LONG.every(a=>lAl.textContent.includes(a))&&notClipped(lAl));
+ lockoutChecks('[long allergens lockout]');
+ ok('[long allergens lockout] no visible text under 11px',tiny(lk()).length===0,tiny(lk()).slice(0,3).join(','));
+ closeLockout(); await w(150);
+ // ── offline banner and pairing
+ setOnline(false); await w(150);
+ const ob=document.getElementById('offlineBanner');
+ ok('[offline] banner fully visible, not clipped',getComputedStyle(ob).display!=='none'&&R(ob).height>0&&notClipped(ob)&&R(ob).right<=VW+1);
+ const firstCard=document.querySelector('#cardArea .row');
+ ok('[offline] banner covers no part of the board',!firstCard||R(firstCard).top>=R(ob).bottom-1,firstCard&&Math.round(R(firstCard).top)+' vs '+Math.round(R(ob).bottom));
+ ok('[offline] banner sits below the header, never behind it',R(ob).top>=R(document.querySelector('.hdr')).bottom-1,Math.round(R(ob).top)+' vs '+Math.round(R(document.querySelector('.hdr')).bottom));
+ ok('[offline] in the display language',LOC==='en'||!leaks(ob).length);
+ setOnline(true);
+ openPair(); await w(200); document.getElementById('pairCode').value='12'; submitPair(); await w(300);
+ const pc=document.querySelector('#pair .vfy-card');
+ ok('[pairing] card inside the viewport, below the header',R(pc).right<=VW+1&&R(pc).left>=-1&&R(pc).top>=R(document.querySelector('.hdr')).bottom-1);
+ ok('[pairing] in the display language',LOC==='en'||!leaks(pc).length,leaks(pc).join(','));
+ ok('[pairing] validation message shown',!!document.getElementById('pairErr').textContent.trim());
+ closePair();
 }catch(e){T.push('THREW '+e.message+'\n'+(e.stack||''))}
  T.push(''); T.push(fail===0?('ALL '+pass+' CHECKS PASS'):(pass+' pass, '+fail+' FAIL'));
  try{await fetch('/__results',{method:'POST',body:T.join('\n')})}catch(e){}

@@ -3,582 +3,776 @@
   "group": "general",
   "where": "Header, before the venue loads",
   "meaning": "Product name.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "app.activate": {
   "group": "general",
   "where": "Full-screen prompt when the display first opens",
   "meaning": "Tap once so the display is allowed to play alert sounds.",
-  "concern": "Brand \"HC Kitchen\" stays in English."
+  "concern": "Brand \"HC Kitchen\" stays in English.",
+  "zh_concern": null,
+  "priority": null
  },
  "hdr.kitchen": {
   "group": "general",
   "where": "Header",
   "meaning": "\"<Venue> · Kitchen\" — which venue this screen belongs to.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "hdr.contrast": {
   "group": "general",
   "where": "Header button tooltip",
   "meaning": "Switch to high-contrast colours.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "lang.label": {
   "group": "general",
   "where": "EN | ES control (screen readers)",
   "meaning": "Name of the language switch.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "lang.blocked": {
   "group": "errors",
   "where": "Under the EN | ES control",
   "meaning": "Language did not change because a hold or a save is in progress. Finish that first.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "lang.not_saved": {
   "group": "errors",
   "where": "Under the EN | ES control",
   "meaning": "Language changed on this screen but was not saved to the display; it will retry.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "status.paired": {
   "group": "general",
   "where": "Header status pill",
   "meaning": "\"<Display name> · Paired\" — this screen is signed in to the venue.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "status.not_paired": {
   "group": "errors",
   "where": "Header status pill",
   "meaning": "This screen is not signed in to any venue and shows no allergies.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "status.pair_title": {
   "group": "general",
   "where": "Header status pill tooltip",
   "meaning": "Open pairing.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "offline.banner": {
   "group": "errors",
   "where": "Banner across the board",
   "meaning": "The screen has lost its connection and new allergy alerts are NOT arriving.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "board.empty": {
   "group": "status",
   "where": "Board when there is nothing to show",
   "meaning": "No open allergy records for this service.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "board.needs": {
   "group": "status",
   "where": "Board section heading",
   "meaning": "Records the kitchen has not yet confirmed receiving — act now.",
-  "concern": "Deliberately not literal (\"Te necesita\"); \"Requiere acción\" chosen for clarity."
+  "concern": "Deliberately not literal (\"Te necesita\"); \"Requiere acción\" chosen for clarity.",
+  "zh_concern": null,
+  "priority": null
  },
  "board.working": {
   "group": "status",
   "where": "Board section heading",
   "meaning": "Records received and in the kitchen workflow.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "board.done": {
   "group": "status",
   "where": "Board section heading",
   "meaning": "Records marked served in this service.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "\"service\" = \"餐段\" (meal period). \"本班次\" (this shift) is an alternative; confirm which the kitchen uses.",
+  "priority": null
  },
  "board.earlier": {
   "group": "status",
   "where": "Board section heading",
   "meaning": "Records from before the current service.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "board.show": {
   "group": "general",
   "where": "Earlier section toggle",
   "meaning": "Show the earlier records.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "board.hide": {
   "group": "general",
   "where": "Earlier section toggle",
   "meaning": "Hide the earlier records.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "board.earlier_note": {
   "group": "status",
   "where": "Under the Earlier heading",
   "meaning": "These are not part of the service running now; review them in the Shift Record (an Admin page).",
-  "concern": "\"Shift Record\" kept in English: it is the name of the Admin page, which is in English."
+  "concern": "\"Shift Record\" kept in English: it is the name of the Admin page, which is in English.",
+  "zh_concern": "\"Shift Record\" kept in English: it is the name of the Admin page.",
+  "priority": null
  },
  "summary.tables.one": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "Count of tables with open records — singular.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "summary.tables.other": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "Count of tables with open records — plural.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "summary.allergies.one": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "Count of declared allergies — singular.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "summary.allergies.other": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "Count of declared allergies — plural.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "summary.anaphylaxis": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "How many open records are anaphylaxis severity.",
-  "concern": "\"{n} con anafilaxia\" = n records with anaphylaxis severity. Confirm it reads as a count of records, not of people with a diagnosis."
+  "concern": "\"{n} con anafilaxia\" = n records with anaphylaxis severity. Confirm it reads as a count of records, not of people with a diagnosis.",
+  "zh_concern": "Counts records with anaphylaxis severity. See sev.anaphylaxis.",
+  "priority": 3
  },
  "summary.need_action.one": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "One record not yet confirmed by the kitchen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "summary.need_action.other": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "Several records not yet confirmed by the kitchen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "summary.all_confirmed": {
   "group": "status",
   "where": "Summary bar (bottom)",
   "meaning": "Every open record has been confirmed received.",
-  "concern": "\"All Confirmed\" means all RECEIVED — not that anything is safe. \"Todas confirmadas\" agrees with \"alergias\"."
+  "concern": "\"All Confirmed\" means all RECEIVED — not that anything is safe. \"Todas confirmadas\" agrees with \"alergias\".",
+  "zh_concern": null,
+  "priority": null
  },
  "row.rehearsal": {
   "group": "rehearsal",
   "where": "Badge on every rehearsal row",
   "meaning": "This record is from a practice run, not a real guest.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "See reh.full.",
+  "priority": 29
  },
  "row.updated": {
   "group": "status",
   "where": "Badge on a row",
   "meaning": "The guest changed this allergy record; this is the newer version.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "row.open": {
   "group": "general",
   "where": "Row (screen readers)",
   "meaning": "Open this allergy record.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "row.confirm_received": {
   "group": "actions",
   "where": "Row button (hold)",
   "meaning": "Hold to confirm the kitchen has received this allergy.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "See step.ack.",
+  "priority": 9
  },
  "row.confirm_prep": {
   "group": "actions",
   "where": "Row button (hold)",
   "meaning": "Hold to confirm the prep area has been cleared and separated.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "See hold.prep.",
+  "priority": 15
  },
  "row.second_check": {
   "group": "actions",
   "where": "Row button (opens the record)",
   "meaning": "Open the Second Check for this record.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "See step.verify.",
+  "priority": 17
  },
  "row.second_check_aria": {
   "group": "general",
   "where": "Row button (screen readers)",
   "meaning": "Open the Second Check.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "row.mark_served": {
   "group": "actions",
   "where": "Row button (hold)",
   "meaning": "Hold to record that this dish has left the kitchen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "See step.serve.",
+  "priority": 21
  },
  "sev.anaphylaxis": {
   "group": "safety",
   "where": "Severity badge — row, record, lockout",
   "meaning": "The guest stated anaphylaxis: the most severe reaction.",
-  "concern": "Medical term \"ANAFILAXIA\". Confirm kitchen staff recognise it; if not, pair it with a plain word without weakening it."
+  "concern": "Medical term \"ANAFILAXIA\". Confirm kitchen staff recognise it; if not, pair it with a plain word without weakening it.",
+  "zh_concern": "\"过敏性休克\" (literally \"allergic shock\") is the common term for anaphylaxis; \"严重过敏反应\" is an alternative. Confirm staff read it as the most severe reaction even before shock occurs.",
+  "priority": 2
  },
  "sev.severe": {
   "group": "safety",
   "where": "Severity badge",
   "meaning": "The guest stated a severe reaction.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "\"严重\" — confirm it is clearly below anaphylaxis and above discomfort.",
+  "priority": 4
  },
  "sev.discomfort": {
   "group": "safety",
   "where": "Severity badge",
   "meaning": "The guest stated discomfort: the mildest stated severity.",
-  "concern": "\"MALESTAR\" — confirm it reads as neither more nor less serious than \"discomfort\"."
+  "concern": "\"MALESTAR\" — confirm it reads as neither more nor less serious than \"discomfort\".",
+  "zh_concern": "\"不适\" for the mildest stated severity. Confirm it reads as neither more nor less serious than \"discomfort\".",
+  "priority": 5
  },
  "sev.unsure": {
   "group": "safety",
   "where": "Severity badge",
   "meaning": "The guest did not say how severe the reaction is. Treat the allergy as real.",
-  "concern": "NOT \"NO SEGURO\": \"seguro\" also means \"safe\", so \"no seguro\" reads as \"not safe\". \"GRAVEDAD NO INDICADA\" = severity not stated. Confirm."
+  "concern": "NOT \"NO SEGURO\": \"seguro\" also means \"safe\", so \"no seguro\" reads as \"not safe\". \"GRAVEDAD NO INDICADA\" = severity not stated. Confirm.",
+  "zh_concern": "\"严重程度未说明\" = the guest did not state how severe. Must not read as \"not serious\".",
+  "priority": 6
  },
  "sev.unknown": {
   "group": "safety",
   "where": "Severity badge",
   "meaning": "The record has no severity value.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": 7
  },
  "chip.cross_contact": {
   "group": "safety",
   "where": "Badge — row, record, lockout",
   "meaning": "The guest asked for CROSS-CONTACT precautions: prevent any trace of the allergen reaching their food through shared surfaces, utensils, oil, gloves or hands — not only bacterial contamination.",
-  "concern": "\"CONTACTO CRUZADO\" (allergen-specific) vs \"contaminación cruzada\" (common kitchen term that usually means microbial cross-contamination, a different concept). Do not choose \"contaminación cruzada\" just because it is familiar; the allergen meaning must survive."
+  "concern": "\"CONTACTO CRUZADO\" (allergen-specific) vs \"contaminación cruzada\" (common kitchen term that usually means microbial cross-contamination, a different concept). Do not choose \"contaminación cruzada\" just because it is familiar; the allergen meaning must survive.",
+  "zh_concern": "\"交叉接触\" (allergen cross-contact) vs \"交叉污染\" (cross-contamination, which kitchen staff usually understand as germs / hygiene — a different concept). The allergen meaning must survive; do not choose \"交叉污染\" just because it is familiar.",
+  "priority": 1
  },
  "reh.full": {
   "group": "rehearsal",
   "where": "Top of the record and the lockout",
   "meaning": "This whole record is a practice run. There is no real guest at this table.",
-  "concern": "GUEST = \"huésped\" (also in notes.heading, misc.guest). In a restaurant \"comensal\" or \"cliente\" may read more naturally; \"huésped\" leans hotel. Choose one word and use it everywhere."
+  "concern": "Guest word. For Mexican / U.S. kitchens \"cliente\" or \"comensal\" is likely more natural than \"huésped\" (hotel register). Choose one word and use it in reh.full, notes.heading and misc.guest.",
+  "zh_concern": "\"演练\" (drill / exercise) vs \"测试\" (test) vs \"彩排\" (rehearsal). It must be unmistakable that there is no real guest.",
+  "priority": 28
  },
  "step.ack": {
   "group": "safety",
   "where": "Record title + wait line",
   "meaning": "Current step: the kitchen confirms it has received the allergy.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "\"确认已收到\" = confirm (the kitchen) received it. Must not read as \"allergy confirmed / verified\".",
+  "priority": 8
  },
  "step.prep": {
   "group": "safety",
   "where": "Record title + wait line",
   "meaning": "Current step: confirm the prep area, utensils and surfaces are cleared and separated.",
-  "concern": "\"Confirmación de preparación\" can read as \"the dish was prepared\". The step is confirming the PREP AREA was cleared. (The English has the same ambiguity.)"
+  "concern": "\"Confirmación de preparación\" can read as \"the dish was prepared\". The step is confirming the PREP AREA was cleared. (The English has the same ambiguity.)",
+  "zh_concern": "\"备餐区确认\" can read as confirming the dish was prepared; the step is confirming the prep AREA is cleared and separated.",
+  "priority": 11
  },
  "step.verify": {
   "group": "safety",
   "where": "Record title + wait line + rail",
   "meaning": "Current step: another team member checks the allergy preparation before the dish leaves.",
-  "concern": "\"Segunda revisión\", deliberately NOT \"verificación\": \"verificado\" reads as \"verified safe\", a stronger claim than \"Second Check\"."
+  "concern": "\"Segunda revisión\", deliberately NOT \"verificación\": \"verificado\" reads as \"verified safe\", a stronger claim than \"Second Check\".",
+  "zh_concern": "\"二次检查\" chosen. \"复核\" is also natural but can read as a formal sign-off; \"验证/核验\" (verify) are NOT acceptable — they imply verified safe.",
+  "priority": 16
  },
  "step.serve": {
   "group": "safety",
   "where": "Record title + wait line",
   "meaning": "Current step: record that the dish has left the kitchen.",
-  "concern": "Agreement: \"servida\" agrees with \"la alergia\" (the record). If it reads as the dish it should be \"servido\" (el plato). Decide once — it recurs in row.mark_served, hold.serve, rail.served, err.serve, title.served_done."
+  "concern": "Agreement: \"servida\" agrees with \"la alergia\" (the record). If it reads as the dish it should be \"servido\" (el plato). Decide once — it recurs in row.mark_served, hold.serve, rail.served, err.serve, title.served_done.",
+  "zh_concern": "\"标记已出餐\" = mark as left the kitchen. Must not imply the guest received or ate it.",
+  "priority": 20
  },
  "step.waiting": {
   "group": "status",
   "where": "Record, under the badges",
   "meaning": "How long the current step has been waiting.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "The timer keeps its Latin units (\"5d 23h\"). Decide whether Chinese staff need \"天 / 小时\" — that is a display-format change, not a string.",
+  "priority": null
  },
  "hold.ack": {
   "group": "actions",
   "where": "Main hold button — record and lockout",
   "meaning": "Press and hold to record that the kitchen received this allergy.",
-  "concern": "\"Mantén presionado\" (Latin America) vs \"Mantén pulsado\" (Spain); informal \"tú\" throughout — confirm the register for kitchen staff."
+  "concern": "\"Mantén presionado\" is the Mexican / Latin-American form (not Spain's \"pulsado\"). Informal \"tú\" is used throughout — confirm that register suits U.S. kitchen crews.",
+  "zh_concern": "\"长按\" = press and hold. See step.ack.",
+  "priority": 10
  },
  "hold.prep": {
   "group": "actions",
   "where": "Main hold button — record and lockout",
   "meaning": "Press and hold to record that the prep area was cleared and separated.",
-  "concern": "\"despejada\" = cleared of things. Must NOT drift toward \"limpia/libre de alérgenos\" (a claim). Confirm a cook reads it as \"cleared and separated\"."
+  "concern": "\"despejada\" = cleared of things. Must NOT drift toward \"limpia/libre de alérgenos\" (a claim). Confirm a cook reads it as \"cleared and separated\".",
+  "zh_concern": "\"清理\" can read as \"cleaned\" (stronger — implies allergen residue removed) rather than \"cleared and separated\". Alternatives: \"腾空\" (emptied), \"整理\". Must not drift toward \"无过敏原\" (allergen-free).",
+  "priority": 13
  },
  "hold.verify": {
   "group": "actions",
   "where": "Main hold button — record",
   "meaning": "Press and hold to record that the Second Check happened.",
-  "concern": "See step.verify — no \"verificación\"."
+  "concern": "See step.verify — no \"verificación\".",
+  "zh_concern": "See step.verify.",
+  "priority": 18
  },
  "hold.serve": {
   "group": "actions",
   "where": "Main hold button — record",
   "meaning": "Press and hold to record that the dish left the kitchen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "See step.serve.",
+  "priority": 22
  },
  "do.ack": {
   "group": "safety",
   "where": "One-line instruction — record and lockout",
   "meaning": "Confirm the kitchen has received this allergy.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "do.prep": {
   "group": "safety",
   "where": "One-line instruction — record and lockout",
   "meaning": "Clear and separate the prep area, utensils and surfaces.",
-  "concern": "Same concern as hold.prep."
+  "concern": "Same concern as hold.prep.",
+  "zh_concern": "See hold.prep.",
+  "priority": 14
  },
  "do.verify": {
   "group": "safety",
   "where": "One-line instruction — record",
   "meaning": "Have a different team member check the allergy preparation. (The display cannot prove who did.)",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "do.serve": {
   "group": "safety",
   "where": "One-line instruction — record",
   "meaning": "Record served when the dish leaves the kitchen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "do.complete": {
   "group": "status",
   "where": "Served record",
   "meaning": "All four Kitchen steps are recorded. It says nothing about the guest or the plate.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "\"已全部记录\" (all recorded) chosen over \"已完成\" so it claims only that the steps were recorded.",
+  "priority": 30
  },
  "do.gone": {
   "group": "status",
   "where": "Record that left the board",
   "meaning": "This record is no longer current work here; nothing was recorded on this screen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "title.record": {
   "group": "general",
   "where": "Record title (fallback)",
   "meaning": "An allergy record with no current step.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "title.second_check_done": {
   "group": "status",
   "where": "Record title after the hold",
   "meaning": "The Second Check was recorded.",
-  "concern": "See step.verify."
+  "concern": "See step.verify.",
+  "zh_concern": "\"已记录二次检查\" = a second check was recorded. Must not imply the food was found safe.",
+  "priority": 19
  },
  "title.served_done": {
   "group": "status",
   "where": "Record title after the hold",
   "meaning": "Served was recorded.",
-  "concern": "Awkward (\"Servida: registrado\"). Needs a native phrasing that says only \"served was recorded\", and must not imply the guest received or ate it."
+  "concern": "Awkward (\"Servida: registrado\"). Needs a native phrasing that says only \"served was recorded\", and must not imply the guest received or ate it.",
+  "zh_concern": "\"已记录出餐\" = served was recorded. Must not imply the guest received or ate it.",
+  "priority": 23
  },
  "title.gone": {
   "group": "status",
   "where": "Record title",
   "meaning": "This record is no longer on the board.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "ok.ack": {
   "group": "status",
   "where": "Confirmation banner — record and lockout",
   "meaning": "The \"received\" step was recorded.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "ok.prep": {
   "group": "status",
   "where": "Confirmation banner — record and lockout",
   "meaning": "The \"prep area cleared\" step was recorded.",
-  "concern": "Same concern as hold.prep."
+  "concern": "Same concern as hold.prep.",
+  "zh_concern": "See hold.prep.",
+  "priority": 12
  },
  "ok.recorded": {
   "group": "status",
   "where": "Confirmation banner",
   "meaning": "\"Recorded <time>\".",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "rail.received": {
   "group": "status",
   "where": "Progress rail",
   "meaning": "Stage 1 — the allergy reached the kitchen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "rail.confirmed": {
   "group": "status",
   "where": "Progress rail",
   "meaning": "Stage 2 — the kitchen confirmed it.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "rail.second_check": {
   "group": "status",
   "where": "Progress rail",
   "meaning": "Stage 3 — Second Check recorded.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "rail.served": {
   "group": "status",
   "where": "Progress rail",
   "meaning": "Stage 4 — served recorded.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "ref.avoid_all": {
   "group": "safety",
   "where": "Heading above each reference list",
   "meaning": "\"Avoid all — <allergen>\": ingredients that contain or derive from this allergen.",
-  "concern": "Infinitive \"Evitar todo\" (sign style) vs imperative \"Evita todo\". The allergen name after the dash is English data until a canonical allergen vocabulary exists, so the heading is mixed-language by design."
+  "concern": "Infinitive \"Evitar todo\" (sign style) vs imperative \"Evita todo\". The allergen name after the dash is English data until a canonical allergen vocabulary exists, so the heading is mixed-language by design.",
+  "zh_concern": "\"全部避开 — {allergen}\" vs \"禁用\" (prohibited) / \"避免使用\". The allergen after the dash stays English data, so the heading is mixed-language by design.",
+  "priority": 24
  },
  "ref.check_ingredients": {
   "group": "safety",
   "where": "Heading when no reference list exists",
   "meaning": "There is no list for this allergen; check the ingredients yourself.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "\"核对配料\" = check the ingredients against the order. Must not become \"核验\" (verify).",
+  "priority": 25
  },
  "ref.no_list": {
   "group": "safety",
   "where": "Under that heading",
   "meaning": "No reference list exists; confirm ingredients before preparing.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": 26
  },
  "ref.untranslated": {
   "group": "safety",
   "where": "Under the reference lists (Spanish only)",
   "meaning": "Tells the cook the allergen names and lists are in English and were NOT translated.",
-  "concern": "Must state plainly that this data is untranslated. It is shown only when the screen language is not English."
+  "concern": "Must state plainly that this data is untranslated. It is shown only when the screen language is not English.",
+  "zh_concern": null,
+  "priority": null
  },
  "notes.heading": {
   "group": "safety",
   "where": "Above the guest's own words",
   "meaning": "What the guest wrote, verbatim.",
-  "concern": "See reh.full on \"huésped\". \"(sin traducir)\" is deliberate: guest text is never machine-translated."
+  "concern": "See reh.full (\"huésped\" vs \"cliente\"/\"comensal\"). \"(sin traducir)\" is deliberate: guest text is never machine-translated.",
+  "zh_concern": "\"顾客\" vs \"客人\" / \"食客\". \"（未翻译）\" is deliberate: guest text is never machine-translated.",
+  "priority": 27
  },
  "prov.line": {
   "group": "safety",
   "where": "Small line under the action",
   "meaning": "\"<Display> · <Venue> — records the display, not the person.\" The screen knows which display acted, never which person.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "\"记录的是显示屏，不是人员\" — confirm it reads as \"the display, not a person, is recorded\" without implying anything about who acted.",
+  "priority": null
  },
  "prov.this_display": {
   "group": "general",
   "where": "Inside prov.line (fallback)",
   "meaning": "\"This display\" when the display name is not known yet.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "prov.this_venue": {
   "group": "general",
   "where": "Inside prov.line (fallback)",
   "meaning": "\"this venue\" before the venue name loads.",
-  "concern": "\"este local\" vs \"este restaurante\" / \"este establecimiento\"."
+  "concern": "\"este local\" reads Spain-leaning; \"este restaurante\" is likely more natural in Mexican / U.S. kitchens.",
+  "zh_concern": null,
+  "priority": null
  },
  "nav.back": {
   "group": "general",
   "where": "Button — record and lockout",
   "meaning": "Return to the board.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "nav.close": {
   "group": "general",
   "where": "Close (×) button, screen readers",
   "meaning": "Close this screen.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "lock.next": {
   "group": "safety",
   "where": "Lockout after prep",
   "meaning": "The next Kitchen step for this record is the Second Check.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "misc.table": {
   "group": "general",
   "where": "Fallback label",
   "meaning": "\"Table\" when a record has no service point.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "misc.guest": {
   "group": "general",
   "where": "Fallback label",
   "meaning": "\"Guest\" when no name was given.",
-  "concern": "See reh.full."
+  "concern": "See reh.full.",
+  "zh_concern": null,
+  "priority": null
  },
  "err.not_paired": {
   "group": "errors",
   "where": "Record, after a hold",
   "meaning": "Nothing was recorded: this screen is not paired. Pair it in Set Up (Admin).",
-  "concern": "\"Set Up\" kept in English: it is the Admin menu label."
+  "concern": "\"Set Up\" kept in English: it is the Admin menu label.",
+  "zh_concern": "\"Set Up\" kept in English: it is the Admin menu label.",
+  "priority": null
  },
  "err.ack": {
   "group": "errors",
   "where": "Record / lockout, after a hold",
   "meaning": "\"Received\" was NOT recorded. Hold again.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "err.prep": {
   "group": "errors",
   "where": "Record / lockout, after a hold",
   "meaning": "\"Prep\" was NOT recorded. Hold again.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "err.verify": {
   "group": "errors",
   "where": "Record, after a hold",
   "meaning": "\"Second Check\" was NOT recorded. Hold again.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "err.serve": {
   "group": "errors",
   "where": "Record, after a hold",
   "meaning": "\"Served\" was NOT recorded. Hold again.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "err.minimize": {
   "group": "errors",
   "where": "Record",
   "meaning": "Hidden on this screen but not saved.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.title": {
   "group": "general",
   "where": "Pairing screen",
   "meaning": "Pair this display.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.body": {
   "group": "general",
   "where": "Pairing screen",
   "meaning": "Where to get the 6-digit code in Admin.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.button": {
   "group": "actions",
   "where": "Pairing screen",
   "meaning": "Submit the code.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.need_code": {
   "group": "errors",
   "where": "Pairing screen",
   "meaning": "The code must be 6 digits.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.pairing": {
   "group": "general",
   "where": "Pairing screen",
   "meaning": "Working.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.failed": {
   "group": "errors",
   "where": "Pairing screen",
   "meaning": "The code was refused.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.unreachable": {
   "group": "errors",
   "where": "Pairing screen",
   "meaning": "No connection to Happy Chair.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.done_title": {
   "group": "general",
   "where": "Pairing screen",
   "meaning": "Pairing succeeded.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  },
  "pair.done_body": {
   "group": "general",
   "where": "Pairing screen",
   "meaning": "This display is signed in to the venue; it identifies the display, not the person.",
-  "concern": null
+  "concern": null,
+  "zh_concern": "Deliberately avoids \"认证\" (which also means \"certified\"); uses \"绑定\" (linked) to the venue.",
+  "priority": null
  },
  "pair.this_venue": {
   "group": "general",
   "where": "Pairing screen (fallback)",
   "meaning": "\"This venue\" before the name loads.",
-  "concern": null
+  "concern": null,
+  "zh_concern": null,
+  "priority": null
  }
 }

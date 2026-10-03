@@ -60,9 +60,16 @@ const unused = enKeys.filter(k => !used.has(k) && !used.has(k.replace(/\.(one|ot
 if (unused.length) notes.push(`catalog keys not referenced by a literal (check they are still needed): ${unused.join(', ')}`);
 
 // 4 · no stronger claim in translation
-const CLAIM = /segur|libre de|sin al[eé]rgenos|garantiz|certificad|protegid|verificad|apto para/i;
-for (const l of LOCALES) if (l !== 'en') for (const [k, v] of Object.entries(I18N[l]))
-  if (CLAIM.test(v)) errors.push(`${l}: ${k} makes a claim the English does not: "${v}"`);
+// Per language: safe, allergen-free, guaranteed, certified, protected, verified, independent.
+const CLAIM = {
+  es: /segur|libre de|sin al[eé]rgenos|garantiz|certificad|protegid|verificad|apto para|independiente/i,
+  'zh-CN': /安全|无过敏|不含过敏|没有过敏原|保证|担保|认证|保护|验证|核验|独立|合格|放心/,
+};
+for (const l of LOCALES) if (l !== 'en') {
+  if (!CLAIM[l]) { errors.push(`${l}: no claim pattern defined — add one before shipping this locale`); continue }
+  for (const [k, v] of Object.entries(I18N[l]))
+    if (CLAIM[l].test(v)) errors.push(`${l}: ${k} makes a claim the English does not: "${v}"`);
+}
 
 // 5 · nothing user-visible bypasses the catalog
 // Each entry is shown verbatim BY DESIGN. Anything else that looks like words fails the gate.
@@ -82,25 +89,25 @@ body.split('\n').forEach((line, i) => {
   const t = line.trim();
   if (/^(\/\/|\*|\/\*)/.test(t) || /console\.(error|log|warn)/.test(line)) return;
   if (/^var ALLERGEN_DEFS=/.test(t)) return;               // reference lists: data, untranslated by design
-  for (const m of line.matchAll(/>([^<>{}'"\n]*[A-Za-z][^<>{}'"\n]*)</g)) {
+  for (const m of line.matchAll(/>([^<>{}'"\n]*[A-Za-z\u3400-\u9fff\uf900-\ufaff][^<>{}'"\n]*)</g)) {
     const s = m[1].trim(); if (!s) continue;
     // static markup carrying data-i18n is replaced from the catalog at boot
     const before = line.slice(0, m.index + 1);
     if (/data-i18n="[\w.]+"[^<]*>$/.test(before)) continue;
     visible.push([s, i]);
   }
-  for (const m of line.matchAll(/(?<![\w-])(aria-label|title|placeholder|alt)="([^"'+]*[A-Za-z][^"'+]*)"/g)) {
+  for (const m of line.matchAll(/(?<![\w-])(aria-label|title|placeholder|alt)="([^"'+]*[A-Za-z\u3400-\u9fff][^"'+]*)"/g)) {
     // static attributes re-applied from the catalog at boot
     if (m[1] === 'title' && /data-i18n-title="[\w.]+"/.test(line)) continue;
     if (m[1] === 'aria-label' && /data-i18n-aria="[\w.]+"/.test(line)) continue;
     visible.push([m[2], i]);
   }
-  for (const m of line.matchAll(/\.(?:textContent|title|placeholder)=(['"])([^'"]*[A-Za-z][^'"]*)\1/g)) visible.push([m[2], i]);
+  for (const m of line.matchAll(/\.(?:textContent|title|placeholder)=(['"])([^'"]*[A-Za-z\u3400-\u9fff][^'"]*)\1/g)) visible.push([m[2], i]);
 });
 const startLine = html.slice(0, html.indexOf('<body>')).split('\n').length;
 for (const [s, i] of visible) {
   if (DATA[s] !== undefined) continue;
-  if (/^(EN|ES)$/.test(s)) continue;                         // language codes on the EN | ES control
+  if (/^(EN|ES|中文)$/.test(s)) continue;                    // each language's own name on the EN | ES | 中文 control
   errors.push(`hard-coded visible string (line ~${i + startLine}): "${s}" — move it to the catalog or classify it in DATA`);
 }
 
