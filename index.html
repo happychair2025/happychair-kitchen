@@ -1036,13 +1036,41 @@ function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
 //
 // Two independent signals, because the guest writes them as two statements and only the
 // first is safety-critical. If the second never lands, `superseded_at` is null on a row
-// that has genuinely been replaced — so a row is ALSO treated as superseded when another
-// declaration on this board names it. Either signal alone is sufficient.
+// that has genuinely been replaced — so a row is ALSO treated as superseded when a successor
+// names it in supersedes_id. Either signal alone is sufficient — BUT a reference counts ONLY when
+// the successor is from the SAME VISIT: same asset_id AND the same non-null guest_session_id (and
+// no rehearsal/live mismatch). Anyone holding the publishable key can insert a row at any table
+// naming any declaration; an unchecked reference let a row at another table make an
+// un-acknowledged anaphylaxis record vanish with no lockout and no alarm. A reference that does not
+// match is ignored: the record it names stays fully live.
+//
+// The references are kept in a page-life registry fed by EVERY row read — including rows that are
+// themselves superseded and dropped — before any of them is ingested, so a chain A ← B ← C still
+// hides A when only B's superseded_at landed, and A does not reappear if B later leaves the board.
+// A valid supersession is permanent.
+var rowMeta={},successorsOf={};
+function noteRow(d){
+  if(!d||!d.id)return;
+  var m=rowMeta[d.id]||(rowMeta[d.id]={});
+  ['asset_id','guest_session_id','service_kind'].forEach(function(k){if(d[k]!==undefined&&d[k]!==null)m[k]=d[k]});
+  if(d.supersedes_id)(successorsOf[d.supersedes_id]=successorsOf[d.supersedes_id]||{})[d.id]=true;
+}
+function sameVisit(predId,succId){
+  var p=rowMeta[predId],q=rowMeta[succId];if(!p||!q)return false;
+  if(!p.asset_id||p.asset_id!==q.asset_id)return false;
+  if(!p.guest_session_id||p.guest_session_id!==q.guest_session_id)return false;
+  if(p.service_kind&&q.service_kind&&p.service_kind!==q.service_kind)return false;
+  return true;
+}
+function validSuccessorOf(id){var m=successorsOf[id];if(!m)return null;
+  return Object.keys(m).find(function(s){return sameVisit(id,s)})||null}
+// Is this row a correction of a record from its own visit? (Drives the UPDATED badge — a
+// reference that is not honoured must not be presented as a correction either.)
+function isValidCorrection(c){return !!(c&&c.supersedes_id&&sameVisit(c.supersedes_id,c.id))}
 function isSupersededRow(c){
   if(!c)return false;
   if(c.superseded_at)return true;
-  var id=c.id;
-  return Object.keys(cards).some(function(k){return cards[k].supersedes_id===id});
+  return !!validSuccessorOf(c.id);
 }
 
 var LIFECYCLE_TS=['delivered_to_kitchen_at','kitchen_ack_at','protocol_confirmed_at','verified_at','served_at','closed_at','minimized_at'];
@@ -1126,11 +1154,13 @@ function sameVisitOthers(c){
 function ingestDeclaration(row,source){
   if(!row||!row.id)return null;
   var d=stripUi(row),id=d.id,isNew=false,cur;
+  noteRow(d);
   // A superseded declaration is history, not an active card, on every path.
   if(d.superseded_at){dropCard(id);return null}
   // A correction REPLACES its predecessor: the successor is its own card and the predecessor
   // leaves the board.
-  if(source==='insert'&&!cards[id]&&d.supersedes_id&&cards[d.supersedes_id])dropCard(d.supersedes_id);
+  // (A successor no longer DROPS its predecessor here: whether the reference counts is decided by
+  // isSupersededRow's same-visit rule, which hides a genuinely replaced predecessor everywhere.)
   cur=cards[id];
   var prevSig=cur?lockoutContentSig(cur):null;
   if(cur){
@@ -1177,8 +1207,16 @@ function afterIngest(c,source,isNew,prevSig){
   // SUPERSEDED BY REFERENCE. A successor names its predecessor (supersedes_id) even when the
   // predecessor's own superseded_at never landed. The predecessor stops being actionable at once:
   // its hold is cancelled, its generation moves on, and it leaves every band and the lockout.
-  if(c.supersedes_id&&cards[c.supersedes_id]&&!cards[c.supersedes_id]._supersededSeen){
-    cards[c.supersedes_id]._supersededSeen=true;invalidateRecord(c.supersedes_id)}
+  noteRow(c);
+  var pred=c.supersedes_id&&cards[c.supersedes_id];
+  if(pred&&!pred._supersededSeen&&isValidCorrection(c)){
+    pred._supersededSeen=true;
+    // A hold in progress on the predecessor is cancelled — and SAID so on the successor, rather than
+    // letting the cook's hold silently vanish.
+    var wasHeld=!!holdTimers[pred.id]||(recordOpenId===pred.id&&recordHolding);
+    invalidateRecord(pred.id);
+    if(wasHeld)showNotice(c.id,'note.superseded');
+  }
   if(lockoutEligible(c)){if(enqueueLockout(c.id))soundAlarm()}
   else if(isNew&&source!=='cache'&&!isAnaph(c.severity))chimeStandard();
 }
@@ -1310,7 +1348,7 @@ function renderCards(){
     if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">'+th('chip.cross_contact')+'</div>';
     // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
     // declaration must still read as a correction after a reload or a reconciliation read.
-    if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">'+th('row.updated')+'</div>';
+    if(isValidCorrection(c)&&!isSrv)h+='<div class="r-upd">'+th('row.updated')+'</div>';
     // Same table AND same guest session, another open record: stated as a count, never as a
     // relationship (which one corrects or extends the other is not known).
     var also=isSrv?0:sameVisitOthers(c);
@@ -1354,7 +1392,7 @@ function renderCards(){
   // which made a card rebuild itself for a reason the data knew nothing about.
   function cardSig(id){
     var c=cards[id];
-    return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,c.supersedes_id,
+    return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,isValidCorrection(c)?1:0,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
             c.served_at,c._error||'',c._ackPending?1:0,sameVisitOthers(c),locale].join('|');
   }
@@ -1573,7 +1611,7 @@ function refuseSuperseded(id){
   if(lockoutId===id)closeLockout();
   // The notice goes where the cook now is: the successor (its lockout or record), since the
   // superseded record itself is no longer shown anywhere.
-  var succ=Object.keys(cards).find(function(k){return cards[k].supersedes_id===id});
+  var succ=validSuccessorOf(id);if(succ&&!cards[succ])succ=null;
   if(succ){showNotice(succ,'note.superseded');if(lockoutId===succ&&!holdInProgress())renderLockout(succ,lockoutStage,lockoutErr)}
   renderCards();
 }
@@ -2390,7 +2428,7 @@ function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,func
 function loadCache(){try{
   localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
   var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(g)ghosted=JSON.parse(g);
-  if(c){var o=JSON.parse(c);Object.keys(o).forEach(function(id){ingestDeclaration(o[id],'cache')})}}catch(e){}}
+  if(c){var o=JSON.parse(c);Object.keys(o).forEach(function(id){noteRow(o[id])});Object.keys(o).forEach(function(id){ingestDeclaration(o[id],'cache')})}}catch(e){}}
 function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
 
 // Bounds a READ at READ_TIMEOUT_MS. `fetch` has no default timeout and supabase-js sets
@@ -2454,6 +2492,9 @@ async function reconcile(opts){
     // Rehearsal identity and current-work classification both arrive inside the board read
     // now — service_kind per row, and membership already applied by the server.
     // Oldest-first so any escalation surfaces the longest-waiting case first.
+    // Every reference first, from every row (superseded ones included), so no row is escalated
+    // before the read has said whether something replaced it.
+    res.data.forEach(noteRow);
     res.data.slice().reverse().forEach(function(d){ingestDeclaration(d,'reconcile')});
     // THE SERVER RESULT IS THE BOARD. Reconcile used to be additive only — it folded and
     // created, and removed a card solely when the row came back superseded. Anything ever

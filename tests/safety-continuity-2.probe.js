@@ -14,6 +14,10 @@
 //     successor carries an honest notice.
 // (t) · E: a lockout record that stops being anaphylaxis closes its lockout; no ANAPHYLAXIS chip.
 // (u) · F: an INSERT during an in-flight board read is not pruned by that read; a further read runs.
+// (v) verifier round 4 · X1/X2: a supersedes_id from another table or guest session is ignored —
+//     the named record stays live, owed and alarming, and the naming row is not shown as UPDATED.
+// (w) · C1/C2/C3: a chain A ← B ← C hides A when only B's superseded_at landed (A never reaches the
+//     lockout and is never written); A does not come back when its successor leaves the board.
 const SS='hc_probe_w13b';
 const st=JSON.parse(sessionStorage.getItem(SS)||'{"T":[],"pass":0,"fail":0}');
 const T=st.T;
@@ -205,7 +209,9 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await until(()=>lockoutId===S1,RECONCILE_MS+2000);
  const nS=MW(S1).length;const sb=lkBtn();md(sb);await w(300);
  window.__ROWS.push(rowObj(S2,{guest_session_id:SS1,asset_id:'asset-s',table_label:'T15',zone_name:'Main Hall',allergens:['Sesame','Egg'],supersedes_id:S1}));
- await boardRead();await w(1100);mu(sb);await w(400);
+ await boardRead();await w(150);
+ ok('6b · the cancelled hold is SAID on the successor, not silently dropped',lockoutId===S2&&/replaced by this newer one — nothing was recorded/.test(lkTxt()));
+ await w(950);mu(sb);await w(400);
  ok('6b · the hold wrote NOTHING to the predecessor',MW(S1).length===nS,MW(S1).length-nS);
  ok('6b · successor on the lockout at Confirm Received',lockoutId===S2&&lockoutStage==='ack'&&/Egg/.test(lkTxt()));
  const s1w=document.querySelector('[data-k="card:'+S1+'"]');
@@ -247,6 +253,66 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await w(RECONCILE_MS+800);
  ok('F · still there after the next poll',!!cards[U1]&&lockoutId===U1);
  await hold(lkBtn());persist(U1);await hold(lkBtn());persist(U1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+
+ // ── (v) verifier round 4 · X1/X2: a supersedes_id from ANOTHER visit is ignored ─────────────────
+ H('(v) A REFERENCE FROM ANOTHER TABLE OR SESSION NEVER HIDES A RECORD');
+ // Works every lockout off the screen (Confirm Received, Prep, Back) so the next scenario starts clean.
+ async function drain(){for(let i=0;i<20&&lockoutId;i++){const id=lockoutId;
+   if(lockoutStage==='ack'){await hold(lkBtn());persist(id)}
+   if(lockoutStage==='prep'){await hold(lkBtn());persist(id)}
+   const bk=document.querySelector('#lockoutContent .lockout-back');if(bk){bk.click();await w(200)}}}
+ const live=id=>!!document.querySelector('[data-k="card:'+id+'"]')&&!isSupersededRow(cards[id]);
+ const queuedOrUp=id=>lockoutId===id||lockoutQueue.indexOf(id)>=0;
+ const V1='v1000000-t3-anaph',V2='v2000000-p1-attack',V3='v3000000-t4-anaph',V4='v4000000-p2-attack',V5='v5000000-t5-anaph',V6='v6000000-t5-othersess';
+ window.__ROWS.push(rowObj(V1,{asset_id:'asset-T3',table_label:'T3',zone_name:'Main Hall',guest_session_id:'gs-T3'}));
+ await until(()=>lockoutId===V1,RECONCILE_MS+2000);
+ const v2=rowObj(V2,{asset_id:'asset-P1',table_label:'P1',zone_name:'Patio',guest_session_id:'gs-P1',severity:'unsure',supersedes_id:V1});
+ window.__ROWS.push(v2);insertHandlers().forEach(h=>h.cb({new:rawRow(v2)}));await w(200);await boardRead();await w(150);
+ ok('X1 · cross-table INSERT naming T3: T3 stays on the board, on the lockout, alarming',live(V1)&&queuedOrUp(V1)&&lockoutEligible(cards[V1])&&alarmPending());
+ ok('X1 · the attacking row is not presented as a correction (no UPDATED)',!/UPDATED/.test((document.querySelector('[data-k="card:'+V2+'"]')||{}).innerText||''));
+ window.__ROWS.push(rowObj(V3,{asset_id:'asset-T4',table_label:'T4',zone_name:'Main Hall',guest_session_id:'gs-T4'}),
+                   rowObj(V4,{asset_id:'asset-P2',table_label:'P2',zone_name:'Patio',guest_session_id:'gs-P2',severity:'discomfort',supersedes_id:V3}));
+ await boardRead();await w(150);
+ ok('X2 · cross-table reference via board read only: T4 stays live and owed',live(V3)&&queuedOrUp(V3)&&lockoutEligible(cards[V3]));
+ window.__ROWS.push(rowObj(V5,{asset_id:'asset-T5',table_label:'T5',zone_name:'Main Hall',guest_session_id:'gs-T5a'}),
+                   rowObj(V6,{asset_id:'asset-T5',table_label:'T5',zone_name:'Main Hall',guest_session_id:'gs-T5b',supersedes_id:V5,allergens:['Fish']}));
+ await boardRead();await w(150);
+ ok('same table, DIFFERENT guest session: the named record stays live',live(V5)&&queuedOrUp(V5));
+ ok('a non-matching reference never writes: no milestone to any named record',MW(V1).length===0&&MW(V3).length===0&&MW(V5).length===0);
+ await shot('v-cross-table-reference-ignored');
+ await drain();
+
+ // ── (w) verifier round 4 · C1/C2/C3: chains and successors that leave the board ────────────────
+ H('(w) SUPERSESSION CHAINS AND SUCCESSORS THAT LEAVE THE BOARD');
+ const CA='wa000000-a',CB='wb000000-b',CC='wc000000-c';
+ window.__ROWS.push(rowObj(CA,{guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall'}),
+                   rowObj(CB,{guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall',supersedes_id:CA,superseded_at:new Date().toISOString()}),
+                   rowObj(CC,{guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall',supersedes_id:CB,allergens:['Sesame','Egg']}));
+ const lk0=window.__LKLOG.length;await boardRead();await w(200);
+ ok('C1 · A ← B ← C with only B.superseded_at: A is hidden and not owed',!document.querySelector('[data-k="card:'+CA+'"]')&&!lockoutEligible(cards[CA]));
+ ok('C1 · A never reached the lockout, not even for an instant',!window.__LKLOG.slice(lk0).some(x=>x.startsWith(CA)),window.__LKLOG.slice(lk0).join());
+ const nA=MW(CA).length;await doAck(CA,'row');await w(150);
+ ok('C1 · no milestone is ever written to A',MW(CA).length===nA);
+ ok('C1 · C is the live record',lockoutId===CC);
+ await drain();
+ const DA='wd000000-a',DB='we000000-b';
+ window.__ROWS.push(rowObj(DA,{guest_session_id:'gs-D',asset_id:'asset-D',table_label:'T19',zone_name:'Main Hall'}));
+ await until(()=>lockoutId===DA,RECONCILE_MS+2000);
+ const db=rowObj(DB,{guest_session_id:'gs-D',asset_id:'asset-D',table_label:'T19',zone_name:'Main Hall',supersedes_id:DA,allergens:['Milk']});
+ window.__ROWS.push(db);insertHandlers().forEach(h=>h.cb({new:rawRow(db)}));await w(200);
+ ok('C2 · same-visit successor by INSERT: A leaves the lockout, B takes it',lockoutId===DB&&!document.querySelector('[data-k="card:'+DA+'"]'));
+ window.__ROWS=window.__ROWS.filter(x=>x.id!==DB);await boardRead();await w(200);
+ ok('C2 · B leaves the board: A does NOT come back',!document.querySelector('[data-k="card:'+DA+'"]')&&!lockoutEligible(cards[DA])&&lockoutId!==DA);
+ await drain();
+ const EA='wf000000-a',EB='wg000000-b';
+ window.__ROWS.push(rowObj(EA,{guest_session_id:'gs-E',asset_id:'asset-E',table_label:'T20',zone_name:'Main Hall'}));
+ await until(()=>lockoutId===EA,RECONCILE_MS+2000);
+ window.__ROWS.push(rowObj(EB,{guest_session_id:'gs-E',asset_id:'asset-E',table_label:'T20',zone_name:'Main Hall',supersedes_id:EA,severity:'severe'}));
+ await boardRead();await w(150);
+ ok('C3 · same-visit successor by board read: A hidden, off the lockout',!document.querySelector('[data-k="card:'+EA+'"]')&&lockoutId!==EA);
+ window.__ROWS=window.__ROWS.filter(x=>x.id!==EB);await boardRead();await w(200);
+ ok('C3 · B leaves the board: A does NOT come back',!document.querySelector('[data-k="card:'+EA+'"]')&&!lockoutEligible(cards[EA]));
+ ok('invariant · every owed anaphylaxis record is on the lockout or queued',Object.keys(cards).filter(id=>lockoutEligible(cards[id])).every(queuedOrUp));
 
  await done();
 }catch(e){T.push('EXCEPTION '+e.message+'\n'+e.stack);st.fail++;await done()}})();

@@ -53,6 +53,7 @@ PASS  severe record: the stale hold wrote nothing   → 0
 PASS  row shows the new content, hold still available
 
 ──── (s) SUPERSEDED ONLY BY REFERENCE (successor names it; its own superseded_at never landed) ────
+PASS  6b · the cancelled hold is SAID on the successor, not silently dropped
 PASS  6b · the hold wrote NOTHING to the predecessor   → 0
 PASS  6b · successor on the lockout at Confirm Received
 PASS  6b · predecessor is not drawn in any band (not actionable)
@@ -72,6 +73,24 @@ PASS  F · not pruned by the stale read that began before it
 PASS  F · one more board read ran after the stale one   → 2 reads
 PASS  F · still there after the next poll
 
-ALL 51 CHECKS PASS
+──── (v) A REFERENCE FROM ANOTHER TABLE OR SESSION NEVER HIDES A RECORD ────
+PASS  X1 · cross-table INSERT naming T3: T3 stays on the board, on the lockout, alarming
+PASS  X1 · the attacking row is not presented as a correction (no UPDATED)
+PASS  X2 · cross-table reference via board read only: T4 stays live and owed
+PASS  same table, DIFFERENT guest session: the named record stays live
+PASS  a non-matching reference never writes: no milestone to any named record
+
+──── (w) SUPERSESSION CHAINS AND SUCCESSORS THAT LEAVE THE BOARD ────
+PASS  C1 · A ← B ← C with only B.superseded_at: A is hidden and not owed
+PASS  C1 · A never reached the lockout, not even for an instant   → wc000000-c|ack
+PASS  C1 · no milestone is ever written to A
+PASS  C1 · C is the live record
+PASS  C2 · same-visit successor by INSERT: A leaves the lockout, B takes it
+PASS  C2 · B leaves the board: A does NOT come back
+PASS  C3 · same-visit successor by board read: A hidden, off the lockout
+PASS  C3 · B leaves the board: A does NOT come back
+PASS  invariant · every owed anaphylaxis record is on the lockout or queued
+
+ALL 66 CHECKS PASS
 
 network: no request left the local server

@@ -321,7 +321,14 @@ same-visit count, direct milestone calls on it write nothing, the successor carr
 were holding was replaced by this newer one — nothing was recorded."; (t) a lockout record whose
 severity changes away from anaphylaxis closes its lockout — no ANAPHYLAXIS chip, no alarm — and stays
 on the board as itself; (u) an INSERT that arrives while a board read is in flight is not pruned by
-that read, and one more read runs after it. 51 checks. A timed-out write now reads as UNKNOWN —
+that read, and one more read runs after it. Fourth round: (v) a `supersedes_id` from another table
+or another guest session is IGNORED — the named record stays on the board, on the lockout and
+alarming, and the naming row is not shown as UPDATED (the client honours a reference only for the
+same asset_id and the same non-null guest_session_id; `db-proposals/20261008_supersedes_same_visit_check.sql`
+makes the database refuse such rows); (w) a chain A ← B ← C hides A when only B's superseded_at
+landed — A never reaches the lockout, not even for an instant, and is never written — and A does not
+come back when its successor leaves the board. A hold cancelled because a successor arrived is said
+on the successor. 66 checks. A timed-out write now reads as UNKNOWN —
 "No response — couldn't confirm. Hold to try again." / row "Not confirmed — tap to check";
 "NOT recorded" is kept only for an explicit refusal.
 
