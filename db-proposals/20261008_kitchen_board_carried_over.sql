@@ -23,7 +23,12 @@
 -- 2. kitchen_board() also returns delivered_to_kitchen_at, so the client skips a delivery write
 --    it does not need (the write is conditional on IS NULL either way — this only saves a
 --    round trip per record per page life).
---    Both new columns are APPENDED, so existing column positions are unchanged.
+-- 2b. kitchen_board() also returns guest_session_id, so the board can show the honest count
+--    "Also at this table: N other allergy record(s)" (same table AND same guest session) after a
+--    reload too, not only for rows that arrived live. A count only — it asserts no relationship.
+--    guest_session_id is an opaque client-generated visit id already readable by the venue
+--    device through the row SELECT policy (realtime delivers it today); no new exposure.
+--    All three new columns are APPENDED, so existing column positions are unchanged.
 -- 3. The venue-device SELECT and UPDATE policies are widened by exactly the carried-over set, so
 --    the records the board now shows are ACTIONABLE from it (the client treats a 0-row update as
 --    a failure, so without this every milestone on a carried row would show "Not saved").
@@ -82,7 +87,7 @@ revoke all on function public.kitchen_is_carried_over(uuid,uuid,uuid,timestamptz
 grant execute on function public.kitchen_carried_over_reachable(uuid,uuid,uuid,timestamptz,timestamptz,timestamptz) to authenticated;
 grant execute on function public.kitchen_is_carried_over(uuid,uuid,uuid,timestamptz,timestamptz,timestamptz,timestamptz) to authenticated;
 
--- The return type changes (two appended columns), so the function must be dropped, not replaced.
+-- The return type changes (three appended columns), so the function must be dropped, not replaced.
 drop function public.kitchen_board();
 
 create function public.kitchen_board()
@@ -92,7 +97,7 @@ returns table(id uuid, asset_id uuid, table_label text, zone_name text, guest_na
               protocol_confirmed_by text, verified_at timestamptz, verified_by text, served_at timestamptz,
               closed_at timestamptz, superseded_at timestamptz, supersedes_id uuid, minimized_at timestamptz,
               service_instance_id uuid, service_kind text, is_open boolean,
-              delivered_to_kitchen_at timestamptz, carried_over boolean)
+              delivered_to_kitchen_at timestamptz, carried_over boolean, guest_session_id text)
 language sql stable security definer
 set search_path to 'public'
 as $$
@@ -108,7 +113,8 @@ as $$
          public.service_instance_context(d.service_instance_id),
          (d.superseded_at is null and d.served_at is null and d.closed_at is null),
          d.delivered_to_kitchen_at,
-         not c.is_current
+         not c.is_current,
+         d.guest_session_id
   from public.allergen_declarations d
   cross join lateral (select public.is_current_service_record(d.venue_id, d.service_instance_id, d.created_at) as is_current) c
   left join public.assets a on a.id = d.asset_id
@@ -149,7 +155,7 @@ alter policy allergen_declarations_update_venue_device on public.allergen_declar
 commit;
 
 -- ── VERIFY (read-only, after apply) ─────────────────────────────────────────────────────────
--- a) Shape: 27 columns, the last two delivered_to_kitchen_at, carried_over.
+-- a) Shape: 28 columns, the last three delivered_to_kitchen_at, carried_over, guest_session_id.
 --    select pg_get_function_result('public.kitchen_board()'::regprocedure);
 -- b) Grants: authenticated + service_role only.
 --    select proacl from pg_proc where oid='public.kitchen_board()'::regprocedure;

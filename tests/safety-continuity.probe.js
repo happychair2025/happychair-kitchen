@@ -12,9 +12,8 @@
 //     record sheet says why; a retry with a working connection records exactly once.
 // (e) a carried-over record renders in its own "From Earlier Service" band below Needs You,
 //     labelled and actionable.
-// (f) a merged continuation changes the record ON the lockout — at Confirm Received (incl. mid-hold)
-//     and after it (Prep): redrawn at Confirm Received with the merged content, alarm at once,
-//     re-ack is a compare-and-set against the superseded acknowledgement.
+// (f, j, o, p, q, r) — no client-side merging, alarm-on-ack, stale writes, unknown state, hold
+//     cancellation — live in safety-continuity-2.probe.js (same harness, split for run time).
 // (g) a retry after a timed-out write that DID commit: guarded (IS NULL), matches nothing,
 //     the board is re-read, "Already recorded — this hold changed nothing", timestamp unchanged.
 // (h) alarms are single-flight: three lockouts in one board read = one alarm; slider volume intact.
@@ -57,7 +56,7 @@ async function done(){
   sessionStorage.removeItem(SS);
   await fetch('/__results',{method:'POST',body:T.join('\n')});
 }
-setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('/__results',{method:'POST',body:T.join('\n')})},200000);
+setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('/__results',{method:'POST',body:T.join('\n')})},330000);
 
 (async()=>{try{
  if(st.phase==='c'&&!st.cold){
@@ -210,42 +209,6 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await hold(document.querySelector('[data-k="card:'+R5+'"] .row .hold-btn'));persist(R5);
  ok('acknowledging it writes once to it',MW(R5).length===1&&!!cards[R5].kitchen_ack_at);
  ok('one delivery write each for R4..R7',[R4,R4b,R5,R6,R7].every(id=>DW(id).length===1));
-
- // ── (f) ───────────────────────────────────────────────────────────────────────────────────
- H('(f) A MERGED CONTINUATION CHANGES THE RECORD ON THE LOCKOUT');
- const F1='f1000000-host',FS='sess-f1',FA='asset-f1';
- window.__ROWS.push(rowObj(F1,{guest_session_id:FS,asset_id:FA,table_label:'P7',zone_name:'Terrace',guest_name:'Merge Host',allergens:['Sesame']}));
- await until(()=>lockoutId===F1,RECONCILE_MS+2000);
- ok('host on the lockout at Confirm Received',lockoutId===F1&&lockoutStage==='ack');
- const cont=(id,al)=>{const r=rowObj(id,{guest_session_id:FS,asset_id:FA,allergens:al});const x=Object.assign({},r);['table_label','zone_name','service_kind','is_open'].forEach(k=>delete x[k]);x.venue_id='v';return x};
- let f0=alarms.length,nW=MW(F1).length;md(lkBtn());await w(500);
- insertHandlers().forEach(h=>h.cb({new:cont('f2000000-cont-peanut',['Peanut'])}));await w(150);
- ok('card merged: Sesame + Peanut',JSON.stringify(cards[F1].allergens)==='["Sesame","Peanut"]',JSON.stringify(cards[F1].allergens));
- ok('LOCKOUT redrawn with Peanut, at Confirm Received',/Sesame, Peanut/.test(lkTxt())&&lockoutStage==='ack');
- ok('alarm sounded at once',alarms.length>f0,alarms.length-f0);
- await w(1100);const lb=lkBtn();if(lb)mu(lb);await w(200);
- ok('the hold on the OLD content did not complete: no ack written',MW(F1).length===nW,MW(F1).length-nW);
- await shot('f-merge-at-ack');
- await hold(lkBtn());persist(F1);
- ok('acknowledged against the merged content, once',MW(F1).filter(x=>'kitchen_ack_at' in x).length===1&&!!cards[F1].kitchen_ack_at&&lockoutStage==='prep');
- const firstAck=cards[F1].kitchen_ack_at;
- H('(f) …continuation after acknowledgement (lockout at Prep)');
- f0=alarms.length;
- insertHandlers().forEach(h=>h.cb({new:cont('f3000000-cont-shellfish',['Shellfish'])}));await w(150);
- ok('acknowledgement taken away locally for re-ack',!cards[F1].kitchen_ack_at&&cards[F1]._reackRequired===true);
- ok('lockout back at Confirm Received',lockoutId===F1&&lockoutStage==='ack',lockoutStage);
- ok('lockout shows Shellfish',/Shellfish/.test(lkTxt()));
- ok('alarm sounded at once',alarms.length>f0,alarms.length-f0);
- await shot('f-merge-after-ack');
- await w(RECONCILE_MS+800);
- ok('a board read (database still holds the OLD ack) does not restore it',!cards[F1].kitchen_ack_at&&lockoutStage==='ack');
- const nR=MW(F1).length;await hold(lkBtn());persist(F1);
- const re=MW(F1)[nR];
- ok('re-ack is compare-and-set on the superseded acknowledgement',!!re&&(re.__eq||[]).indexOf('kitchen_ack_at')>=0&&!re.__noRow,re&&JSON.stringify(re.__eq));
- ok('re-ack recorded; lockout at Prep',!!cards[F1].kitchen_ack_at&&cards[F1].kitchen_ack_at!==firstAck&&lockoutStage==='prep');
- await w(RECONCILE_MS+800);
- ok('after a board read the re-ack stands (requirement satisfied)',!!cards[F1].kitchen_ack_at&&!cards[F1]._reackRequired);
- await hold(lkBtn());persist(F1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
 
  // ── (g) ───────────────────────────────────────────────────────────────────────────────────
  H('(g) RETRY AFTER A TIMED-OUT WRITE THAT DID COMMIT');

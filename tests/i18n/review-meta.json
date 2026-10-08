@@ -790,5 +790,45 @@
   "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not read as \"saved now\".",
   "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not read as \"saved now\".",
   "priority": null
+ },
+ "card.also_here.one": {
+  "group": "status",
+  "where": "Row, record sheet and lockout",
+  "meaning": "Another open allergy record exists for the same table and guest visit.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must state a count only — never that one record corrects or replaces the other.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must state a count only — never that one record corrects or replaces the other.",
+  "priority": null
+ },
+ "card.also_here.other": {
+  "group": "status",
+  "where": "Row, record sheet and lockout",
+  "meaning": "Other open allergy records exist for the same table and guest visit.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Same as the singular.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Same as the singular.",
+  "priority": null
+ },
+ "row.unconfirmed": {
+  "group": "errors",
+  "where": "Strip under a board row",
+  "meaning": "This display could not confirm whether the last step was saved. Tap to open the record.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "priority": null
+ },
+ "err.unconfirmed": {
+  "group": "errors",
+  "where": "Record sheet / lockout",
+  "meaning": "The board could not confirm the step after a write. The state is unknown — check the record.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not read as \"not saved\" or \"saved\".",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not read as \"not saved\" or \"saved\".",
+  "priority": null
+ },
+ "note.changed_while_saving": {
+  "group": "errors",
+  "where": "Record sheet / lockout",
+  "meaning": "The record changed while this step was being saved; the screen shows what the database has.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "priority": null
  }
 }

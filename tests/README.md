@@ -293,19 +293,34 @@ blocking "Tap to enable allergy alarms" prompt covers the lockout, nothing claim
 unlocks and the pending alarm sounds. `cold=1` repeats (c) in a fresh profile with the browser's
 autoplay rule EMULATED (headless Chrome does not enforce it): an untrusted click cannot dismiss.
 
-Added after independent verification (verifier probes C, D, E and LOW items 4, 5):
-(f) a merged continuation changes the record ON the lockout — at Confirm Received, including
-mid-hold (the hold on the old content is cancelled and writes nothing), and after acknowledgement
-(lockout returns to Confirm Received): redrawn with the merged allergens, alarm at once; a board
-read does not restore the superseded ack; the re-ack is compare-and-set on it and then stands.
-(g) a retry after a timed-out write that committed: guarded IS NULL, matches nothing, the board is
-re-read, "Already recorded — this hold changed nothing.", recorded time unchanged, no confirmation
-chime. (h) three lockouts in one board read = ONE alarm, never stacked, slider volume intact.
-(i) after reload, cached un-acknowledged records raise no lockout and no alarm before the first
-board read; one the read shows acknowledged elsewhere never becomes a lockout; one absent is
-dropped. The fixture now applies `.is()`/`.eq()` write guards to `__ROWS` as PostgREST would,
-can delay the first board read and seed server rows across a reload (sessionStorage), and logs
-every lockout drawn (`__LKLOG`). 95 + 11 checks.
+Added after the first independent verification: (g) a retry after a timed-out write that
+committed — guarded IS NULL, matches nothing, the board is re-read, "Already recorded — this hold
+changed nothing.", recorded time unchanged, no confirmation chime; (h) three lockouts in one board
+read = ONE alarm, never stacked, slider volume intact; (i) after reload, cached un-acknowledged
+records raise no lockout and no alarm before the first board read, one the read shows acknowledged
+elsewhere never becomes a lockout, one absent is dropped. 81 + 11 checks.
+
+## Safety continuity part 2 (`safety-continuity-2.*`) — client-side merge REMOVED
+
+After the second verification failure the client-side merge of continuation declarations was
+subtracted, not patched: every `allergen_declarations` row is its own card, lockout, milestones and
+acknowledgement. (f) two declarations at one table and guest session → two cards and two lockouts,
+each acknowledged separately; the second never changes the first; a hold in progress on the first
+completes on the first (its content never changed); an honest count cue "Also at this table: 1 other
+allergy record" with no correction claim; supersession still replaces. (j) becoming acknowledged —
+elsewhere on screen, elsewhere in the queue, or by this display's own late commit — never sounds
+the alarm. (o) another declaration while an ack is in flight: the ack lands on its own record only,
+the new one stays owed. (p) a write resolving after its record's content changed, or after it was
+superseded, is stale — no chime, no stage drawn from it, "This record changed while saving —
+showing what is recorded." (q) a guarded write that matched nothing followed by a failed re-read says
+"Couldn't confirm — check the record." / "Not confirmed — tap to check", never "NOT recorded", and
+the next good read resolves it. (r) a hold on content that changes is cancelled for any severity.
+37 checks.
+
+The fixture now applies `.is()` write guards to `__ROWS` as PostgREST would, and has
+`__WRITE_MODE='hold'` (released by the probe, commits on match) and `'hangcommit'` (commits, never
+answers), `__BOARD_FAIL` for a failing board read, can delay the first board read and seed rows
+across a reload (sessionStorage), and logs every lockout drawn (`__LKLOG`).
 
 Probe adaptations for refactor decision 1 (every un-acknowledged anaphylaxis record raises its own
 lockout on load, queued one at a time — fixture record A now does so at boot): `showLockout(X)`

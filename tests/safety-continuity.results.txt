@@ -6,7 +6,7 @@ PASS  prompt taken down only once audio runs
 PASS  board empty, nothing pending
 
 ──── (a) SOCKET DEAD — FOUND BY THE BOARD READ ONLY ────
-PASS  lockout within one reconcile cycle   → 4904ms (cycle 5000ms)
+PASS  lockout within one reconcile cycle   → 4898ms (cycle 5000ms)
 PASS  no realtime event was delivered
 PASS  lockout shows the record: T3 · Main Hall, allergens, ANAPHYLAXIS
 PASS  alarm sounded on arrival   → 1 alarm(s)
@@ -41,7 +41,7 @@ PASS  both handled, board clear of lockouts
 
 ──── (d) A WRITE THAT HANGS ────
 PASS  write in flight: guarded
-PASS  bounded: released after the timeout   → 11156ms
+PASS  bounded: released after the timeout   → 11210ms
 PASS  state reverted (no ack, no pending ack)
 PASS  row says "Not saved — tap to retry"   → Not saved — tap to retry
 PASS  the hold is available again on the row
@@ -62,29 +62,11 @@ PASS  not collapsed, not dimmed
 PASS  acknowledging it writes once to it
 PASS  one delivery write each for R4..R7
 
-──── (f) A MERGED CONTINUATION CHANGES THE RECORD ON THE LOCKOUT ────
-PASS  host on the lockout at Confirm Received
-PASS  card merged: Sesame + Peanut   → ["Sesame","Peanut"]
-PASS  LOCKOUT redrawn with Peanut, at Confirm Received
-PASS  alarm sounded at once   → 1
-PASS  the hold on the OLD content did not complete: no ack written   → 0
-PASS  acknowledged against the merged content, once
-
-──── (f) …continuation after acknowledgement (lockout at Prep) ────
-PASS  acknowledgement taken away locally for re-ack
-PASS  lockout back at Confirm Received   → ack
-PASS  lockout shows Shellfish
-PASS  alarm sounded at once   → 1
-PASS  a board read (database still holds the OLD ack) does not restore it
-PASS  re-ack is compare-and-set on the superseded acknowledgement   → ["kitchen_ack_at"]
-PASS  re-ack recorded; lockout at Prep
-PASS  after a board read the re-ack stands (requirement satisfied)
-
 ──── (g) RETRY AFTER A TIMED-OUT WRITE THAT DID COMMIT ────
 PASS  ack write is guarded IS NULL
 PASS  timed out: lockout still asks for Confirm Received
 PASS  the retry was guarded and matched nothing
-PASS  recorded time NOT rewritten (board read shows the committed one)   → 2026-10-08T20:37:54.110Z vs 2026-10-08T20:37:54.110Z
+PASS  recorded time NOT rewritten (board read shows the committed one)   → 2026-10-08T22:19:28.867Z vs 2026-10-08T22:19:28.867Z
 PASS  "Already recorded — this hold changed nothing." on the lockout
 PASS  lockout shows the recorded state (Prep), no confirmation chime claimed
 
@@ -117,6 +99,6 @@ PASS  delivery written once for the new record
 PASS  the lockout is there, unchanged
 PASS  no anonymous client use anywhere in the run
 
-ALL 95 CHECKS PASS
+ALL 81 CHECKS PASS
 
 network: no request left the local server

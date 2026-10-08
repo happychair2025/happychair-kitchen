@@ -1,0 +1,57 @@
+
+──── SETUP ────
+PASS  a real tap unlocks audio
+
+──── (f) TWO DECLARATIONS AT ONE TABLE, ONE GUEST SESSION — NO MERGING ────
+PASS  first record on the lockout
+PASS  two cards, not one
+PASS  the first card is unchanged by the second   → ["Sesame"]
+PASS  second record has its own lockout, queued
+PASS  alarm sounded for the second record   → 2
+PASS  the hold on the first completed on the first — its content never changed
+PASS  the first is acknowledged; the second is not
+PASS  lockout shows the honest count: "Also at this table: 1 other allergy record"   → Also at this table: 1 other allergy record
+PASS  no claim of correction or replacement
+PASS  row carries the same count
+PASS  "1 of 2" — the second waits   → 1 of 2 — the next allergy opens after this one.
+PASS  alarm continues: the second is un-acknowledged
+PASS  Back → the second record's own lockout at Confirm Received
+PASS  second acknowledged separately, once
+
+──── (f) …supersession still replaces ────
+PASS  the corrected record leaves the board
+PASS  its successor is its own card with its own lockout
+PASS  successor row marked UPDATED
+
+──── (j) ACKNOWLEDGEMENT NEVER SOUNDS THE ALARM ────
+PASS  M2 · queued record acknowledged elsewhere: dropped from the queue, NO alarm   → alarms+0
+PASS  J · on-screen record acknowledged elsewhere: lockout → Prep, NO alarm   → stage=prep alarms+0
+PASS  K · own ack timed out; database has it
+PASS  K · board read restores it → Prep, NO alarm on confirmation   → alarms+0
+PASS  K · "Not saved" cleared by the read
+
+──── (o) ANOTHER DECLARATION ARRIVES WHILE AN ACK WRITE IS IN FLIGHT ────
+PASS  the in-flight ack lands on its own record only
+PASS  the new record is still owed: alarm pending, queued
+
+──── (p) A WRITE THAT RESOLVES AFTER THE RECORD CHANGED IS STALE ────
+PASS  at Prep
+PASS  content change redraws the lockout with the new content
+PASS  stale write: no confirmation chime
+PASS  stale write: notice, and the screen shows what the database has
+PASS  record superseded mid-write: no chime, no Prep drawn for it
+PASS  the successor holds the lockout at Confirm Received
+
+──── (q) GUARDED WRITE MATCHED NOTHING AND THE RE-READ FAILED ────
+PASS  says the state is unknown — never "NOT recorded"
+PASS  row: "Not confirmed — tap to check"
+PASS  record: "Couldn't confirm — check the record."
+PASS  next good read resolves it to the recorded state
+
+──── (r) A HOLD ON CHANGED CONTENT IS CANCELLED — ANY SEVERITY ────
+PASS  severe record: the stale hold wrote nothing   → 0
+PASS  row shows the new content, hold still available
+
+ALL 37 CHECKS PASS
+
+network: no request left the local server

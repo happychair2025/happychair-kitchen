@@ -56,6 +56,7 @@ if(location.search.indexOf('inst=1')>=0){
         window.__DEVICE_LOCALE=args.p_locale;return thenable({data:args.p_locale,error:null})}
       if(fn==='kitchen_board'&&boardDelay){var dl=boardDelay;boardDelay=0;var o={retry:function(){return o},abortSignal:function(){return o},
         then:function(r,j){return new Promise(function(res){setTimeout(res,dl)}).then(function(){return {data:JSON.parse(JSON.stringify(window.__ROWS)),error:null}}).then(r,j)}};return o}
+      if(fn==='kitchen_board'&&window.__BOARD_FAIL)return thenable({data:null,error:{message:'board read refused (probe)'}});
       return thenable(fn==='kitchen_board'?{data:JSON.parse(JSON.stringify(window.__ROWS)),error:null}:{data:[],error:null}) },
     from:function(tbl){return {
       select:function(){return {eq:function(){return {single:function(){
@@ -66,7 +67,9 @@ if(location.search.indexOf('inst=1')>=0){
       // (delivered_to_kitchen_at + device_id only — written once per record on ingest since the
       // shared-ingest change) is recorded separately in __DW__, so a probe's milestone counts
       // keep meaning "milestones" while delivery is still fully observable.
-      // window.__WRITE_MODE = 'ok' (default) | 'err' (refused) | 'hang' (never settles).
+      // window.__WRITE_MODE = 'ok' (default) | 'err' (refused) | 'hang' (never settles)
+      //   | 'hold' (settles when the probe calls window.__PEND.shift()(); COMMITS to __ROWS on match)
+      //   | 'hangcommit' (COMMITS to __ROWS on match, never answers — the committed-after-timeout case).
       update:function(v){
         var isDelivery=Object.keys(v).every(function(k){return k==='delivered_to_kitchen_at'||k==='device_id'});
         var log=isDelivery?(window.__DW__=window.__DW__||[]):window.__W__;
@@ -82,6 +85,14 @@ if(location.search.indexOf('inst=1')>=0){
           select:function(c){meta('__select',c);return b},
           abortSignal:function(sig){meta('__signal',!!sig);return b},
           then:function(r,j){var m=window.__WRITE_MODE||'ok';
+            var evalMatch=function(){var row=(window.__ROWS||[]).find(function(x){return x.id===rec.__target});
+              var t=function(v){return v?new Date(v).getTime():null};
+              var mt=!!rec.__target&&(!row||conds.every(function(c){return 'eq' in c?t(row[c.col])===t(c.eq):(c.isnull?row[c.col]==null:row[c.col]!=null)}));
+              if(mt&&row)Object.keys(v).forEach(function(k){row[k]=v[k]});
+              if(!mt)meta('__noRow',1);return mt};
+            if(m==='hangcommit'&&!isDelivery){meta('__hung',1);evalMatch();return new Promise(function(){}).then(r,j)}
+            if(m==='hold'&&!isDelivery){return new Promise(function(res){(window.__PEND=window.__PEND||[]).push(function(){
+              var mt=evalMatch();res({data:mt?[{id:rec.__target}]:[],error:null})})}).then(r,j)}
             if(m==='hang'&&!isDelivery){meta('__hung',1);return new Promise(function(){}).then(r,j)}
             if(m==='err'&&!isDelivery)return Promise.resolve({data:null,error:{message:'refused'}}).then(r,j);
             var row=(window.__ROWS||[]).find(function(x){return x.id===rec.__target});
