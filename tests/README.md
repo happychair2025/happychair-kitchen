@@ -257,3 +257,45 @@ the 14-state walk (`renders/walk-qa.probe.js`) in each language.
 
 Review matrix: `i18n/KITCHEN_STRINGS_EN_ES_ZH.md` (+ review page), highest-risk terms first.
 Spanish and Chinese stay DRAFT until native speakers who know U.S. restaurant kitchens review them.
+
+## Offline harness (`harness/`)
+
+`node tests/harness/run.js tests/<probe>.probe.js --query='inst=1'` drives the real `index.html` in
+headless Chrome over the DevTools protocol, with no dependencies. **No request leaves the machine:**
+the jsdelivr supabase-js tag is replaced by `harness/stub-supabase.js` (dead clients that record any
+call in `window.__ANON__`), the fixture is inserted before the boot IIFE, and every request to
+anything other than the local server is failed by the DevTools Fetch domain and listed at the end
+of the output. `/__tap?x=&y=` gives a probe a TRUSTED input event (audio unlock); `/__shot?n=`
+saves a screenshot to `../shots-kitchen/`. `harness/run-all.sh` runs the gate and every current
+probe and rewrites the `*.results.txt` files.
+
+Stale before this change (fail on 09b6b94 too, not run): `board-selection` (live data),
+`board-ux` / `lockout` / `verification-contract` (the retired `?fixture=1` built-in fixture),
+`render-churn` / `second-check-persistence` (reference the removed `verifyOpenId`),
+`paired-authorization` (its own 115h fixture).
+
+The fixture's write stub now models the supabase-js builder (`update().eq().is().select().abortSignal()`,
+metadata non-enumerable) and records the once-per-record DELIVERY receipt in `__DW__`, separately
+from milestone writes in `__W__`. `?rows=none` starts empty; `window.__WRITE_MODE='ok'|'err'|'hang'`.
+
+## Safety continuity (`safety-continuity.*`) — W1-3
+
+Fault injection with the realtime socket dead throughout. (a) a record found ONLY by the board read
+→ lockout within one reconcile cycle, alarm, exactly one guarded `delivered_to_kitchen_at` write;
+the alarm repeats every 10s, survives a refused acknowledgement, and stops once the ack is
+confirmed. (b) two anaphylaxis INSERTs in one moment → first on the lockout, second queued,
+"1 of 2", each acknowledged individually, Back opens the next; labels come from the board read and
+the anonymous client is never used. (d) a hung write is released at 10s, fully reverted, the row says
+"Not saved — tap to retry", the sheet says why, a retry records once; a write that committed after
+its timeout is restored by the next board read and the message clears. (e) a `carried_over` record
+sits in "From Earlier Service" between Needs You and In Progress, actionable. (c) after reload the
+blocking "Tap to enable allergy alarms" prompt covers the lockout, nothing claims to sound, a real tap
+unlocks and the pending alarm sounds. `cold=1` repeats (c) in a fresh profile with the browser's
+autoplay rule EMULATED (headless Chrome does not enforce it): an untrusted click cannot dismiss.
+64 + 11 checks.
+
+Probe adaptations for refactor decision 1 (every un-acknowledged anaphylaxis record raises its own
+lockout on load, queued one at a time — fixture record A now does so at boot): `showLockout(X)`
+used to mean "draw X's lockout now", which is `renderLockout(X,'ack')`; kitchen-milestones'
+"no lockout popped" is asserted as "this action did not change which lockout is up", and Back now
+also asserts that the next waiting lockout opens.

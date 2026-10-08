@@ -1,0 +1,81 @@
+
+──── SETUP ────
+PASS  audio prompt is up at first paint
+PASS  a real tap unlocks audio   → running
+PASS  prompt taken down only once audio runs
+PASS  board empty, nothing pending
+
+──── (a) SOCKET DEAD — FOUND BY THE BOARD READ ONLY ────
+PASS  lockout within one reconcile cycle   → 4753ms (cycle 5000ms)
+PASS  no realtime event was delivered
+PASS  lockout shows the record: T3 · Main Hall, allergens, ANAPHYLAXIS
+PASS  alarm sounded on arrival   → 1 alarm(s)
+PASS  exactly one delivery write   → 1
+PASS  ...delivered_to_kitchen_at + device_id, guarded IS NULL
+PASS  ...bounded (abort signal attached)
+PASS  no milestone was written by ingest
+PASS  alarm repeats while unacknowledged   → 2 repeat(s) in 16200ms
+PASS  still exactly one delivery write after further board reads   → 1
+PASS  refused ack: lockout still asks for Confirm Received, error shown
+PASS  alarm continues after a refused ack (not merely dismissed)   → 1
+PASS  ack recorded once, to R1   → 2 attempts (1 refused, 1 accepted)
+PASS  alarm stops once the ack is confirmed   → 0 after ack
+PASS  lockout moved to Prep on the SAME record
+PASS  lockout closed after Back
+
+──── (b) TWO ANAPHYLAXIS INSERTS IN ONE MOMENT ────
+PASS  first arrival is on the lockout
+PASS  second arrival is queued, not lost and not overwriting
+PASS  "1 of 2" shown   → 1 of 2 — the next allergy opens after this one.
+PASS  alarm sounded
+PASS  one delivery write each
+PASS  the anonymous client was never used for a label
+PASS  label comes from the board read (P5 · Terrace)
+PASS  R2 acknowledged — R3 untouched
+PASS  still on R2 (prep) with R3 waiting: "1 of 2"   → 1 of 2 — the next allergy opens after this one.
+PASS  alarm continues: R3 is still unacknowledged
+PASS  Back opens the NEXT lockout: R3
+PASS  no queue line for the last one
+PASS  R3 acknowledged individually, exactly once
+PASS  both handled, board clear of lockouts
+
+──── (d) A WRITE THAT HANGS ────
+PASS  write in flight: guarded
+PASS  bounded: released after the timeout   → 11157ms
+PASS  state reverted (no ack, no pending ack)
+PASS  row says "Not saved — tap to retry"   → Not saved — tap to retry
+PASS  the hold is available again on the row
+PASS  card still in Needs You
+PASS  message persists across a board read (outcome still unknown)
+PASS  tap opens the record, which explains and offers the hold
+PASS  retry with a working connection records exactly once
+PASS  message cleared by the success
+PASS  committed-after-timeout: board read restores the ack and clears "Not saved"
+
+──── (e) CARRIED-OVER RECORD ────
+PASS  band order: Needs You → From Earlier Service → In Progress   → sec:needs | sec:carried | sec:working
+PASS  the carried record sits in its band
+PASS  band labelled "From Earlier Service"   → FROM EARLIER SERVICE 1
+PASS  band explains it is still open
+PASS  carried record is actionable (Confirm Received hold)
+PASS  not collapsed, not dimmed
+PASS  acknowledging it writes once to it
+PASS  one delivery write each for R4..R7
+
+──── (c) RELOAD WITH AUDIO LOCKED ────
+PASS  prompt up after reload
+PASS  reads "Tap to enable allergy alarms"   → Tap to enable allergy alarms
+PASS  it is blocking: covers the screen
+PASS  above the lockout: the lockout is up behind it
+PASS  audio is NOT ready, so nothing has claimed to sound
+      untrusted click after reload: browser reports AudioContext running (Chrome may grant audio to an origin already engaged this session)
+PASS  prompt is down ONLY if audio is actually running
+PASS  a real tap unlocks audio and removes it
+PASS  the pending alarm sounds within one tick   → 2
+PASS  delivery written once for the new record
+PASS  the lockout is there, unchanged
+PASS  no anonymous client use anywhere in the run
+
+ALL 64 CHECKS PASS
+
+network: no request left the local server

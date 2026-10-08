@@ -11,6 +11,7 @@ if(location.search.indexOf('inst=1')>=0){
   // The three exact records, ALL AT P4 (asset a1) — which is the live shape and is what makes
   // the duplicate marker count three. The prior fixture put Closure Test on another table, so
   // it never exercised the group at all.
+  window.__DW__=[];
   window.__ROWS=[
    // A · Closure Test — P4 — Sesame + Peanut. Unacknowledged, unrelated guest/session.
    {id:'ba65384b-cccc',asset_id:'a1',table_label:'P4',zone_name:'Terrace',guest_name:'Closure Test',
@@ -36,6 +37,8 @@ if(location.search.indexOf('inst=1')>=0){
     protocol_confirmed_at:ago(90),protocol_confirmed_by:'Kitchen Display',
     verified_at:null,verified_by:null,served_at:null,closed_at:null,superseded_at:null,
     supersedes_id:null,minimized_at:null,service_instance_id:'s1',service_kind:'rehearsal',is_open:true}];
+  // ?rows=none starts with an empty board, for probes that build their own records.
+  if(location.search.indexOf('rows=none')>=0)window.__ROWS=[];
   var thenable=function(v){var o={retry:function(){return o},abortSignal:function(){return o},
     then:function(r,j){return Promise.resolve(v).then(r,j)}};return o};
   // This display's stored language (venue_devices.display_locale) — ?devlocale=es starts the
@@ -51,9 +54,28 @@ if(location.search.indexOf('inst=1')>=0){
       select:function(){return {eq:function(){return {single:function(){
         return thenable(tbl==='venue_devices'?{data:{display_locale:window.__DEVICE_LOCALE},error:null}
                                            :{data:{name:'Happy Bistro'},error:null})}}}}},
-      update:function(v){window.__W__.push(v);__L('net.update',Object.keys(v).join(','));
-        return {eq:function(id,val){window.__W__[window.__W__.length-1].__target=val;
-          return Promise.resolve({error:null})}}}
+      // A write builder shaped like supabase-js: update().eq().is().select().abortSignal(), then
+      // awaited. MILESTONE writes are recorded in __W__ exactly as before. The DELIVERY receipt
+      // (delivered_to_kitchen_at + device_id only — written once per record on ingest since the
+      // shared-ingest change) is recorded separately in __DW__, so a probe's milestone counts
+      // keep meaning "milestones" while delivery is still fully observable.
+      // window.__WRITE_MODE = 'ok' (default) | 'err' (refused) | 'hang' (never settles).
+      update:function(v){
+        var isDelivery=Object.keys(v).every(function(k){return k==='delivered_to_kitchen_at'||k==='device_id'});
+        var log=isDelivery?(window.__DW__=window.__DW__||[]):window.__W__;
+        var rec=v;log.push(rec);__L(isDelivery?'net.delivery':'net.update',Object.keys(v).join(','));
+        // Builder metadata is NON-enumerable, so probes that compare a write's keys still see only
+        // the columns written (plus __target, as before).
+        var meta=function(k,v){Object.defineProperty(rec,k,{value:v,enumerable:false,configurable:true,writable:true})};
+        var b={eq:function(col,val){if(col==='id')rec.__target=val;return b},
+          is:function(col,val){meta('__is',(rec.__is||[]).concat([col+' is '+val]));return b},
+          select:function(c){meta('__select',c);return b},
+          abortSignal:function(sig){meta('__signal',!!sig);return b},
+          then:function(r,j){var m=window.__WRITE_MODE||'ok';
+            if(m==='hang'&&!isDelivery){meta('__hung',1);return new Promise(function(){}).then(r,j)}
+            if(m==='err'&&!isDelivery)return Promise.resolve({data:null,error:{message:'refused'}}).then(r,j);
+            return Promise.resolve({data:rec.__target?[{id:rec.__target}]:[],error:null}).then(r,j)}};
+        return b}
     }},
     // Handlers are KEPT so a probe can deliver a realtime event exactly as the socket would.
     channel:function(){return {on:function(ev,flt,cb){(window.__RT=window.__RT||[]).push({flt:flt,cb:cb});return this},

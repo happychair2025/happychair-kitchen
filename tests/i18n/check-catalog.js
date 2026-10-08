@@ -47,7 +47,8 @@ const used = new Set();
 // a literal key, not a prefix being composed ('step.'+act.a is covered by the composed list below)
 for (const m of code.matchAll(/\b(?:th|tt|tRaw|langMsg)\('([\w.]*\w)'(?!\s*\+)/g)) used.add(m[1]);
 for (const m of code.matchAll(/data-i18n(?:-title|-aria)?="([\w.]+)"/g)) used.add(m[1]);
-for (const m of code.matchAll(/(?:showRowError\(id,|renderLockout\(id,'\w+',)'([\w.]+)'\)/g)) used.add(m[1]);
+// an error key passed to showRowError / renderLockout, with or without trailing options
+for (const m of code.matchAll(/(?:showRowError\(id,|renderLockout\(id,'\w+',)'([\w.]+)'[,)]/g)) used.add(m[1]);
 for (const m of code.matchAll(/recordHeadHtml\(c,'([\w.]+)'/g)) used.add(m[1]);
 for (const m of code.matchAll(/\bsec\('\w+','([\w.]+)'/g)) used.add(m[1]);
 for (const m of code.matchAll(/\?\s*\w+(?:\.\w+)?\s*:\s*'(title\.[\w.]+)'/g)) used.add(m[1]);

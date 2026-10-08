@@ -9,10 +9,10 @@
  },
  "app.activate": {
   "group": "general",
-  "where": "Full-screen prompt when the display first opens",
-  "meaning": "Tap once so the display is allowed to play alert sounds.",
-  "concern": "Brand \"HC Kitchen\" stays in English.",
-  "zh_concern": null,
+  "where": "Full-screen blocking prompt when the display opens or reloads, above every other screen",
+  "meaning": "Tap once so the display can sound allergy alarms. It stays up until sound actually works.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. \"alarmas de alergias\" = alarms for allergies; must not read as \"allergy-free\".",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. 过敏警报 = allergy alarm.",
   "priority": null
  },
  "hdr.kitchen": {
@@ -117,38 +117,6 @@
   "meaning": "Records marked served in this service.",
   "concern": null,
   "zh_concern": "\"service\" = \"餐段\" (meal period). \"本班次\" (this shift) is an alternative; confirm which the kitchen uses.",
-  "priority": null
- },
- "board.earlier": {
-  "group": "status",
-  "where": "Board section heading",
-  "meaning": "Records from before the current service.",
-  "concern": null,
-  "zh_concern": null,
-  "priority": null
- },
- "board.show": {
-  "group": "general",
-  "where": "Earlier section toggle",
-  "meaning": "Show the earlier records.",
-  "concern": null,
-  "zh_concern": null,
-  "priority": null
- },
- "board.hide": {
-  "group": "general",
-  "where": "Earlier section toggle",
-  "meaning": "Hide the earlier records.",
-  "concern": null,
-  "zh_concern": null,
-  "priority": null
- },
- "board.earlier_note": {
-  "group": "status",
-  "where": "Under the Earlier heading",
-  "meaning": "These are not part of the service running now; review them in the Shift Record (an Admin page).",
-  "concern": "\"Shift Record\" kept in English: it is the name of the Admin page, which is in English.",
-  "zh_concern": "\"Shift Record\" kept in English: it is the name of the Admin page.",
   "priority": null
  },
  "summary.tables.one": {
@@ -773,6 +741,46 @@
   "meaning": "\"This venue\" before the name loads.",
   "concern": null,
   "zh_concern": null,
+  "priority": null
+ },
+ "board.carried": {
+  "group": "status",
+  "where": "Board section heading, directly below Needs You",
+  "meaning": "Records still open from an earlier service. They still need the kitchen steps.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. 餐段 is used for \"service\" throughout.",
+  "priority": null
+ },
+ "board.carried_note": {
+  "group": "status",
+  "where": "Under the From Earlier Service heading",
+  "meaning": "These records are still open; closing the earlier service did not complete them.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not imply the records are finished or archived.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not imply the records are finished or archived.",
+  "priority": null
+ },
+ "lock.queue": {
+  "group": "safety",
+  "where": "Anaphylaxis lockout, under the rehearsal marker",
+  "meaning": "This is one of N anaphylaxis alerts waiting; the next opens after this one is handled.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. 第 1 条，共 {n} 条 = item 1 of n.",
+  "priority": null
+ },
+ "row.not_saved": {
+  "group": "errors",
+  "where": "Strip under a board row after a write failed or got no response",
+  "meaning": "The last step was NOT saved. Tap to open the record and hold again.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "priority": null
+ },
+ "err.timeout": {
+  "group": "errors",
+  "where": "Record sheet / lockout, after a hold that got no response",
+  "meaning": "No response from Happy Chair, so the step is not saved here. Hold again.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "priority": null
  }
 }

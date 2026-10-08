@@ -82,7 +82,7 @@ function lockoutChecks(tag){
  closeRecord(); await w(150);
  const L2='lay0001-l';
  window.__ROWS.push(Object.assign({},window.__ROWS.find(x=>x.id===X),{id:L2,served_at:null,verified_at:null,protocol_confirmed_at:null,kitchen_ack_at:null,status:'pending'}));
- await reconcile(); await w(300); showLockout(L2); await w(250);
+ await reconcile(); await w(300); renderLockout(L2,'ack'); await w(250);
  for(const tag of ['[lockout received]','[lockout prep]','[lockout done]']){
    lockoutChecks(tag); const b=lk().querySelector('.hold-btn'); if(b){await hold(b);echo(L2)}
  }
@@ -116,7 +116,7 @@ function lockoutChecks(tag){
  ok('[error] the NOT-recorded error is shown in the sheet, not clipped',!!er&&notClipped(er)&&R(er).right<=R(document.querySelector('#verify .vfy-card')).right+1);
  ok('[error] in the display language',LOC==='en'||!leaks(er).length);
  sbv.from=realFrom; delete cards[G]._error; closeRecord(); await w(150);
- showLockout(G); await w(250);
+ renderLockout(G,'ack'); await w(250);
  const lAl=[...lk().children].find(e=>e.textContent.includes('Sesame')&&e.textContent.includes('Milk')&&!e.querySelector('.avoid-t,[style*=uppercase]'));
  ok('[long allergens] lockout: all nine names shown, not clipped',!!lAl&&LONG.every(a=>lAl.textContent.includes(a))&&notClipped(lAl));
  lockoutChecks('[long allergens lockout]');

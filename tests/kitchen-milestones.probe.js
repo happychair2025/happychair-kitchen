@@ -37,6 +37,10 @@ const refuse=()=>{sbv.from=function(){return {update:function(v){W().push(Object
 const hang=()=>{sbv.from=function(){return {update:function(v){W().push(Object.assign({__hung:1},v));return {eq:function(){return new Promise(function(){})}}}}}};
 
 setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('/__results',{method:'POST',body:T.join('\n')})},150000);
+// Since the shared-ingest change (refactor decision 1) every un-acknowledged anaphylaxis record
+// raises its own lockout on load, and they queue one at a time. So "no lockout popped" is asserted
+// as "this action did not change which lockout is up", and leaving one lockout opens the next.
+const lkState=()=>lkOn()?lockoutId+'|'+lockoutStage:'closed';
 (async()=>{try{
  for(let i=0;i<80&&document.querySelectorAll('.row').length<3;i++)await w(100);
  await window.__realLoadVenue();
@@ -92,15 +96,16 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  echo(A); await churn();
  ok('poll + token refresh + live update: survives',lkOn()&&lkDone().join('|')==='ALLERGY RECEIVED|PREP AREA CLEARED');
  n=W().length; document.querySelector('#lockoutContent .lockout-back').click(); await w(150);
- ok('Back to Kitchen Board closes it, zero writes',!lkOn()&&lockoutId===null&&W().length===n);
+ ok('Back to Kitchen Board closes it, zero writes',lockoutId!==A&&W().length===n);
+ ok('...and the next waiting lockout opens (one at a time)',lkOn()&&[E,G].indexOf(lockoutId)>=0&&lockoutStage==='ack',lockoutId);
  ok('A row badge survives Received → Prep',badge(A));
 
  H('3 · SHEET · NON-ANAPHYLAXIS RECEIVED (D)');
- openRecord(D); await w(200); n=W().length;
+ openRecord(D); await w(200); n=W().length; let lk0=lkState();
  await hold(shBtn(),300); ok('early release = zero writes',W().length===n);
  await hold(shBtn(),1400);
  ok('exactly one ack write to D',W().length===n+1&&wf(D).length===1);
- ok('no lockout popped',!lkOn());
+ ok('no lockout popped',lkState()===lk0,lk0+' → '+lkState());
  ok('sheet stayed open on D',shOn()&&recordOpenId===D);
  ok('Allergy Received confirmed visibly (not a toast)',!!sh().querySelector('.vfy-ok')&&/Allergy Received/.test(sh().querySelector('.vfy-ok').innerText));
  ok('next requirement is Second Check (no prep for severe)',/Hold to Record Second Check/.test(shTxt()));
@@ -130,8 +135,8 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('Back closes, zero writes',!shOn()&&W().length===n);
 
  H('3 · SHEET · ANAPHYLAXIS RECEIVED → PREP (E): no screen swap');
- openRecord(E); await w(200); await hold(shBtn(),1400);
- ok('ack on E from the sheet does NOT pop the lockout',!lkOn());
+ openRecord(E); await w(200); lk0=lkOn()?lockoutId:'closed'; await hold(shBtn(),1400);
+ ok('ack on E from the sheet does NOT pop the lockout',(lkOn()?lockoutId:'closed')===lk0&&(lk0!==E||lockoutStage!=='ack'),lk0+' → '+lkState());
  ok('Allergy Received banner + next is the prep hold',/Allergy Received/.test(shTxt())&&/Hold to Confirm Prep Area Cleared/.test(shTxt()));
  echo(E); await hold(shBtn(),1400);
  ok('prep from the sheet: Prep Area Cleared banner, next Second Check',/Prep Area Cleared/.test(shTxt())&&/Hold to Record Second Check/.test(shTxt()));
@@ -147,9 +152,9 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  hang(); await hold(lkBtn(),1400); await w(400);
  ok('lockout prep hung: never claims Prep Area Cleared',lkDone().join('|')==='ALLERGY RECEIVED'&&/Hold to Confirm Prep Area Cleared/.test(lkTxt()));
  sbv.from=realFrom; closeLockout();
- openRecord(G); await w(200); refuse(); await hold(shBtn(),1400);
+ openRecord(G); await w(200); lk0=lkState(); refuse(); await hold(shBtn(),1400);
  ok('sheet ack refused: no banner, error shown, ack hold still offered',!sh().querySelector('.vfy-ok')&&/Received NOT recorded/.test(shTxt())&&/Hold to Confirm Allergy Received/.test(shTxt()));
- ok('...no lockout popped',!lkOn());
+ ok('...no lockout popped',lkState()===lk0,lk0+' → '+lkState());
  delete cards[G]._error; closeRecord(); openRecord(G); await w(150); hang(); await hold(shBtn(),1400); await w(500);
  ok('sheet ack hung: no banner, never offers the next step',!sh().querySelector('.vfy-ok')&&!/Prep Area Cleared/.test(shTxt())&&/Hold to Confirm Allergy Received/.test(shTxt()));
  sbv.from=realFrom; closeRecord();

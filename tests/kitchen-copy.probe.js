@@ -60,7 +60,7 @@ function sheetContract(name,{title,served,wait,instr,hold:holdLbl,back}){
  window.__ROWS.push(Object.assign({},window.__ROWS.find(x=>x.id===X),{id:L,served_at:null,verified_at:null,protocol_confirmed_at:null,kitchen_ack_at:null,status:'pending',created_at:hrs(0.01)}));
  await reconcile(); await w(300);
  for(const [stage,sub] of [['ack','Confirm the kitchen has received this allergy.'],['prep','Clear and separate the prep area, utensils and surfaces.'],['done','Next: Second Check.']]){
-   if(stage==='ack')showLockout(L); await w(200);
+   if(stage==='ack')renderLockout(L,'ack'); await w(200);
    const r=lk(),t=r.innerText; T.push('');T.push('──── LOCKOUT '+stage.toUpperCase()+' ────');
    ok('REHEARSAL first',/^REHEARSAL · NOT A GUEST/.test(t.trim()));
    ok('one instruction line',r.querySelectorAll('.lockout-sub').length===1&&r.querySelector('.lockout-sub').textContent.trim()===sub,r.querySelector('.lockout-sub').textContent.trim());

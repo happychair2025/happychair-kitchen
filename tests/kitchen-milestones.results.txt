@@ -23,7 +23,7 @@ PASS  a single tap writes nothing
 PASS  early release writes nothing
 PASS  leaving the button cancels
 PASS  blur cancels a keyboard hold
-PASS  progress visible mid-hold   → 24.9455%
+PASS  progress visible mid-hold   → 25.9927%
 PASS  a poll mid-hold does not replace the control
 PASS  completed hold = exactly one write   → 1
 PASS  ...protocol_confirmed_at/by only, to A
@@ -32,12 +32,13 @@ PASS  names the next step briefly, no action performed for them
 PASS  context + REHEARSAL kept
 PASS  poll + token refresh + live update: survives
 PASS  Back to Kitchen Board closes it, zero writes
+PASS  ...and the next waiting lockout opens (one at a time)   → gggg0000-ackfail
 PASS  A row badge survives Received → Prep
 
 ──── 3 · SHEET · NON-ANAPHYLAXIS RECEIVED (D) ────
 PASS  early release = zero writes
 PASS  exactly one ack write to D
-PASS  no lockout popped
+PASS  no lockout popped   → gggg0000-ackfail|ack → gggg0000-ackfail|ack
 PASS  sheet stayed open on D
 PASS  Allergy Received confirmed visibly (not a toast)
 PASS  next requirement is Second Check (no prep for severe)
@@ -61,7 +62,7 @@ PASS  D row badge survives to Served
 PASS  Back closes, zero writes
 
 ──── 3 · SHEET · ANAPHYLAXIS RECEIVED → PREP (E): no screen swap ────
-PASS  ack on E from the sheet does NOT pop the lockout
+PASS  ack on E from the sheet does NOT pop the lockout   → gggg0000-ackfail → gggg0000-ackfail|ack
 PASS  Allergy Received banner + next is the prep hold
 PASS  prep from the sheet: Prep Area Cleared banner, next Second Check
 PASS  E writes: exactly ack then prep
@@ -72,7 +73,7 @@ PASS  ...error shown ON the lockout, prep hold still offered
 PASS  ...F protocol_confirmed_at reverted
 PASS  lockout prep hung: never claims Prep Area Cleared
 PASS  sheet ack refused: no banner, error shown, ack hold still offered
-PASS  ...no lockout popped
+PASS  ...no lockout popped   → gggg0000-ackfail|ack → gggg0000-ackfail|ack
 PASS  sheet ack hung: no banner, never offers the next step
 PASS  Mark Served refused: no Served Recorded, error shown, hold still offered
 PASS  ...served_at reverted
@@ -87,4 +88,6 @@ PASS  B: zero writes, state identical
 PASS  C: zero writes, state identical
 PASS  B and C keep REHEARSAL badges
 
-ALL 70 CHECKS PASS
+ALL 71 CHECKS PASS
+
+network: no request left the local server

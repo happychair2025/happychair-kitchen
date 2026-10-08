@@ -65,3 +65,5 @@ PASS  hung write: never claims success
 PASS  hung write: never offers the next step early   → Hold to Record Second Check
 
 ALL 48 CHECKS PASS
+
+network: no request left the local server
