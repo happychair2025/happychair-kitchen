@@ -21,7 +21,7 @@
 // (x) round 5 · S1 self-reference, S2 cycle, and an OLDER "successor" — none hides anything.
 // (y) round 5 · reload: the supersession registry travels with the cache (A stays hidden before any
 //     board read); a hold on an unconfirmed cached card writes nothing and says "Checking with the
-//     server — hold again in a moment."; after the read A is still hidden and C is owed.
+//     server yet — nothing was recorded."; after the read A is still hidden and C is owed.
 const SS='hc_probe_w13b';
 const st=JSON.parse(sessionStorage.getItem(SS)||'{"T":[],"pass":0,"fail":0}');
 const T=st.T;
@@ -73,7 +73,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
   if(yb){md(yb);await w(1350);mu(yb);await w(250)}
   await doAck(YA,'row');await w(150);
   ok('a hold on an unconfirmed cached card writes NOTHING',MW(YC).length===nC&&MW(YA).length===0);
-  ok('…and says so on the row: "Checking with the server — hold again in a moment."',/Checking with the server — hold again in a moment\./.test(document.querySelector('[data-k="card:'+YC+'"]').innerText));
+  ok('…and says so on the row: "Not confirmed with the server yet — nothing was recorded."',/Not confirmed with the server yet — nothing was recorded\./.test(document.querySelector('[data-k="card:'+YC+'"]').innerText));
   await shot('y-cache-checking');
   H('(y) RELOAD — after the first board read');
   await until(()=>lastReconcileOk>0,8000);await w(300);

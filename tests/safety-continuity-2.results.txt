@@ -105,7 +105,7 @@ PASS  no board read yet (the cache is all the board has)
 PASS  A restored from the cache is still hidden (registry travelled with the cache)
 PASS  C from the cache is shown but not escalated
 PASS  a hold on an unconfirmed cached card writes NOTHING
-PASS  …and says so on the row: "Checking with the server — hold again in a moment."
+PASS  …and says so on the row: "Not confirmed with the server yet — nothing was recorded."
 
 ──── (y) RELOAD — after the first board read ────
 PASS  A still hidden and never written

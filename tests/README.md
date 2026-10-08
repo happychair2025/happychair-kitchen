@@ -334,7 +334,7 @@ is strictly newer, the predecessor does not name the successor back, and both ro
 kind is KNOWN from the server and equal (a kind only inferred for a realtime row does not count);
 (y) a reload with the first board read delayed: the supersession registry travels with the cache, so
 a replaced record restored from the cache stays hidden; a hold on a cached card that no board read has
-confirmed writes nothing and says "Checking with the server — hold again in a moment."; after the read
+confirmed writes nothing and says "Not confirmed with the server yet — nothing was recorded."; after the read
 the replaced record is still hidden and never written, and the live one is owed. 78 checks. A timed-out write now reads as UNKNOWN —
 "No response — couldn't confirm. Hold to try again." / row "Not confirmed — tap to check";
 "NOT recorded" is kept only for an explicit refusal.
