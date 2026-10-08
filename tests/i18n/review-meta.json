@@ -778,9 +778,9 @@
  "err.timeout": {
   "group": "errors",
   "where": "Record sheet / lockout, after a hold that got no response",
-  "meaning": "No response from Happy Chair, so the step is not saved here. Hold again.",
-  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
-  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "meaning": "No response from Happy Chair, so this display cannot confirm whether the step was saved. Hold again.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must read as \"unknown\", not \"not saved\".",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must read as \"unknown\", not \"not saved\".",
   "priority": null
  },
  "note.already_recorded": {
@@ -827,6 +827,14 @@
   "group": "errors",
   "where": "Record sheet / lockout",
   "meaning": "The record changed while this step was being saved; the screen shows what the database has.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "priority": null
+ },
+ "note.superseded": {
+  "group": "errors",
+  "where": "Lockout / record sheet of the NEWER record",
+  "meaning": "The hold was on a record the guest has since replaced; nothing was recorded on the old one. This newer record is what needs the steps.",
   "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "priority": null

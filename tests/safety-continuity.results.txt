@@ -6,7 +6,7 @@ PASS  prompt taken down only once audio runs
 PASS  board empty, nothing pending
 
 ──── (a) SOCKET DEAD — FOUND BY THE BOARD READ ONLY ────
-PASS  lockout within one reconcile cycle   → 4898ms (cycle 5000ms)
+PASS  lockout within one reconcile cycle   → 4900ms (cycle 5000ms)
 PASS  no realtime event was delivered
 PASS  lockout shows the record: T3 · Main Hall, allergens, ANAPHYLAXIS
 PASS  alarm sounded on arrival   → 1 alarm(s)
@@ -41,16 +41,16 @@ PASS  both handled, board clear of lockouts
 
 ──── (d) A WRITE THAT HANGS ────
 PASS  write in flight: guarded
-PASS  bounded: released after the timeout   → 11210ms
+PASS  bounded: released after the timeout   → 11212ms
 PASS  state reverted (no ack, no pending ack)
-PASS  row says "Not saved — tap to retry"   → Not saved — tap to retry
+PASS  row says the outcome is unknown: "Not confirmed — tap to check"   → Not confirmed — tap to check
 PASS  the hold is available again on the row
 PASS  card still in Needs You
 PASS  message persists across a board read (outcome still unknown)
 PASS  tap opens the record, which explains and offers the hold
 PASS  retry with a working connection records exactly once
 PASS  message cleared by the success
-PASS  committed-after-timeout: board read restores the ack and clears "Not saved"
+PASS  committed-after-timeout: board read restores the ack and clears the unknown-state message
 
 ──── (e) CARRIED-OVER RECORD ────
 PASS  band order: Needs You → From Earlier Service → In Progress   → sec:needs | sec:carried | sec:working
@@ -66,7 +66,7 @@ PASS  one delivery write each for R4..R7
 PASS  ack write is guarded IS NULL
 PASS  timed out: lockout still asks for Confirm Received
 PASS  the retry was guarded and matched nothing
-PASS  recorded time NOT rewritten (board read shows the committed one)   → 2026-10-08T22:19:28.867Z vs 2026-10-08T22:19:28.867Z
+PASS  recorded time NOT rewritten (board read shows the committed one)   → 2026-10-08T22:40:40.398Z vs 2026-10-08T22:40:40.398Z
 PASS  "Already recorded — this hold changed nothing." on the lockout
 PASS  lockout shows the recorded state (Prep), no confirmation chime claimed
 

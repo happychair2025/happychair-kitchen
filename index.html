@@ -583,8 +583,9 @@ var I18N={
   'err.verify':'Second Check NOT recorded — try again',
   'err.serve':'Served NOT recorded — try again',
   'err.minimize':'Hidden locally, but couldn\'t sync — try again',
-  'err.timeout':'Not saved — no response. Hold to try again.',
+  'err.timeout':'No response — couldn\'t confirm. Hold to try again.',
   'note.already_recorded':'Already recorded — this hold changed nothing.',
+  'note.superseded':'The record you were holding was replaced by this newer one — nothing was recorded.',
   'card.also_here.one':'Also at this table: {n} other allergy record',
   'card.also_here.other':'Also at this table: {n} other allergy records',
   'row.unconfirmed':'Not confirmed — tap to check',
@@ -689,8 +690,9 @@ var I18N={
   'err.verify':'Segunda revisión NO registrada — inténtalo de nuevo',
   'err.serve':'Servida NO registrada — inténtalo de nuevo',
   'err.minimize':'Oculta en esta pantalla, pero no se sincronizó — inténtalo de nuevo',
-  'err.timeout':'No se guardó — sin respuesta. Mantén presionado para intentarlo de nuevo.',
+  'err.timeout':'Sin respuesta — no se pudo confirmar. Mantén presionado para intentarlo de nuevo.',
   'note.already_recorded':'Ya estaba registrado — esta acción no cambió nada.',
+  'note.superseded':'El registro que mantenías presionado fue sustituido por este más reciente — no se registró nada.',
   'card.also_here.one':'También en esta mesa: {n} registro de alergia más',
   'card.also_here.other':'También en esta mesa: {n} registros de alergia más',
   'row.unconfirmed':'Sin confirmar — toca para revisar',
@@ -795,8 +797,9 @@ var I18N={
   'err.verify':'未记录二次检查 — 请重试',
   'err.serve':'未记录出餐 — 请重试',
   'err.minimize':'已在此屏隐藏，但未同步 — 请重试',
-  'err.timeout':'未保存 — 无响应。请长按重试。',
+  'err.timeout':'无响应 — 无法确认。请长按重试。',
   'note.already_recorded':'已有记录 — 此次长按未作任何更改。',
+  'note.superseded':'你长按的记录已被这条更新的记录取代 — 未作任何记录。',
   'card.also_here.one':'此桌另有 {n} 条过敏记录',
   'card.also_here.other':'此桌另有 {n} 条过敏记录',
   'row.unconfirmed':'未确认 — 点按查看',
@@ -1105,6 +1108,10 @@ function foldDeclaration(cur,d){
 // for a label: the old per-INSERT assets lookup ran on the ANONYMOUS client, read the legacy
 // assets.zone text, and held every ingest step (lockout, alarm, delivery) behind its response.
 var deliveryAttempted={};
+// Monotonic ingest counter. A board read prunes only cards that were already held when the read
+// STARTED: a row that arrived (realtime) while the read was in flight is newer than that read's
+// snapshot and must not be removed by it.
+var ingestSeq=0,reconcileAgain=false;
 function stripUi(row){var o={};Object.keys(row||{}).forEach(function(k){if(k.charAt(0)!=='_')o[k]=row[k]});return o}
 function labelOf(c){return c&&c.table_label?c.table_label+(c.zone_name?' · '+c.zone_name:''):null}
 function dropCard(id){delete cards[id];delete ghosted[id]}
@@ -1140,7 +1147,7 @@ function ingestDeclaration(row,source){
     if(!(source==='reconcile'&&cur._writing))foldDeclaration(cur,d);
   }else{
     if(source==='update')return null;          // an UPDATE never introduces a card
-    cur=cards[id]=d;isNew=true;
+    cur=cards[id]=d;isNew=true;cur._seq=++ingestSeq;
     if(source==='cache')cur._fromCache=true;
     if(source==='insert'){
       // Rehearsal identity for a raw realtime row, from a held card in the same instance.
@@ -1167,6 +1174,11 @@ function afterIngest(c,source,isNew,prevSig){
   // hold or in-flight write on it is invalidated, and it alarms only if it is an un-acknowledged
   // anaphylaxis record. Becoming acknowledged is not a content change and never alarms.
   if(prevSig!=null&&!c._fromCache&&prevSig!==lockoutContentSig(c))recordContentChanged(c.id);
+  // SUPERSEDED BY REFERENCE. A successor names its predecessor (supersedes_id) even when the
+  // predecessor's own superseded_at never landed. The predecessor stops being actionable at once:
+  // its hold is cancelled, its generation moves on, and it leaves every band and the lockout.
+  if(c.supersedes_id&&cards[c.supersedes_id]&&!cards[c.supersedes_id]._supersededSeen){
+    cards[c.supersedes_id]._supersededSeen=true;invalidateRecord(c.supersedes_id)}
   if(lockoutEligible(c)){if(enqueueLockout(c.id))soundAlarm()}
   else if(isNew&&source!=='cache'&&!isAnaph(c.severity))chimeStandard();
 }
@@ -1188,8 +1200,10 @@ function recordDelivery(id,d,source){
 function renderCards(){
   var area=document.getElementById('cardArea');
   var ids=Object.keys(cards);
-  var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at});
-  var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at});
+  // A superseded record (superseded_at, OR named by a successor's supersedes_id) is history and is
+  // not drawn in any band: it is not actionable and is not counted anywhere.
+  var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
+  var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
 
   // Four bands, and the question the board exists to answer is the first one.
   // Membership comes from the server; openness from the row's own stamps. A record an EARLIER
@@ -1305,7 +1319,7 @@ function renderCards(){
     h+='</div>';
     // A write that did not land is stated on the row itself, not only inside the record. The
     // strip opens the record, where the hold is: retrying a milestone is still a hold.
-    var unk=c._error==='err.unconfirmed';
+    var unk=c._error==='err.unconfirmed'||c._error==='err.timeout';   // outcome unknown, not refused
     if(c._error)h+='<button type="button" class="row-retry" role="alert" onclick="openRecord(\''+esc(id)+'\')">'+th(unk?'row.unconfirmed':'row.not_saved')+'</button>';
 
     // NO EXPANDED PANEL. Everything that lived here — guest, cross-contact sentence, elapsed
@@ -1395,7 +1409,7 @@ function renderGhosts(gIds){
 }
 
 function updateSummary(){
-  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at});
+  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at&&!isSupersededRow(cards[id])});
   var tables=new Set(),alCount=0,anCount=0,unack=0;
   ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!isAcked(c))unack++});
   var p=[];
@@ -1551,6 +1565,18 @@ function showUnconfirmed(id,field){
 // moved _gen on) or the record left the board (superseded, pruned, replaced), the result is
 // stale: no chime, no lockout advance, no completed stage drawn from it. The optimistic change is
 // undone, the board is re-read, and the record is shown as the DATABASE has it, with a notice.
+// A superseded record (by either signal) is history: nothing is written to it. The hold that
+// reached here ends with an honest notice, and the board moves to the successor.
+function refuseSuperseded(id){
+  invalidateRecord(id);
+  if(recordFlow&&recordFlow.id===id)recordFlow=null;
+  if(lockoutId===id)closeLockout();
+  // The notice goes where the cook now is: the successor (its lockout or record), since the
+  // superseded record itself is no longer shown anywhere.
+  var succ=Object.keys(cards).find(function(k){return cards[k].supersedes_id===id});
+  if(succ){showNotice(succ,'note.superseded');if(lockoutId===succ&&!holdInProgress())renderLockout(succ,lockoutStage,lockoutErr)}
+  renderCards();
+}
 function writeIsStale(id,c,gen){return cards[id]!==c||(c._gen||0)!==gen||isSupersededRow(c)}
 async function settleStale(id,field){
   var okRead=await boardRead();
@@ -1595,6 +1621,7 @@ function writeFailed(id,key,r,field){
 async function doAck(id,origin){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var c=cards[id];if(!c)return;
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1631,6 +1658,7 @@ async function doAck(id,origin){
 
 async function confirmProtocol(id,origin){
   var c=cards[id];if(!c)return;
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1657,6 +1685,7 @@ async function confirmProtocol(id,origin){
 
 async function verifyDish(id,origin){
   var c=cards[id];if(!c)return;
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1682,6 +1711,7 @@ async function verifyDish(id,origin){
 
 async function markServed(id,origin){
   var c=cards[id];if(!c)return;
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -2022,6 +2052,7 @@ function renderRecord(){
   if(recordHolding)return;           // never rebuild under a running gesture
 
   var c=cards[recordOpenId];
+  if(c&&isSupersededRow(c))c=null;   // replaced by a newer record: shown as no longer on the board
   if(!c){
     // The declaration left the board while the sheet was open — served elsewhere, closed, or
     // the service ended. Say so explicitly instead of silently dropping the operator back to
@@ -2161,11 +2192,21 @@ function lockoutContentSig(c){
 // record is shown it is redrawn; it alarms only if it is an un-acknowledged anaphylaxis record.
 function recordContentChanged(id){
   var c=cards[id];if(!c)return;
-  c._gen=(c._gen||0)+1;
-  if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
-  if(recordOpenId===id)recordHolding=false;
+  invalidateRecord(id);
+  // No longer anaphylaxis: its lockout closes (the next waiting one opens). Never leave a
+  // lockout's ANAPHYLAXIS chip on a record that is not anaphylaxis.
+  if(lockoutId===id&&!isAnaph(c.severity)){closeLockout();return}
   if(lockoutId===id)renderLockout(id,lockoutStage,lockoutErr);
   if(lockoutEligible(c))soundAlarm();
+}
+// Cancels any hold on the record and moves its generation on, so nothing in progress against
+// the record as it was (a hold, or a write already in flight — see writeIsStale) can complete
+// against it. Used when its content changes, when it becomes superseded (by either signal), and
+// when its lockout closes.
+function invalidateRecord(id){
+  var c=cards[id];if(c)c._gen=(c._gen||0)+1;
+  if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
+  if(recordOpenId===id)recordHolding=false;
 }
 function showLockout(id){if(enqueueLockout(id))soundAlarm()}
 function lockoutWaiting(){
@@ -2282,7 +2323,7 @@ function renderLockout(id,stage,err){
 function showLockoutProtocol(id){renderLockout(id,'prep')}
 
 // Leaving one lockout opens the next waiting one, if any.
-function closeLockout(){lockoutId=null;lockoutStage=null;lockoutErr=null;lockoutLabel=null;document.getElementById('lockout').classList.remove('on');advanceLockout()}
+function closeLockout(){if(lockoutId)invalidateRecord(lockoutId);lockoutId=null;lockoutStage=null;lockoutErr=null;lockoutLabel=null;document.getElementById('lockout').classList.remove('on');advanceLockout()}
 
 // Minimize is a local UI preference (ghosting the card into the side rail).
 // The minimized_at write is bookkeeping for admin reporting. If the write
@@ -2395,10 +2436,13 @@ function boundRead(q){
 // HEALTH IS SET HERE AND ONLY HERE. A socket event may DEGRADE the board but can never
 // promote it: a re-SUBSCRIBED channel proves a socket reconnected, not that this board
 // holds current data. Only a completed read proves that.
-async function reconcile(){
+// opts.again — the caller (a realtime INSERT) needs a read that STARTS after it; if one is
+// already in flight, one more runs as soon as it finishes.
+async function reconcile(opts){
   if(!venueId)return false;
-  if(reconcileInFlight)return false;
+  if(reconcileInFlight){if(opts&&opts.again)reconcileAgain=true;return false}
   reconcileInFlight=true;
+  var seq0=ingestSeq;
   try{
     // THE AUTHENTICATED BOARD READ. kitchen_board() takes NO ARGUMENTS: the venue comes from
     // the credential, and inclusion is "current service work", not an age window. The 36-hour
@@ -2423,7 +2467,7 @@ async function reconcile(){
     // authoritative only while no successful read has happened.
     var seen={};res.data.forEach(function(d){seen[d.id]=1});
     Object.keys(cards).forEach(function(id){
-      if(seen[id]||cards[id]._writing)return;
+      if(seen[id]||cards[id]._writing||(cards[id]._seq||0)>seq0)return;
       dropCard(id);
     });
 
@@ -2431,7 +2475,8 @@ async function reconcile(){
     setOnline(true);
     renderCards();cacheCards();resetDim();
     return true;
-  }finally{reconcileInFlight=false}
+  }finally{reconcileInFlight=false;
+    if(reconcileAgain){reconcileAgain=false;setTimeout(function(){reconcile()},0)}}
 }
 
 function startReconcileLoop(){
@@ -2448,7 +2493,7 @@ function subscribe(){
       // identity) from the same authenticated source as every other row.
       ingestDeclaration(payload.new,'insert');
       renderCards();cacheCards();resetDim();
-      reconcile();
+      reconcile({again:true});
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
       var d=payload.new;if(!cards[d.id])return;

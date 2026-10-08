@@ -8,7 +8,7 @@
 //     from the anonymous client.
 // (c) reload with audio locked → blocking "Tap to enable allergy alarms" above the lockout; an
 //     untrusted click cannot dismiss it; a real tap unlocks audio and the pending alarm sounds.
-// (d) a write that hangs → bounded; state reverted; "Not saved — tap to retry" on the row; the
+// (d) a write that hangs → bounded; state reverted; "Not confirmed — tap to check" on the row; the
 //     record sheet says why; a retry with a working connection records exactly once.
 // (e) a carried-over record renders in its own "From Earlier Service" band below Needs You,
 //     labelled and actionable.
@@ -164,7 +164,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('state reverted (no ack, no pending ack)',!cards[R4].kitchen_ack_at&&!cards[R4]._ackPending);
  await w(150);
  const retry=document.querySelector('[data-k="card:'+R4+'"] .row-retry');
- ok('row says "Not saved — tap to retry"',!!retry&&retry.textContent.trim()==='Not saved — tap to retry',retry&&retry.textContent);
+ ok('row says the outcome is unknown: "Not confirmed — tap to check"',!!retry&&retry.textContent.trim()==='Not confirmed — tap to check',retry&&retry.textContent);
  ok('the hold is available again on the row',!!rb()&&/Confirm Received/.test(rb().textContent));
  ok('card still in Needs You',!!document.querySelector('[data-k="card:'+R4+'"]'));
  await shot('d-row-not-saved');
@@ -172,7 +172,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('message persists across a board read (outcome still unknown)',!!document.querySelector('[data-k="card:'+R4+'"] .row-retry'));
  retry.click();await w(250);
  const sheet=document.getElementById('verifyContent').innerText;
- ok('tap opens the record, which explains and offers the hold',document.getElementById('verify').classList.contains('on')&&/Not saved — no response\. Hold to try again\./.test(sheet)&&!!document.querySelector('#verifyContent .vfy-go'));
+ ok('tap opens the record, which explains and offers the hold',document.getElementById('verify').classList.contains('on')&&/No response — couldn't confirm\. Hold to try again\./.test(sheet)&&!!document.querySelector('#verifyContent .vfy-go'));
  await shot('d-sheet-not-saved');
  window.__WRITE_MODE='ok';
  const n4=MW(R4).length;await hold(document.querySelector('#verifyContent .vfy-go'));persist(R4);
@@ -187,7 +187,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await until(()=>!cards[R4b]._writing,WRITE_TIMEOUT_MS+3000,100);window.__WRITE_MODE='ok';
  window.__ROWS.find(x=>x.id===R4b).kitchen_ack_at=new Date().toISOString();
  await until(()=>!!cards[R4b].kitchen_ack_at,RECONCILE_MS+2000);
- ok('committed-after-timeout: board read restores the ack and clears "Not saved"',!!cards[R4b].kitchen_ack_at&&!cards[R4b]._error);
+ ok('committed-after-timeout: board read restores the ack and clears the unknown-state message',!!cards[R4b].kitchen_ack_at&&!cards[R4b]._error);
 
  // ── (e) ───────────────────────────────────────────────────────────────────────────────────
  H('(e) CARRIED-OVER RECORD');
@@ -220,7 +220,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('ack write is guarded IS NULL',!!hungAck&&(hungAck.__is||[]).indexOf('kitchen_ack_at is null')>=0);
  await until(()=>!cards[G1]._writing,WRITE_TIMEOUT_MS+3000,100);window.__WRITE_MODE='ok';
  window.__ROWS.find(x=>x.id===G1).kitchen_ack_at=hungAck.kitchen_ack_at;
- ok('timed out: lockout still asks for Confirm Received',lockoutId===G1&&lockoutStage==='ack'&&/Not saved/.test(lkTxt()));
+ ok('timed out: lockout still asks for Confirm Received',lockoutId===G1&&lockoutStage==='ack'&&/No response — couldn't confirm/.test(lkTxt()));
  const ackChimes=[];const _cka=chimeAck;chimeAck=function(){ackChimes.push(1);return _cka.apply(this,arguments)};
  const nG=MW(G1).length;await hold(lkBtn());
  await until(()=>/Already recorded/.test(lkTxt()),RECONCILE_MS+4000);

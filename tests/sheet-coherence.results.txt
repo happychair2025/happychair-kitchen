@@ -4,7 +4,7 @@
 ──── 1 · COMPLETED RAIL READS COMPLETED ────
 PASS  Served Recorded: all four stages complete   → Received✓ Confirmed✓ Second Check✓ Served✓
 PASS  ...none grey/disabled
-PASS  ...every stage keeps its timestamp   → 10:52 PM | 12:16 AM | 06:16 PM | 06:16 PM
+PASS  ...every stage keeps its timestamp   → 11:13 PM | 12:37 AM | 06:37 PM | 06:37 PM
 PASS  ...connectors between completed stages use the success class
 PASS  Second Check Recorded: three complete, Served pending (not green)
 PASS  ordinary record: completed stages green, owed ones neutral

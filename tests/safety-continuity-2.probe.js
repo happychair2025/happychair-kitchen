@@ -9,6 +9,11 @@
 //     no chime, no stage drawn from it, the database state shown with a notice (P, B).
 // (q) a guarded write matched nothing and the re-read failed → "Couldn't confirm", never "NOT recorded" (D).
 // (r) a hold on changed content is cancelled for every severity (R, E).
+// (s) verifier round 3 · 6b: a record superseded only by a successor's supersedes_id — the hold
+//     writes nothing, it leaves every band and the cue, milestone calls on it write nothing, and the
+//     successor carries an honest notice.
+// (t) · E: a lockout record that stops being anaphylaxis closes its lockout; no ANAPHYLAXIS chip.
+// (u) · F: an INSERT during an in-flight board read is not pruned by that read; a further read runs.
 const SS='hc_probe_w13b';
 const st=JSON.parse(sessionStorage.getItem(SS)||'{"T":[],"pass":0,"fail":0}');
 const T=st.T;
@@ -113,7 +118,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('K · own ack timed out; database has it',!cards[K1].kitchen_ack_at&&!!window.__ROWS.find(x=>x.id===K1).kitchen_ack_at);
  j0=alarms.length;await w(RECONCILE_MS+800);
  ok('K · board read restores it → Prep, NO alarm on confirmation',!!cards[K1].kitchen_ack_at&&lockoutStage==='prep'&&alarms.length===j0,'alarms+'+(alarms.length-j0));
- ok('K · "Not saved" cleared by the read',!cards[K1]._error);
+ ok('K · the unknown-state message is cleared by the read',!cards[K1]._error);
  await hold(lkBtn());persist(K1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
 
  // ── (o) re-verifier O: another declaration while an ack is IN FLIGHT ─────────────────────────
@@ -192,6 +197,56 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await w(1000);mu(eb);await w(250);
  ok('severe record: the stale hold wrote nothing',MW(E1).length===nE,MW(E1).length-nE);
  ok('row shows the new content, hold still available',/Sesame, Soy/.test(document.querySelector('[data-k="card:'+E1+'"]').innerText)&&!!document.querySelector('[data-k="card:'+E1+'"] .row .hold-btn'));
+
+ // ── (s) verifier round 3 · 6b: superseded ONLY by reference ───────────────────────────────────
+ H('(s) SUPERSEDED ONLY BY REFERENCE (successor names it; its own superseded_at never landed)');
+ const S1='s1000000-pred',S2='s2000000-succ',SS1='sess-s';
+ window.__ROWS.push(rowObj(S1,{guest_session_id:SS1,asset_id:'asset-s',table_label:'T15',zone_name:'Main Hall'}));
+ await until(()=>lockoutId===S1,RECONCILE_MS+2000);
+ const nS=MW(S1).length;const sb=lkBtn();md(sb);await w(300);
+ window.__ROWS.push(rowObj(S2,{guest_session_id:SS1,asset_id:'asset-s',table_label:'T15',zone_name:'Main Hall',allergens:['Sesame','Egg'],supersedes_id:S1}));
+ await boardRead();await w(1100);mu(sb);await w(400);
+ ok('6b · the hold wrote NOTHING to the predecessor',MW(S1).length===nS,MW(S1).length-nS);
+ ok('6b · successor on the lockout at Confirm Received',lockoutId===S2&&lockoutStage==='ack'&&/Egg/.test(lkTxt()));
+ const s1w=document.querySelector('[data-k="card:'+S1+'"]');
+ ok('6b · predecessor is not drawn in any band (not actionable)',!s1w);
+ ok('6b · predecessor not counted in the same-visit cue',!/Also at this table/.test(lkTxt()));
+ // backstop: a milestone call that reaches a superseded-by-reference record writes nothing
+ const nS2=MW(S1).length;await doAck(S1,'row');await confirmProtocol(S1,'row');await w(150);
+ ok('6b · ack / prep calls on the predecessor write nothing',MW(S1).length===nS2);
+ ok('6b · honest notice on the successor',/replaced by this newer one — nothing was recorded/.test(lkTxt()));
+ await shot('s-superseded-by-reference');
+ await hold(lkBtn());persist(S2);await hold(lkBtn());persist(S2);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+
+ // ── (t) verifier round 3 · E: severity leaves anaphylaxis ─────────────────────────────────────
+ H('(t) THE LOCKOUT RECORD STOPS BEING ANAPHYLAXIS');
+ const T1='t1000000-sev';
+ window.__ROWS.push(rowObj(T1,{table_label:'T16',zone_name:'Main Hall'}));
+ await until(()=>lockoutId===T1,RECONCILE_MS+2000);
+ const rT=window.__ROWS.find(x=>x.id===T1);rT.severity='severe';upd(rT);await w(200);
+ ok('E · lockout closed for a record that is no longer anaphylaxis',!(lkOn()&&lockoutId===T1),lkOn()+' '+lockoutId);
+ ok('E · no ANAPHYLAXIS chip left for it',!(lkOn()&&/T16/.test(lkTxt())&&/ANAPHYLAXIS/.test(lkTxt())));
+ ok('E · alarm no longer pending for it',!lockoutEligible(cards[T1])&&!alarmPending());
+ ok('E · the record stays on the board, actionable, as SEVERE',/SEVERE/.test(document.querySelector('[data-k="card:'+T1+'"]').innerText)&&!!document.querySelector('[data-k="card:'+T1+'"] .row .hold-btn'));
+
+ // ── (u) verifier round 3 · F: INSERT during an in-flight board read ───────────────────────────
+ H('(u) AN INSERT DURING AN IN-FLIGHT BOARD READ IS NOT PRUNED BY IT');
+ const U1='u1000000-mid-read';
+ const snap=JSON.parse(JSON.stringify(window.__ROWS));const realRpc=sbv.rpc;let boardCalls=0;
+ sbv.rpc=function(fn,a){if(fn!=='kitchen_board')return realRpc.call(sbv,fn,a);boardCalls++;
+   if(boardCalls>1)return realRpc.call(sbv,fn,a);
+   const o={retry:()=>o,abortSignal:()=>o,then:(r,j)=>new Promise(res=>setTimeout(res,800)).then(()=>({data:JSON.parse(JSON.stringify(snap)),error:null})).then(r,j)};return o};
+ await until(()=>!reconcileInFlight,6000);
+ const pr=reconcile();await w(100);
+ const u1=rowObj(U1,{table_label:'T17',zone_name:'Main Hall'});window.__ROWS.push(u1);insertHandlers().forEach(h=>h.cb({new:rawRow(u1)}));await w(50);
+ ok('F · lockout up on the insert',lockoutId===U1);
+ await pr;await w(300);
+ ok('F · not pruned by the stale read that began before it',!!cards[U1]&&lockoutId===U1);
+ ok('F · one more board read ran after the stale one',boardCalls>=2,boardCalls+' reads');
+ sbv.rpc=realRpc;
+ await w(RECONCILE_MS+800);
+ ok('F · still there after the next poll',!!cards[U1]&&lockoutId===U1);
+ await hold(lkBtn());persist(U1);await hold(lkBtn());persist(U1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
 
  await done();
 }catch(e){T.push('EXCEPTION '+e.message+'\n'+e.stack);st.fail++;await done()}})();

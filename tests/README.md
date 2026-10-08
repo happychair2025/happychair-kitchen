@@ -315,7 +315,15 @@ superseded, is stale — no chime, no stage drawn from it, "This record changed 
 showing what is recorded." (q) a guarded write that matched nothing followed by a failed re-read says
 "Couldn't confirm — check the record." / "Not confirmed — tap to check", never "NOT recorded", and
 the next good read resolves it. (r) a hold on content that changes is cancelled for any severity.
-37 checks.
+Third verification round: (s) a record superseded ONLY by its successor's `supersedes_id` (its own
+`superseded_at` never landed) — a hold in progress writes nothing, it leaves every band and the
+same-visit count, direct milestone calls on it write nothing, the successor carries "The record you
+were holding was replaced by this newer one — nothing was recorded."; (t) a lockout record whose
+severity changes away from anaphylaxis closes its lockout — no ANAPHYLAXIS chip, no alarm — and stays
+on the board as itself; (u) an INSERT that arrives while a board read is in flight is not pruned by
+that read, and one more read runs after it. 51 checks. A timed-out write now reads as UNKNOWN —
+"No response — couldn't confirm. Hold to try again." / row "Not confirmed — tap to check";
+"NOT recorded" is kept only for an explicit refusal.
 
 The fixture now applies `.is()` write guards to `__ROWS` as PostgREST would, and has
 `__WRITE_MODE='hold'` (released by the probe, commits on match) and `'hangcommit'` (commits, never

@@ -28,7 +28,7 @@ PASS  M2 · queued record acknowledged elsewhere: dropped from the queue, NO ala
 PASS  J · on-screen record acknowledged elsewhere: lockout → Prep, NO alarm   → stage=prep alarms+0
 PASS  K · own ack timed out; database has it
 PASS  K · board read restores it → Prep, NO alarm on confirmation   → alarms+0
-PASS  K · "Not saved" cleared by the read
+PASS  K · the unknown-state message is cleared by the read
 
 ──── (o) ANOTHER DECLARATION ARRIVES WHILE AN ACK WRITE IS IN FLIGHT ────
 PASS  the in-flight ack lands on its own record only
@@ -52,6 +52,26 @@ PASS  next good read resolves it to the recorded state
 PASS  severe record: the stale hold wrote nothing   → 0
 PASS  row shows the new content, hold still available
 
-ALL 37 CHECKS PASS
+──── (s) SUPERSEDED ONLY BY REFERENCE (successor names it; its own superseded_at never landed) ────
+PASS  6b · the hold wrote NOTHING to the predecessor   → 0
+PASS  6b · successor on the lockout at Confirm Received
+PASS  6b · predecessor is not drawn in any band (not actionable)
+PASS  6b · predecessor not counted in the same-visit cue
+PASS  6b · ack / prep calls on the predecessor write nothing
+PASS  6b · honest notice on the successor
+
+──── (t) THE LOCKOUT RECORD STOPS BEING ANAPHYLAXIS ────
+PASS  E · lockout closed for a record that is no longer anaphylaxis   → false null
+PASS  E · no ANAPHYLAXIS chip left for it
+PASS  E · alarm no longer pending for it
+PASS  E · the record stays on the board, actionable, as SEVERE
+
+──── (u) AN INSERT DURING AN IN-FLIGHT BOARD READ IS NOT PRUNED BY IT ────
+PASS  F · lockout up on the insert
+PASS  F · not pruned by the stale read that began before it
+PASS  F · one more board read ran after the stale one   → 2 reads
+PASS  F · still there after the next poll
+
+ALL 51 CHECKS PASS
 
 network: no request left the local server
