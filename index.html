@@ -203,6 +203,9 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
   border-radius:8px;padding:6px 14px;margin-bottom:14px;text-align:center}
 .lk-carried{font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--t1);
   border:1px solid var(--b2);border-radius:8px;padding:6px 14px;margin-bottom:14px}
+.lk-note,.vfy-note{max-width:500px;width:100%;margin-bottom:14px;padding:10px 14px;border-radius:8px;text-align:center;
+  font-size:17px;font-weight:700;color:var(--t1);border:1px solid var(--b2);background:var(--s2)}
+.vfy-note{max-width:none;font-size:14px;margin:8px 0}
 .lockout-title{font-size:32px;font-weight:800;color:var(--danger);margin-bottom:12px;text-align:center}
 .lockout-sub{font-size:20px;color:var(--t2);margin-bottom:32px;text-align:center}
 body.dimmed .main{opacity:.3;transition:opacity 1s}
@@ -364,9 +367,19 @@ function activateAudio(){
   }catch(e){console.error('[kitchen] audio unlock failed:',e)}
   Promise.resolve(p).then(audioStateCheck,audioStateCheck);
 }
-function playChime(f,d,v){if(!audioReady||!ctx)return;var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime((v||.3)*volume,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.start();o.stop(ctx.currentTime+d)}
+// vol overrides the slider for this tone only (the anaphylaxis alarm plays at full volume and
+// ignores mute); at schedules it on the AudioContext clock. Returns the oscillator so a caller can
+// stop it. The global `volume` is never mutated by a chime.
+function playChime(f,d,v,vol,at){if(!audioReady||!ctx)return null;var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;var s0=at||ctx.currentTime;g.gain.setValueAtTime((v||.3)*(vol==null?volume:vol),s0);g.gain.exponentialRampToValueAtTime(.001,s0+d);o.start(s0);o.stop(s0+d);return o}
 function chimeStandard(){if(muted)return;playChime(440,.3,.25);setTimeout(function(){playChime(554,.3,.2)},50)}
-function chimeAnaphylaxis(){var sv=volume;volume=1;playChime(880,.15,.4);setTimeout(function(){playChime(880,.15,.4)},250);setTimeout(function(){playChime(880,.15,.4);volume=sv},500)}
+// SINGLE-FLIGHT. Three beeps scheduled on the audio clock at full volume. A new alarm stops the
+// one still sounding before it starts, so alarms never stack, and the slider volume is never
+// touched — the previous version set volume=1 and restored it from a value captured while an
+// overlapping alarm had already set it to 1, leaving every later chime at full volume.
+var anaphNodes=[];
+function chimeAnaphylaxis(){if(!audioReady||!ctx)return;
+  anaphNodes.forEach(function(o){try{o.stop()}catch(e){}});anaphNodes=[];
+  var t=ctx.currentTime;[0,.25,.5].forEach(function(dt){var o=playChime(880,.15,.4,1,t+dt);if(o)anaphNodes.push(o)})}
 function chimeAck(){playChime(1200,.05,.15)}
 function setVolume(v){volume=v/100;if(volume===0)muted=true;else muted=false;updateVolIcon()}
 function toggleMute(){muted=!muted;if(!muted){volume=0.6;document.getElementById('volSlider').value=60}else{document.getElementById('volSlider').value=0}updateVolIcon()}
@@ -592,6 +605,7 @@ var I18N={
   'err.serve':'Served NOT recorded — try again',
   'err.minimize':'Hidden locally, but couldn\'t sync — try again',
   'err.timeout':'Not saved — no response. Hold to try again.',
+  'note.already_recorded':'Already recorded — this hold changed nothing.',
   'pair.title':'Pair this display',
   'pair.body':'In Happy Chair, open {path} and tap {action}, then enter the 6-digit code it shows.',
   'pair.button':'Pair Display',
@@ -692,6 +706,7 @@ var I18N={
   'err.serve':'Servida NO registrada — inténtalo de nuevo',
   'err.minimize':'Oculta en esta pantalla, pero no se sincronizó — inténtalo de nuevo',
   'err.timeout':'No se guardó — sin respuesta. Mantén presionado para intentarlo de nuevo.',
+  'note.already_recorded':'Ya estaba registrado — esta acción no cambió nada.',
   'pair.title':'Vincular esta pantalla',
   'pair.body':'En Happy Chair, abre {path} y toca {action}; luego escribe el código de 6 dígitos que aparece.',
   'pair.button':'Vincular pantalla',
@@ -792,6 +807,7 @@ var I18N={
   'err.serve':'未记录出餐 — 请重试',
   'err.minimize':'已在此屏隐藏，但未同步 — 请重试',
   'err.timeout':'未保存 — 无响应。请长按重试。',
+  'note.already_recorded':'已有记录 — 此次长按未作任何更改。',
   'pair.title':'配对此显示屏',
   'pair.body':'在 Happy Chair 中打开 {path}，点按 {action}，然后输入显示的 6 位数字代码。',
   'pair.button':'配对显示屏',
@@ -1066,7 +1082,13 @@ function foldDeclaration(cur,d){
   Object.keys(d).forEach(function(k){if(k.charAt(0)!=='_')cur[k]=d[k]});
   Object.keys(keep).forEach(function(k){cur[k]=keep[k]});
   cur.allergens=allergens;cur.severity=severity;cur.cross_contact=xc;cur.status=status;
-  if(cur._reackRequired)cur.kitchen_ack_at=null;
+  if(cur._reackRequired){
+    // Satisfied once the database shows an acknowledgement OTHER than the one the merge
+    // superseded (this display's re-ack landing, or another display's).
+    if(d.kitchen_ack_at&&(!cur._reackFrom||new Date(d.kitchen_ack_at).getTime()!==new Date(cur._reackFrom).getTime())){
+      cur.kitchen_ack_at=d.kitchen_ack_at;delete cur._reackRequired;delete cur._reackFrom}
+    else cur.kitchen_ack_at=null;
+  }
   // Database provenance. If the row carries an acknowledgement, the attempt is settled —
   // whether it was this board's write landing after its response was lost, or another
   // board acknowledging first.
@@ -1118,7 +1140,7 @@ function ingestDeclaration(row,source){
   var d=stripUi(row),id=d.id,isNew=false,cur;
   // A continuation merged into another card contributes content to its host and nothing else.
   var host=mergedInto[id];
-  if(host&&cards[host]){foldMergedContent(cards[host],d);afterIngest(cards[host],source,false);recordDelivery(id,d,source);return cards[host]}
+  if(host&&cards[host]){var hs=lockoutContentSig(cards[host]);foldMergedContent(cards[host],d);afterIngest(cards[host],source,false,hs);recordDelivery(id,d,source);return cards[host]}
   // A superseded declaration is history, not an active card, on every path.
   if(d.superseded_at){dropCard(id);return null}
   if(source==='insert'&&!cards[id]){
@@ -1134,6 +1156,8 @@ function ingestDeclaration(row,source){
         return cards[k].guest_session_id===d.guest_session_id&&cards[k].asset_id===d.asset_id&&!cards[k].closed_at});
       if(existing){
         cur=cards[existing];
+        // The continuation is a live database row, so the host is no longer cache-only.
+        if(cur._fromCache){delete cur._fromCache;var es=null}else var es=lockoutContentSig(cur);
         // Severity and cross-contact merge never-downgrade; everything downstream re-derives.
         var merged=maxSeverity(cur.severity,d.severity),upgraded=merged!==cur.severity;
         cur._updated=true;
@@ -1142,20 +1166,29 @@ function ingestDeclaration(row,source){
         cur.cross_contact=!!(cur.cross_contact||d.cross_contact);
         // New content needs a new acknowledgement. The database row still holds the old ack, so
         // _reackRequired stops the next fold restoring it.
+        // _reackFrom is the acknowledgement being superseded — the value the DATABASE still holds.
+        // The re-ack write is conditional on it (compare-and-set), so it can never overwrite a
+        // newer acknowledgement, and the fold knows the re-ack is satisfied once the database
+        // shows a different one.
+        if(cur.kitchen_ack_at)cur._reackFrom=cur.kitchen_ack_at;
         cur.kitchen_ack_at=null;cur._reackRequired=true;
         if(upgraded)delete cur._escalated;
         mergedInto[id]=existing;
         // The host is already on screen, so it is not a new arrival — but if the merge has made
         // it an un-acknowledged anaphylaxis record, afterIngest enqueues its lockout.
         if(!isAnaph(merged))chimeStandard();
-        afterIngest(cur,source,false);
+        afterIngest(cur,source,false,es);
         recordDelivery(id,d,source);
         return cur;
       }
     }
   }
   cur=cards[id];
+  var prevSig=cur?lockoutContentSig(cur):null;
   if(cur){
+    // Any database-sourced row confirms a cache-restored card; from here escalation is decided on
+    // database truth.
+    if(source!=='cache')delete cur._fromCache;
     if(source==='update'&&d.service_instance_id!==undefined&&d.service_instance_id!==cur.service_instance_id){
       // service_kind / carried_over are computed by kitchen_board(), not columns. Kept across a
       // raw UPDATE only while the row stays stamped to the same instance.
@@ -1167,6 +1200,7 @@ function ingestDeclaration(row,source){
   }else{
     if(source==='update')return null;          // an UPDATE never introduces a card
     cur=cards[id]=d;isNew=true;
+    if(source==='cache')cur._fromCache=true;
     if(source==='insert'){
       if(d.supersedes_id)cur._updated=true;
       // Rehearsal identity for a raw realtime row, from a held card in the same instance.
@@ -1174,12 +1208,12 @@ function ingestDeclaration(row,source){
         if(sib)cur.service_kind=cards[sib].service_kind}
     }
   }
-  afterIngest(cur,source,isNew);
+  afterIngest(cur,source,isNew,prevSig);
   recordDelivery(id,d,source);
   return cur;
 }
 
-function afterIngest(c,source,isNew){
+function afterIngest(c,source,isNew,prevSig){
   // Label: board read first; else a held card on the same service point; else 'T?'.
   var l=labelOf(c);
   if(!l){var sp=Object.keys(cards).find(function(k){return cards[k]!==c&&cards[k].asset_id===c.asset_id&&cards[k].table_label});
@@ -1190,7 +1224,10 @@ function afterIngest(c,source,isNew){
   if(c._errField&&c[c._errField]){delete c._error;delete c._errField}
   // Escalation, identical on every path. A cache restore enqueues but does not sound: the
   // board has not read anything yet, and the first board read sounds it if it is still true.
-  if(lockoutEligible(c)){if(enqueueLockout(c.id)&&source!=='cache')soundAlarm()}
+  // A record already held whose actionable content changed (or lost its acknowledgement) is
+  // redrawn and re-alarmed if it is — or now should be — on the lockout.
+  if(prevSig!=null&&!c._fromCache&&prevSig!==lockoutContentSig(c)&&(lockoutId===c.id||lockoutQueue.indexOf(c.id)>=0||lockoutEligible(c))){lockoutContentChanged(c.id)}
+  else if(lockoutEligible(c)){if(enqueueLockout(c.id))soundAlarm()}
   else if(isNew&&source!=='cache'&&!isAnaph(c.severity))chimeStandard();
 }
 
@@ -1529,15 +1566,52 @@ function boundWrite(q){
 // error, not a silent success: PostgREST answers 204 whether 0 or N rows changed, and a row
 // can leave this display's write scope between the read and the hold (its service closed).
 // Without this the card would advance on screen while the database stayed unchanged.
-function writeDeclaration(id,patch){
+//
+// guard makes a MILESTONE write conditional, so it can only ever fill an empty milestone:
+//   {col:'verified_at'}               → .is(col, null)
+//   {col:'kitchen_ack_at', eq:value}  → .eq(col, value) — the merge re-ack, which replaces the
+//                                       acknowledgement the merge superseded and nothing newer.
+// Without it, a retry after a timed-out write that had in fact committed rewrote the recorded
+// time — altering evidence. A guarded write that matches no row sets r.noRow; the caller then
+// re-reads the board to learn whether the milestone is already recorded (see settleNoRow).
+function writeDeclaration(id,patch,guard){
   var q=sbv.from('allergen_declarations').update(patch).eq('id',id);
+  if(guard&&q){
+    if(guard.eq!==undefined&&typeof q.eq==='function')q=q.eq(guard.col,guard.eq);
+    else if(guard.eq===undefined&&typeof q.is==='function')q=q.is(guard.col,null);
+  }
   if(q&&typeof q.select==='function')q=q.select('id');
   return boundWrite(q).then(function(r){
     if(!r.error&&Array.isArray(r.data)&&r.data.length===0)
-      r={data:r.data,error:{message:'no row updated',code:'HC_NO_ROW'}};
+      r={data:r.data,error:{message:'no row updated',code:'HC_NO_ROW'},noRow:true};
     return r;
   });
 }
+// A guarded milestone write matched no row: either the milestone is ALREADY recorded (another
+// display, or this display's own earlier write that committed after its timeout) or the record
+// has left this display's write scope. Which one is decided by reading the board, never guessed.
+// Already recorded → the record is redrawn in its recorded state with a neutral notice that this
+// hold changed nothing; this display never claims it recorded the step (no chime, no "done"
+// confirmation flow). Not recorded → the ordinary NOT-recorded error.
+async function boardRead(){
+  for(var i=0;i<120&&reconcileInFlight;i++)await new Promise(function(r){setTimeout(r,100)});
+  return reconcile();
+}
+function lockoutStageFor(c){return !c.kitchen_ack_at?'ack':!c.protocol_confirmed_at?'prep':'done'}
+async function settleNoRow(id,field,errKey){
+  await boardRead();
+  var c=cards[id];if(!c)return;
+  if(c[field]){
+    showNotice(id,'note.already_recorded');
+    if(lockoutId===id)renderLockout(id,lockoutStageFor(c));
+  }else{
+    var k=writeFailed(id,errKey,{error:{code:'HC_NO_ROW'}},field);
+    if(lockoutId===id)renderLockout(id,lockoutStageFor(c),k);
+  }
+}
+function showNotice(id,key){var c=cards[id];if(!c)return;c._notice=key;delete c._error;delete c._errField;renderCards();renderRecord();
+  setTimeout(function(){if(cards[id]&&cards[id]._notice===key){delete cards[id]._notice;renderCards();renderRecord();
+    if(lockoutId===id&&!holdInProgress())renderLockout(id,lockoutStage,lockoutErr)}},8000)}
 // Which message a failed write shows. A timeout says the outcome is unknown and persists until
 // resolved; a refusal says the step was not recorded.
 function writeFailed(id,key,r,field){
@@ -1568,8 +1642,10 @@ async function doAck(id,origin){
   c._ackPending=ackAt;
   if(origin==='sheet'&&recordOpenId===id)recordFlow={id:id,a:'ack',phase:'saving'};
   renderCards();
-  var r=await writeDeclaration(id,{kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'});
+  var guard=(c._reackRequired&&c._reackFrom)?{col:'kitchen_ack_at',eq:c._reackFrom}:{col:'kitchen_ack_at'};
+  var r=await writeDeclaration(id,{kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'},guard);
   delete c._writing;
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();await settleNoRow(id,'kitchen_ack_at','err.ack');return}
   // Rejection clears the attempt and nothing needs reverting — no safety field was ever
   // mutated. Escalation (and the repeating alarm) continue with no manual intervention.
   if(r.error){console.error('[kitchen] acknowledge failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;
@@ -1578,10 +1654,10 @@ async function doAck(id,origin){
   // Accepted. Only now is this confirmed truth.
   c.kitchen_ack_at=ackAt;c.kitchen_ack_by=ackBy;c.status='acknowledged';
   delete c._ackPending;
-  delete c._error;delete c._errField;
+  delete c._error;delete c._errField;delete c._notice;
   // Re-acknowledgement satisfied; the database row now carries the fresh timestamp, so the
   // fold must stop re-nulling it.
-  delete c._reackRequired;
+  delete c._reackRequired;delete c._reackFrom;
   chimeAck();
   // Confirm where the operator is. The sheet confirms in place and exposes the next step; the
   // lockout keeps the SAME card and replaces only its action with the next requirement. A
@@ -1601,12 +1677,13 @@ async function confirmProtocol(id,origin){
   if(origin==='sheet'&&recordOpenId===id)recordFlow={id:id,a:'prep',phase:'saving'};
   c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
   renderCards();
-  var r=await writeDeclaration(id,{protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by});
+  var r=await writeDeclaration(id,{protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by},{col:'protocol_confirmed_at'});
   delete c._writing;
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'protocol_confirmed_at','err.prep');return}
   if(r.error){console.error('[kitchen] protocol confirm failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
     var k=writeFailed(id,'err.prep',r,'protocol_confirmed_at');
     if(lockoutId===id)renderLockout(id,'prep',k);return}
-  delete c._error;delete c._errField;
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // Confirmed in place; the operator leaves when they choose. It used to closeLockout() here —
   // unconditionally, so it could also dismiss a DIFFERENT record's unacknowledged lockout.
@@ -1624,11 +1701,12 @@ async function verifyDish(id,origin){
   if(recordOpenId===id)recordFlow={id:id,a:'verify',phase:'saving'};
   c.verified_at=new Date().toISOString();c.verified_by=deviceName;
   renderCards();
-  var r=await writeDeclaration(id,{verified_at:c.verified_at,verified_by:c.verified_by});
+  var r=await writeDeclaration(id,{verified_at:c.verified_at,verified_by:c.verified_by},{col:'verified_at'});
   delete c._writing;
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'verified_at','err.verify');return}
   if(r.error){console.error('[kitchen] verify failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
     writeFailed(id,'err.verify',r,'verified_at');return}
-  delete c._error;delete c._errField;
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // Confirm IN PLACE. The sheet used to close here, so a deliberate safety hold ended with
   // the screen vanishing — indistinguishable from a crash. It stays open on a success state
@@ -1647,11 +1725,12 @@ async function markServed(id,origin){
   if(inSheet)recordFlow={id:id,a:'serve',phase:'saving'};
   c.served_at=new Date().toISOString();c.status='resolved';
   renderCards();
-  var r=await writeDeclaration(id,{served_at:c.served_at,status:'resolved'});
+  var r=await writeDeclaration(id,{served_at:c.served_at,status:'resolved'},{col:'served_at'});
   delete c._writing;
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'served_at','err.serve');return}
   if(r.error){console.error('[kitchen] mark served failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
     writeFailed(id,'err.serve',r,'served_at');return}
-  delete c._error;delete c._errField;
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // From the sheet: confirm in place (Served Recorded) instead of vanishing. From a board row
   // there is no sheet to keep, so the row's existing behaviour stands.
@@ -1890,6 +1969,7 @@ function recordHeadHtml(c,title,done,okA){
     +'</span><span class="vfy-ok-t">'+th('ok.recorded',{time:fmtTime(okA==='ack'?c.kitchen_ack_at:c.protocol_confirmed_at)})+'</span></div>';
   // _error holds a catalog KEY, so the message follows a language change.
   if(c._error)h+='<div class="row-err">'+th(c._error)+'</div>';
+  else if(c._notice)h+='<div class="vfy-note" role="status">'+th(c._notice)+'</div>';
   // The row abbreviates and may truncate; the record never does.
   h+='<div class="vfy-tbl">'+esc(c._assetLabel||tt('misc.table'))+'</div>';
   if(c.guest_name&&String(c.guest_name).trim())
@@ -2003,7 +2083,7 @@ function renderRecord(){
   // be harmless but putting the formatted value here would rebuild the sheet every second.
   var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
            c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
-           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA,locale].join('|');
+           c._error||'',c._notice||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA,locale].join('|');
   if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
   recordSig=sig;
 
@@ -2032,7 +2112,7 @@ var CK_DONE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke=
 function renderSecondCheckDone(c,lc){
   var id=c.id;
   var sig=['done',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
-           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||'',locale].join('|');
+           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||'',c._notice||'',locale].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
   var h=recordHeadHtml(c,'title.second_check_done',true,'');
@@ -2072,15 +2152,50 @@ var lockoutId=null;
 // Which stage (and error key) the lockout is showing, so a language change redraws it in place.
 var lockoutStage=null,lockoutErr=null;
 var lockoutQueue=[];
-function lockoutEligible(c){return !!c&&isAnaph(c.severity)&&isOpenWork(c)&&!c.kitchen_ack_at&&!isSupersededRow(c)}
+// _fromCache: a card restored from this tablet's cache and not yet confirmed by any database
+// read. It is drawn on the board (offline redraw) but raises NO lockout and NO alarm: the cache is
+// not evidence of current state, and a record acknowledged elsewhere since must not come back as a
+// lockout here. The first board read (or realtime row) that carries the record clears the flag,
+// and only then is escalation decided — from database truth.
+function lockoutEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!c.kitchen_ack_at&&!isSupersededRow(c)}
+
+// ── QUEUE POLICY — the ONLY place lockout ordering is decided ─────────────────────────────
+// Current rule: arrival order, and the record on screen keeps the screen until the operator leaves
+// it (Back), even once it is past acknowledgement. That means an un-acknowledged arrival can wait
+// behind a lockout that is at its Prep step (head-of-line blocking). DECISION PENDING with the
+// Product Owner (W1-3 verifier item 3) — change it HERE and nowhere else:
+//   lockoutPreempts(newId)  → true to put a new arrival on screen at once (the displaced record is
+//                              requeued at the front by renderLockout, never dropped);
+//   lockoutNextId()         → which waiting record is shown next.
+function lockoutPreempts(newId){return false}
+function lockoutNextId(){lockoutWaiting();return lockoutQueue[0]||null}
+
 // Idempotent. Returns true only for a declaration this screen was not already holding.
 function enqueueLockout(id){
   if(!lockoutEligible(cards[id]))return false;
   if(lockoutId===id||lockoutQueue.indexOf(id)>=0)return false;
-  if(lockoutId)lockoutQueue.push(id);
+  if(lockoutId&&!lockoutPreempts(id))lockoutQueue.push(id);
   else renderLockout(id,'ack');
   updateLockoutQueue();
   return true;
+}
+// What the cook acts on in a lockout. If any of it changes under a lockout that is up or waiting —
+// a merged continuation adds an allergen, raises severity, sets cross-contact, or takes the
+// acknowledgement away for a re-ack — the record must be redrawn and the alarm sounded, exactly as
+// 09b6b94 did with chimeAnaphylaxis(); showLockout(existing).
+function lockoutContentSig(c){
+  return c?[(c.allergens||[]).map(function(a){return String(a).trim().toLowerCase()}).sort().join(','),
+            (c.severity||'').toLowerCase(),!!c.cross_contact,!!c.kitchen_ack_at].join('|'):'';
+}
+function lockoutContentChanged(id){
+  var c=cards[id];if(!c||!isAnaph(c.severity)||!isOpenWork(c))return;
+  // A hold that started on the OLD content must not complete against the new content.
+  if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id];recordHolding=false}
+  if(lockoutId===id){
+    renderLockout(id,c.kitchen_ack_at?lockoutStage:'ack');
+    soundAlarm();
+  }else if(lockoutQueue.indexOf(id)>=0){soundAlarm()}
+  else if(enqueueLockout(id))soundAlarm();
 }
 function showLockout(id){if(enqueueLockout(id))soundAlarm()}
 function lockoutWaiting(){
@@ -2094,9 +2209,8 @@ function updateLockoutQueue(){
   el.hidden=n<2;el.textContent=n<2?'':tt('lock.queue',{n:n});
 }
 function advanceLockout(){
-  lockoutWaiting();
-  var next=lockoutQueue.shift();
-  if(next)renderLockout(next,'ack');
+  var next=lockoutNextId();
+  if(next)renderLockout(next,'ack');   // renderLockout takes it out of the queue
 }
 // Run after every board change (end of renderCards). Keeps the screen consistent with the
 // records: a lockout whose record left the board closes and the next takes its place; any
@@ -2124,11 +2238,20 @@ var lockoutLabel=null;
 // not. Ignores mute (chimeAnaphylaxis forces full volume), as before.
 // lastAlarmAt only advances when a sound actually played, so a board whose audio is still locked
 // sounds on the first tick after the tap rather than waiting out a cycle it was silent through.
+// Cache-restored cards are not eligible (see lockoutEligible), so they never sound.
 var ALARM_REPEAT_MS=10000,lastAlarmAt=0;
 function alarmPending(){return Object.keys(cards).some(function(id){return lockoutEligible(cards[id])})}
+// SINGLE-FLIGHT PER TICK. Any number of requests in one task (a board read enqueuing N
+// lockouts at boot, a merge plus its sync) produce ONE alarm, played at the end of the task.
+// chimeAnaphylaxis() itself stops a still-sounding alarm before starting, so alarms never stack.
+var alarmRequested=false;
 function soundAlarm(){
   if(!audioReady||!ctx||ctx.state!=='running')return false;
-  chimeAnaphylaxis();lastAlarmAt=Date.now();return true;
+  lastAlarmAt=Date.now();
+  if(alarmRequested)return true;
+  alarmRequested=true;
+  setTimeout(function(){alarmRequested=false;if(audioReady)chimeAnaphylaxis()},0);
+  return true;
 }
 function alarmTick(){
   if(ctx&&audioReady&&ctx.state!=='running')audioStateCheck();
@@ -2166,7 +2289,7 @@ function renderLockout(id,stage,err){
   lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')
     // A record a closed service left open. Stated, so a cook does not read it as a new arrival.
     +(c.carried_over?'<div class="lk-carried">'+th('board.carried')+'</div>':'')
-    +'<div class="lk-queue" id="lkQueue" role="status" hidden></div>'+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div class="lk-chips" style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
+    +'<div class="lk-queue" id="lkQueue" role="status" hidden></div>'+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':c._notice?'<div class="lk-note" role="status">'+th(c._notice)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div class="lk-chips" style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
     // Guest notes were missing from the lockout entirely. Verbatim, esc()'d, labelled — the
     // same rule as the record sheet.
     +(c.notes?'<div class="lk-notes"><div class="al-notes-h">'+th('notes.heading')+'</div><div class="al-notes">'+esc(c.notes)+'</div></div>':'')
@@ -2217,9 +2340,9 @@ function checkEscalations(){
   // acknowledgement only (see the contract above), so an in-flight or failed attempt does
   // not appear here and cannot suppress a required escalation. Do NOT substitute isAcked()
   // — that predicate includes _ackPending and would restore the false-safety defect.
-  Object.keys(cards).forEach(function(id){var c=cards[id];if(c.kitchen_ack_at||c.closed_at||c.served_at)return;
+  Object.keys(cards).forEach(function(id){var c=cards[id];if(c.kitchen_ack_at||c.closed_at||c.served_at||c._fromCache)return;
     var elapsed=Date.now()-new Date(c.created_at).getTime();var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
-    if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity))chimeAnaphylaxis();else chimeStandard()}
+    if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity))soundAlarm();else chimeStandard()}   // anaphylaxis through the single-flight alarm
   });
 }
 

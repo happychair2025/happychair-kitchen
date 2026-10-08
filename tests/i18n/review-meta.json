@@ -782,5 +782,13 @@
   "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "priority": null
+ },
+ "note.already_recorded": {
+  "group": "errors",
+  "where": "Record sheet / lockout, after a hold whose step the database already had",
+  "meaning": "The step was already recorded (on another display, or by an earlier attempt). This hold changed nothing.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not read as \"saved now\".",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not read as \"saved now\".",
+  "priority": null
  }
 }

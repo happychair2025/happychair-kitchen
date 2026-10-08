@@ -36,6 +36,9 @@ function page(){
 let ws,seq=0;const pend={},blocked=[];
 const cdp=(m,p)=>{const id=++seq;ws.send(JSON.stringify({id,method:m,params:p||{}}));return new Promise(r=>pend[id]=r)};
 let done;const got=new Promise(r=>done=r);
+// The overall bound starts NOW, before Chrome is launched, so a run can never hang on start-up or
+// on the DevTools socket either.
+const to=setTimeout(()=>done('HARNESS TIMEOUT after '+TIMEOUT+'ms'),TIMEOUT);
 fs.mkdirSync(shots,{recursive:true});
 const srv=http.createServer(async(q,s)=>{
   const u=new URL(q.url,'http://x');
@@ -50,13 +53,14 @@ const srv=http.createServer(async(q,s)=>{
   if(u.pathname==='/'||u.pathname==='/index.html'){s.setHeader('content-type','text/html; charset=utf-8');s.end(page());return}
   s.statusCode=404;s.end();
 }).listen(0,'127.0.0.1',async()=>{
-  const port=srv.address().port,dbg=9300+Math.floor(Math.random()*600);
+  // Debug port derived from our own (unique) server port, so parallel runs never collide.
+  const port=srv.address().port,dbg=20000+(port%20000);
   const ud=fs.mkdtempSync(path.join(os.tmpdir(),'hc-kitchen-'));
   const ch=spawn(CHROME,['--headless=new','--disable-gpu','--hide-scrollbars','--no-first-run','--user-data-dir='+ud,
     '--autoplay-policy=user-gesture-required','--remote-debugging-port='+dbg,'--window-size=1280,900','about:blank'],{stdio:'ignore'});
   let t;for(let i=0;i<75&&!t;i++){await new Promise(r=>setTimeout(r,200));try{t=(await (await fetch('http://127.0.0.1:'+dbg+'/json')).json()).find(x=>x.type==='page')}catch(e){}}
-  if(!t){console.error('chrome did not start');process.exit(2)}
-  ws=new WebSocket(t.webSocketDebuggerUrl);await new Promise(r=>ws.onopen=r);
+  if(!t){console.error('chrome did not start');ch.kill();process.exit(2)}
+  ws=new WebSocket(t.webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j});
   ws.onmessage=e=>{const m=JSON.parse(e.data);
     if(m.id&&pend[m.id]){pend[m.id](m);delete pend[m.id];return}
     if(m.method==='Fetch.requestPaused'){const url=m.params.request.url;
@@ -70,7 +74,6 @@ const srv=http.createServer(async(q,s)=>{
   if(arg('size')){const [W,Hh]=arg('size').split(/[x,]/).map(Number);
     await cdp('Emulation.setDeviceMetricsOverride',{width:W,height:Hh,deviceScaleFactor:1,mobile:false})}
   await cdp('Page.navigate',{url:'http://127.0.0.1:'+port+'/?'+query});
-  const to=setTimeout(()=>done('HARNESS TIMEOUT after '+TIMEOUT+'ms'),TIMEOUT);
   got.then(b=>{clearTimeout(to);
     const tail='\n\nnetwork: '+(blocked.length?blocked.length+' request(s) blocked — '+[...new Set(blocked)].join(', '):'no request left the local server');
     console.log(b+tail);if(out)fs.writeFileSync(out,b+tail+'\n');

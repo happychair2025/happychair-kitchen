@@ -292,7 +292,20 @@ sits in "From Earlier Service" between Needs You and In Progress, actionable. (c
 blocking "Tap to enable allergy alarms" prompt covers the lockout, nothing claims to sound, a real tap
 unlocks and the pending alarm sounds. `cold=1` repeats (c) in a fresh profile with the browser's
 autoplay rule EMULATED (headless Chrome does not enforce it): an untrusted click cannot dismiss.
-64 + 11 checks.
+
+Added after independent verification (verifier probes C, D, E and LOW items 4, 5):
+(f) a merged continuation changes the record ON the lockout — at Confirm Received, including
+mid-hold (the hold on the old content is cancelled and writes nothing), and after acknowledgement
+(lockout returns to Confirm Received): redrawn with the merged allergens, alarm at once; a board
+read does not restore the superseded ack; the re-ack is compare-and-set on it and then stands.
+(g) a retry after a timed-out write that committed: guarded IS NULL, matches nothing, the board is
+re-read, "Already recorded — this hold changed nothing.", recorded time unchanged, no confirmation
+chime. (h) three lockouts in one board read = ONE alarm, never stacked, slider volume intact.
+(i) after reload, cached un-acknowledged records raise no lockout and no alarm before the first
+board read; one the read shows acknowledged elsewhere never becomes a lockout; one absent is
+dropped. The fixture now applies `.is()`/`.eq()` write guards to `__ROWS` as PostgREST would,
+can delay the first board read and seed server rows across a reload (sessionStorage), and logs
+every lockout drawn (`__LKLOG`). 95 + 11 checks.
 
 Probe adaptations for refactor decision 1 (every un-acknowledged anaphylaxis record raises its own
 lockout on load, queued one at a time — fixture record A now does so at boot): `showLockout(X)`

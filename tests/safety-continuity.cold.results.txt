@@ -7,7 +7,7 @@ PASS  above the lockout: the lockout is up behind it
 PASS  audio is NOT ready, so nothing has claimed to sound
 PASS  an untrusted click cannot dismiss it (audio not granted)   → suspended
 PASS  a real tap unlocks audio and removes it
-PASS  the pending alarm sounds within one tick   → 2
+PASS  the pending alarm sounds within one tick   → 1
 PASS  delivery written once for the new record
 PASS  the lockout is there, unchanged
 PASS  no anonymous client use anywhere in the run

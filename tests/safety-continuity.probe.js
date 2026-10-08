@@ -12,7 +12,15 @@
 //     record sheet says why; a retry with a working connection records exactly once.
 // (e) a carried-over record renders in its own "From Earlier Service" band below Needs You,
 //     labelled and actionable.
-// The realtime socket is "dead" throughout (a), (d), (e): no handler is ever invoked.
+// (f) a merged continuation changes the record ON the lockout — at Confirm Received (incl. mid-hold)
+//     and after it (Prep): redrawn at Confirm Received with the merged content, alarm at once,
+//     re-ack is a compare-and-set against the superseded acknowledgement.
+// (g) a retry after a timed-out write that DID commit: guarded (IS NULL), matches nothing,
+//     the board is re-read, "Already recorded — this hold changed nothing", timestamp unchanged.
+// (h) alarms are single-flight: three lockouts in one board read = one alarm; slider volume intact.
+// (i) cache-restored records are silent until the first board read, and a cached un-acked record
+//     that the board read shows acknowledged never becomes a lockout.
+// The realtime socket is "dead" throughout (a), (d), (e), (g), (h): no handler is ever invoked.
 const SS='hc_probe_w13';
 const st=JSON.parse(sessionStorage.getItem(SS)||'{"T":[],"pass":0,"fail":0}');
 const T=st.T;
@@ -52,6 +60,17 @@ async function done(){
 setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('/__results',{method:'POST',body:T.join('\n')})},200000);
 
 (async()=>{try{
+ if(st.phase==='c'&&!st.cold){
+   H('(i) CACHE-RESTORED STATE IS SILENT UNTIL THE BOARD READ');
+   const R9='i9000000-cache-acked-elsewhere',R10='ia000000-cache-gone';
+   ok('before any board read: both cached records are on the board',!!cards[R9]&&!!cards[R10]&&lastReconcileOk===0);
+   ok('...marked unconfirmed, raising no lockout',cards[R9]._fromCache===true&&!lkOn()&&!window.__LKLOG.some(x=>x.startsWith(R9)||x.startsWith(R10)),window.__LKLOG.join());
+   ok('...and nothing escalates from them',!alarmPending());
+   await until(()=>lastReconcileOk>0,8000);await w(300);
+   ok('board read shows R9 acknowledged elsewhere: never a lockout, not even at Prep',!!cards[R9]&&!!cards[R9].kitchen_ack_at&&!window.__LKLOG.some(x=>x.startsWith(R9)),window.__LKLOG.join());
+   ok('R10, absent from the board read, is gone and never locked out',!cards[R10]&&!window.__LKLOG.some(x=>x.startsWith(R10)));
+   ok('R9 confirmed by the read',!cards[R9]._fromCache);
+ }
  await until(()=>typeof reconcile==='function'&&paired()&&lastReconcileOk>0,8000);
 
  if(st.phase!=='c'){
@@ -192,9 +211,92 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('acknowledging it writes once to it',MW(R5).length===1&&!!cards[R5].kitchen_ack_at);
  ok('one delivery write each for R4..R7',[R4,R4b,R5,R6,R7].every(id=>DW(id).length===1));
 
+ // ── (f) ───────────────────────────────────────────────────────────────────────────────────
+ H('(f) A MERGED CONTINUATION CHANGES THE RECORD ON THE LOCKOUT');
+ const F1='f1000000-host',FS='sess-f1',FA='asset-f1';
+ window.__ROWS.push(rowObj(F1,{guest_session_id:FS,asset_id:FA,table_label:'P7',zone_name:'Terrace',guest_name:'Merge Host',allergens:['Sesame']}));
+ await until(()=>lockoutId===F1,RECONCILE_MS+2000);
+ ok('host on the lockout at Confirm Received',lockoutId===F1&&lockoutStage==='ack');
+ const cont=(id,al)=>{const r=rowObj(id,{guest_session_id:FS,asset_id:FA,allergens:al});const x=Object.assign({},r);['table_label','zone_name','service_kind','is_open'].forEach(k=>delete x[k]);x.venue_id='v';return x};
+ let f0=alarms.length,nW=MW(F1).length;md(lkBtn());await w(500);
+ insertHandlers().forEach(h=>h.cb({new:cont('f2000000-cont-peanut',['Peanut'])}));await w(150);
+ ok('card merged: Sesame + Peanut',JSON.stringify(cards[F1].allergens)==='["Sesame","Peanut"]',JSON.stringify(cards[F1].allergens));
+ ok('LOCKOUT redrawn with Peanut, at Confirm Received',/Sesame, Peanut/.test(lkTxt())&&lockoutStage==='ack');
+ ok('alarm sounded at once',alarms.length>f0,alarms.length-f0);
+ await w(1100);const lb=lkBtn();if(lb)mu(lb);await w(200);
+ ok('the hold on the OLD content did not complete: no ack written',MW(F1).length===nW,MW(F1).length-nW);
+ await shot('f-merge-at-ack');
+ await hold(lkBtn());persist(F1);
+ ok('acknowledged against the merged content, once',MW(F1).filter(x=>'kitchen_ack_at' in x).length===1&&!!cards[F1].kitchen_ack_at&&lockoutStage==='prep');
+ const firstAck=cards[F1].kitchen_ack_at;
+ H('(f) …continuation after acknowledgement (lockout at Prep)');
+ f0=alarms.length;
+ insertHandlers().forEach(h=>h.cb({new:cont('f3000000-cont-shellfish',['Shellfish'])}));await w(150);
+ ok('acknowledgement taken away locally for re-ack',!cards[F1].kitchen_ack_at&&cards[F1]._reackRequired===true);
+ ok('lockout back at Confirm Received',lockoutId===F1&&lockoutStage==='ack',lockoutStage);
+ ok('lockout shows Shellfish',/Shellfish/.test(lkTxt()));
+ ok('alarm sounded at once',alarms.length>f0,alarms.length-f0);
+ await shot('f-merge-after-ack');
+ await w(RECONCILE_MS+800);
+ ok('a board read (database still holds the OLD ack) does not restore it',!cards[F1].kitchen_ack_at&&lockoutStage==='ack');
+ const nR=MW(F1).length;await hold(lkBtn());persist(F1);
+ const re=MW(F1)[nR];
+ ok('re-ack is compare-and-set on the superseded acknowledgement',!!re&&(re.__eq||[]).indexOf('kitchen_ack_at')>=0&&!re.__noRow,re&&JSON.stringify(re.__eq));
+ ok('re-ack recorded; lockout at Prep',!!cards[F1].kitchen_ack_at&&cards[F1].kitchen_ack_at!==firstAck&&lockoutStage==='prep');
+ await w(RECONCILE_MS+800);
+ ok('after a board read the re-ack stands (requirement satisfied)',!!cards[F1].kitchen_ack_at&&!cards[F1]._reackRequired);
+ await hold(lkBtn());persist(F1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+
+ // ── (g) ───────────────────────────────────────────────────────────────────────────────────
+ H('(g) RETRY AFTER A TIMED-OUT WRITE THAT DID COMMIT');
+ const G1='g1000000-anaph-late-commit';
+ window.__ROWS.push(rowObj(G1,{table_label:'T9',zone_name:'Main Hall',guest_name:'Late Ack'}));
+ await until(()=>lockoutId===G1,RECONCILE_MS+2000);
+ window.__WRITE_MODE='hang';await hold(lkBtn());
+ const hungAck=MW(G1).slice(-1)[0];
+ ok('ack write is guarded IS NULL',!!hungAck&&(hungAck.__is||[]).indexOf('kitchen_ack_at is null')>=0);
+ await until(()=>!cards[G1]._writing,WRITE_TIMEOUT_MS+3000,100);window.__WRITE_MODE='ok';
+ window.__ROWS.find(x=>x.id===G1).kitchen_ack_at=hungAck.kitchen_ack_at;
+ ok('timed out: lockout still asks for Confirm Received',lockoutId===G1&&lockoutStage==='ack'&&/Not saved/.test(lkTxt()));
+ const ackChimes=[];const _cka=chimeAck;chimeAck=function(){ackChimes.push(1);return _cka.apply(this,arguments)};
+ const nG=MW(G1).length;await hold(lkBtn());
+ await until(()=>/Already recorded/.test(lkTxt()),RECONCILE_MS+4000);
+ const retryG=MW(G1)[nG];
+ ok('the retry was guarded and matched nothing',!!retryG&&(retryG.__is||[]).indexOf("kitchen_ack_at is null")>=0&&retryG.__noRow===1);
+ ok('recorded time NOT rewritten (board read shows the committed one)',cards[G1].kitchen_ack_at===hungAck.kitchen_ack_at,cards[G1].kitchen_ack_at+' vs '+hungAck.kitchen_ack_at);
+ ok('"Already recorded — this hold changed nothing." on the lockout',/Already recorded — this hold changed nothing\./.test(lkTxt()));
+ ok('lockout shows the recorded state (Prep), no confirmation chime claimed',lockoutStage==='prep'&&ackChimes.length===0);
+ await shot('g-already-recorded');
+ chimeAck=_cka;
+ await hold(lkBtn());persist(G1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+
+ // ── (h) ───────────────────────────────────────────────────────────────────────────────────
+ H('(h) ALARM IS SINGLE-FLIGHT, VOLUME INTACT');
+ setVolume(30);
+ const h0=alarms.length,now=new Date().toISOString();
+ ['h1000000-a','h2000000-b','h3000000-c'].forEach((id,i)=>window.__ROWS.push(rowObj(id,{created_at:now,table_label:'SP'+(22+i),zone_name:'Terrace',guest_name:'Burst '+i})));
+ await until(()=>lockoutQueue.length>=2,RECONCILE_MS+2000);await w(800);
+ ok('three lockouts in one board read → ONE alarm',alarms.length-h0===1,alarms.length-h0);
+ ok('never more than one alarm sounding (3 tones)',anaphNodes.length<=3,anaphNodes.length);
+ ok('slider volume untouched by the alarm',Math.abs(volume-0.3)<1e-9,volume);
+ ok('"1 of 3"',/^1 of 3\b/.test(lkQ()),lkQ());
+ setVolume(60);
+ for(const id of ['h1000000-a','h2000000-b','h3000000-c']){await until(()=>lockoutId===id,1500);await hold(lkBtn());persist(id);await hold(lkBtn());persist(id);document.querySelector('#lockoutContent .lockout-back').click();await w(200)}
+ ok('burst cleared one at a time',!lkOn()&&lockoutQueue.length===0);
+
  // ── (c) prepare: reload with audio locked ─────────────────────────────────────────────────
  H('(c) RELOAD WITH AUDIO LOCKED');
  st.phase='c';sessionStorage.setItem(SS,JSON.stringify(st));
+ // (i) setup: this tablet's cache holds two un-acknowledged anaphylaxis records. After the reload
+ // the database holds R9 ACKNOWLEDGED (by another display) and does not return R10 at all.
+ cacheCards();
+ const R9='i9000000-cache-acked-elsewhere',R10='ia000000-cache-gone';
+ const cc=JSON.parse(localStorage.getItem(CACHE_K)||'{}');
+ cc[R9]=rowObj(R9,{table_label:'T5',zone_name:'Main Hall',guest_name:'Cached Acked'});
+ cc[R10]=rowObj(R10,{table_label:'T6',zone_name:'Main Hall',guest_name:'Cached Gone'});
+ localStorage.setItem(CACHE_K,JSON.stringify(cc));
+ sessionStorage.setItem('hc_fixture_rows',JSON.stringify([rowObj(R9,{table_label:'T5',zone_name:'Main Hall',guest_name:'Cached Acked',kitchen_ack_at:minsAgo(0.5),kitchen_ack_by:'Other Display',status:'acknowledged'})]));
+ sessionStorage.setItem('hc_fixture_delay_board','2500');
  location.reload();
  return;
  }
