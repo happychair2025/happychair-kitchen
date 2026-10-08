@@ -18,6 +18,10 @@
 //     the named record stays live, owed and alarming, and the naming row is not shown as UPDATED.
 // (w) · C1/C2/C3: a chain A ← B ← C hides A when only B's superseded_at landed (A never reaches the
 //     lockout and is never written); A does not come back when its successor leaves the board.
+// (x) round 5 · S1 self-reference, S2 cycle, and an OLDER "successor" — none hides anything.
+// (y) round 5 · reload: the supersession registry travels with the cache (A stays hidden before any
+//     board read); a hold on an unconfirmed cached card writes nothing and says "Checking with the
+//     server — hold again in a moment."; after the read A is still hidden and C is owed.
 const SS='hc_probe_w13b';
 const st=JSON.parse(sessionStorage.getItem(SS)||'{"T":[],"pass":0,"fail":0}');
 const T=st.T;
@@ -57,6 +61,26 @@ async function done(){
 setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('/__results',{method:'POST',body:T.join('\n')})},330000);
 
 (async()=>{try{
+ if(st.phase==='reload'){
+  H('(y) RELOAD — before the first board read');
+  const YA='ya000000-a',YC='yc000000-c';
+  await until(()=>typeof reconcile==='function'&&!!cards[YC],4000);await w(150);
+  ok('no board read yet (the cache is all the board has)',lastReconcileOk===0);
+  ok('A restored from the cache is still hidden (registry travelled with the cache)',!document.querySelector('[data-k="card:'+YA+'"]')&&!(cards[YA]&&lockoutEligible(cards[YA])));
+  ok('C from the cache is shown but not escalated',!!document.querySelector('[data-k="card:'+YC+'"]')&&!lockoutEligible(cards[YC])&&!lkOn());
+  const nC=MW(YC).length;
+  const yb=document.querySelector('[data-k="card:'+YC+'"] .row .hold-btn');
+  if(yb){md(yb);await w(1350);mu(yb);await w(250)}
+  await doAck(YA,'row');await w(150);
+  ok('a hold on an unconfirmed cached card writes NOTHING',MW(YC).length===nC&&MW(YA).length===0);
+  ok('…and says so on the row: "Checking with the server — hold again in a moment."',/Checking with the server — hold again in a moment\./.test(document.querySelector('[data-k="card:'+YC+'"]').innerText));
+  await shot('y-cache-checking');
+  H('(y) RELOAD — after the first board read');
+  await until(()=>lastReconcileOk>0,8000);await w(300);
+  ok('A still hidden and never written',!document.querySelector('[data-k="card:'+YA+'"]')&&!(cards[YA]&&lockoutEligible(cards[YA]))&&MW(YA).length===0);
+  ok('C confirmed: live, owed, on the lockout',!cards[YC]._fromCache&&lockoutEligible(cards[YC])&&(lockoutId===YC||lockoutQueue.indexOf(YC)>=0));
+  await done();return;
+ }
  await until(()=>typeof reconcile==='function'&&paired()&&lastReconcileOk>0,8000);
  H('SETUP');
  const ap=document.getElementById('audioPrompt');const r0=ap.getBoundingClientRect();await tap(r0.left+r0.width/2,r0.top+r0.height/2);
@@ -285,9 +309,9 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  // ── (w) verifier round 4 · C1/C2/C3: chains and successors that leave the board ────────────────
  H('(w) SUPERSESSION CHAINS AND SUCCESSORS THAT LEAVE THE BOARD');
  const CA='wa000000-a',CB='wb000000-b',CC='wc000000-c';
- window.__ROWS.push(rowObj(CA,{guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall'}),
-                   rowObj(CB,{guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall',supersedes_id:CA,superseded_at:new Date().toISOString()}),
-                   rowObj(CC,{guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall',supersedes_id:CB,allergens:['Sesame','Egg']}));
+ window.__ROWS.push(rowObj(CA,{created_at:minsAgo(5),guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall'}),
+                   rowObj(CB,{created_at:minsAgo(4),guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall',supersedes_id:CA,superseded_at:new Date().toISOString()}),
+                   rowObj(CC,{created_at:minsAgo(3),guest_session_id:'gs-C',asset_id:'asset-C',table_label:'T18',zone_name:'Main Hall',supersedes_id:CB,allergens:['Sesame','Egg']}));
  const lk0=window.__LKLOG.length;await boardRead();await w(200);
  ok('C1 · A ← B ← C with only B.superseded_at: A is hidden and not owed',!document.querySelector('[data-k="card:'+CA+'"]')&&!lockoutEligible(cards[CA]));
  ok('C1 · A never reached the lockout, not even for an instant',!window.__LKLOG.slice(lk0).some(x=>x.startsWith(CA)),window.__LKLOG.slice(lk0).join());
@@ -314,5 +338,35 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('C3 · B leaves the board: A does NOT come back',!document.querySelector('[data-k="card:'+EA+'"]')&&!lockoutEligible(cards[EA]));
  ok('invariant · every owed anaphylaxis record is on the lockout or queued',Object.keys(cards).filter(id=>lockoutEligible(cards[id])).every(queuedOrUp));
 
- await done();
+ // ── (x) verifier round 5 · S1/S2: self-reference and cycles are never honoured ─────────────────
+ await drain();
+ H('(x) SELF-REFERENCE, CYCLES AND OLDER "SUCCESSORS" HIDE NOTHING');
+ const X1='x1000000-self',XP='x2000000-p',XQ='x3000000-q',XO='x4000000-old-succ',XN='x5000000-named';
+ window.__ROWS.push(rowObj(X1,{asset_id:'asset-X1',table_label:'T21',zone_name:'Main Hall',guest_session_id:'gs-X1',supersedes_id:X1}));
+ await boardRead();await w(200);
+ ok('S1 · a row naming ITSELF stays on the board, owed and alarming',!!document.querySelector('[data-k="card:'+X1+'"]')&&queuedOrUp(X1)&&lockoutEligible(cards[X1])&&alarmPending());
+ window.__ROWS.push(rowObj(XP,{asset_id:'asset-X2',table_label:'T22',zone_name:'Main Hall',guest_session_id:'gs-X2',supersedes_id:XQ,created_at:minsAgo(3)}),
+                   rowObj(XQ,{asset_id:'asset-X2',table_label:'T22',zone_name:'Main Hall',guest_session_id:'gs-X2',supersedes_id:XP,allergens:['Peanut'],created_at:minsAgo(2)}));
+ await boardRead();await w(200);
+ ok('S2 · a cycle P ↔ Q hides NEITHER: both owed',queuedOrUp(XP)&&queuedOrUp(XQ)&&!isSupersededRow(cards[XP])&&!isSupersededRow(cards[XQ]));
+ window.__ROWS.push(rowObj(XN,{asset_id:'asset-X3',table_label:'T23',zone_name:'Main Hall',guest_session_id:'gs-X3',created_at:minsAgo(1)}),
+                   rowObj(XO,{asset_id:'asset-X3',table_label:'T23',zone_name:'Main Hall',guest_session_id:'gs-X3',supersedes_id:XN,severity:'unsure',created_at:minsAgo(6)}));
+ await boardRead();await w(200);
+ ok('a "successor" OLDER than the record it names hides nothing',queuedOrUp(XN)&&!isSupersededRow(cards[XN]));
+ ok('none of these records was written to by the board',[X1,XP,XQ,XN].every(id=>MW(id).length===0));
+ await drain();
+
+ // ── (y) verifier round 5 · reload: the cache window ───────────────────────────────────────────
+ H('(y) RELOAD — prepare: chain A ← B ← C in the cache, first board read delayed');
+ const YA='ya000000-a',YB='yb000000-b',YC='yc000000-c';
+ const yrows=[rowObj(YA,{asset_id:'asset-Y',table_label:'T24',zone_name:'Main Hall',guest_session_id:'gs-Y',created_at:minsAgo(5)}),
+   rowObj(YB,{asset_id:'asset-Y',table_label:'T24',zone_name:'Main Hall',guest_session_id:'gs-Y',supersedes_id:YA,superseded_at:minsAgo(1),created_at:minsAgo(4)}),
+   rowObj(YC,{asset_id:'asset-Y',table_label:'T24',zone_name:'Main Hall',guest_session_id:'gs-Y',supersedes_id:YB,allergens:['Egg'],created_at:minsAgo(3)})];
+ window.__ROWS.push(...yrows);await boardRead();await w(300);cacheCards();
+ ok('pre-reload: A hidden',!document.querySelector('[data-k="card:'+YA+'"]'));
+ st.phase='reload';sessionStorage.setItem(SS,JSON.stringify(st));
+ sessionStorage.setItem('hc_fixture_rows',JSON.stringify(yrows));
+ sessionStorage.setItem('hc_fixture_delay_board','3000');
+ location.reload();
+ return;
 }catch(e){T.push('EXCEPTION '+e.message+'\n'+e.stack);st.fail++;await done()}})();

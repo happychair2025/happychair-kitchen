@@ -838,5 +838,13 @@
   "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "priority": null
+ },
+ "note.checking": {
+  "group": "errors",
+  "where": "Row, record sheet and lockout — a hold on a record shown from this display's cache before the first board read",
+  "meaning": "The display has not yet confirmed this record with the server, so it recorded nothing. Hold again in a moment.",
+  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
+  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. 核对 = check against; must not read as \"verify safe\".",
+  "priority": null
  }
 }

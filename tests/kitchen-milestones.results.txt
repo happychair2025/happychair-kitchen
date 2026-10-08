@@ -23,7 +23,7 @@ PASS  a single tap writes nothing
 PASS  early release writes nothing
 PASS  leaving the button cancels
 PASS  blur cancels a keyboard hold
-PASS  progress visible mid-hold   → 24.8582%
+PASS  progress visible mid-hold   → 25.0327%
 PASS  a poll mid-hold does not replace the control
 PASS  completed hold = exactly one write   → 1
 PASS  ...protocol_confirmed_at/by only, to A

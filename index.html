@@ -201,6 +201,8 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
    severity — and updated in place so it never rebuilds the hold under a finger. */
 .lk-queue{font-size:18px;font-weight:700;color:var(--t1);border:1px solid var(--b2);background:var(--s2);
   border-radius:8px;padding:6px 14px;margin-bottom:14px;text-align:center}
+.row-note{margin:-4px 0 8px;padding:8px 12px;border-radius:0 0 8px 8px;background:var(--s2);border:1px solid var(--b2);
+  color:var(--t1);font-size:14px;font-weight:600;text-align:center}
 .lk-also{font-size:16px;font-weight:600;color:var(--t2);margin-bottom:12px;text-align:center}
 .r-also{font-size:12px;font-weight:600;color:var(--t2);white-space:nowrap}
 .vfy-also{font-size:14px;font-weight:600;color:var(--t2);margin:2px 0 4px}
@@ -585,6 +587,7 @@ var I18N={
   'err.minimize':'Hidden locally, but couldn\'t sync — try again',
   'err.timeout':'No response — couldn\'t confirm. Hold to try again.',
   'note.already_recorded':'Already recorded — this hold changed nothing.',
+  'note.checking':'Checking with the server — hold again in a moment.',
   'note.superseded':'The record you were holding was replaced by this newer one — nothing was recorded.',
   'card.also_here.one':'Also at this table: {n} other allergy record',
   'card.also_here.other':'Also at this table: {n} other allergy records',
@@ -692,6 +695,7 @@ var I18N={
   'err.minimize':'Oculta en esta pantalla, pero no se sincronizó — inténtalo de nuevo',
   'err.timeout':'Sin respuesta — no se pudo confirmar. Mantén presionado para intentarlo de nuevo.',
   'note.already_recorded':'Ya estaba registrado — esta acción no cambió nada.',
+  'note.checking':'Comprobando con el servidor — mantén presionado de nuevo en un momento.',
   'note.superseded':'El registro que mantenías presionado fue sustituido por este más reciente — no se registró nada.',
   'card.also_here.one':'También en esta mesa: {n} registro de alergia más',
   'card.also_here.other':'También en esta mesa: {n} registros de alergia más',
@@ -799,6 +803,7 @@ var I18N={
   'err.minimize':'已在此屏隐藏，但未同步 — 请重试',
   'err.timeout':'无响应 — 无法确认。请长按重试。',
   'note.already_recorded':'已有记录 — 此次长按未作任何更改。',
+  'note.checking':'正在与服务器核对 — 请稍后再次长按。',
   'note.superseded':'你长按的记录已被这条更新的记录取代 — 未作任何记录。',
   'card.also_here.one':'此桌另有 {n} 条过敏记录',
   'card.also_here.other':'此桌另有 {n} 条过敏记录',
@@ -1049,17 +1054,28 @@ function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
 // hides A when only B's superseded_at landed, and A does not reappear if B later leaves the board.
 // A valid supersession is permanent.
 var rowMeta={},successorsOf={};
+// rowMeta holds only what the SERVER said about a row. service_kind in particular is taken only from
+// rows that carry it (board reads, cache of board reads) — never the kind a realtime row inherits
+// locally — so a rehearsal/live mismatch cannot be hidden behind a guess.
 function noteRow(d){
   if(!d||!d.id)return;
   var m=rowMeta[d.id]||(rowMeta[d.id]={});
-  ['asset_id','guest_session_id','service_kind'].forEach(function(k){if(d[k]!==undefined&&d[k]!==null)m[k]=d[k]});
+  ['asset_id','guest_session_id','service_kind','created_at','supersedes_id'].forEach(function(k){if(d[k]!==undefined&&d[k]!==null)m[k]=d[k]});
   if(d.supersedes_id)(successorsOf[d.supersedes_id]=successorsOf[d.supersedes_id]||{})[d.id]=true;
 }
+// A reference counts only if ALL hold: not a self-reference; same asset_id; same non-null
+// guest_session_id; rehearsal/live kind KNOWN for both and equal; the successor created STRICTLY
+// later; and the predecessor does not itself name the successor (a cycle — neither member of a
+// cycle is ever hidden).
 function sameVisit(predId,succId){
+  if(!predId||!succId||predId===succId)return false;
   var p=rowMeta[predId],q=rowMeta[succId];if(!p||!q)return false;
   if(!p.asset_id||p.asset_id!==q.asset_id)return false;
   if(!p.guest_session_id||p.guest_session_id!==q.guest_session_id)return false;
-  if(p.service_kind&&q.service_kind&&p.service_kind!==q.service_kind)return false;
+  if(!p.service_kind||!q.service_kind||p.service_kind!==q.service_kind)return false;
+  var tp=Date.parse(p.created_at),tq=Date.parse(q.created_at);
+  if(!(tq>tp))return false;
+  if(p.supersedes_id===succId)return false;
   return true;
 }
 function validSuccessorOf(id){var m=successorsOf[id];if(!m)return null;
@@ -1207,7 +1223,6 @@ function afterIngest(c,source,isNew,prevSig){
   // SUPERSEDED BY REFERENCE. A successor names its predecessor (supersedes_id) even when the
   // predecessor's own superseded_at never landed. The predecessor stops being actionable at once:
   // its hold is cancelled, its generation moves on, and it leaves every band and the lockout.
-  noteRow(c);
   var pred=c.supersedes_id&&cards[c.supersedes_id];
   if(pred&&!pred._supersededSeen&&isValidCorrection(c)){
     pred._supersededSeen=true;
@@ -1357,6 +1372,8 @@ function renderCards(){
     h+='</div>';
     // A write that did not land is stated on the row itself, not only inside the record. The
     // strip opens the record, where the hold is: retrying a milestone is still a hold.
+    // A neutral notice (e.g. "Checking with the server") is stated on the row too.
+    if(!c._error&&c._notice)h+='<div class="row-note" role="status">'+th(c._notice)+'</div>';
     var unk=c._error==='err.unconfirmed'||c._error==='err.timeout';   // outcome unknown, not refused
     if(c._error)h+='<button type="button" class="row-retry" role="alert" onclick="openRecord(\''+esc(id)+'\')">'+th(unk?'row.unconfirmed':'row.not_saved')+'</button>';
 
@@ -1394,7 +1411,7 @@ function renderCards(){
     var c=cards[id];
     return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,isValidCorrection(c)?1:0,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
-            c.served_at,c._error||'',c._ackPending?1:0,sameVisitOthers(c),locale].join('|');
+            c.served_at,c._error||'',c._notice||'',c._ackPending?1:0,sameVisitOthers(c),locale].join('|');
   }
   function pushCards(list){list.forEach(function(id){
     seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
@@ -1659,6 +1676,9 @@ function writeFailed(id,key,r,field){
 async function doAck(id,origin){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var c=cards[id];if(!c)return;
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -1696,6 +1716,9 @@ async function doAck(id,origin){
 
 async function confirmProtocol(id,origin){
   var c=cards[id];if(!c)return;
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -1723,6 +1746,9 @@ async function confirmProtocol(id,origin){
 
 async function verifyDish(id,origin){
   var c=cards[id];if(!c)return;
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -1749,6 +1775,9 @@ async function verifyDish(id,origin){
 
 async function markServed(id,origin){
   var c=cards[id];if(!c)return;
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -2421,13 +2450,24 @@ var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
 // UI state (_writing, _ackPending, _escalated, _error, _notice, _gen, _assetLabel…), and a
 // reload must start from records, not from latches an earlier page life left set — an
 // _escalated restored from cache used to suppress the escalation a reloaded board owed.
-function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return (typeof k==='string'&&k.charAt(0)==='_')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
+// The supersession registry travels with the cache, trimmed to what the cached cards need: the
+// cards' own metadata, every successor that names one of them, and those successors' metadata. So a
+// record hidden because something replaced it is still hidden when it is restored after a reload,
+// before any board read.
+var SUPER_K='hc_k_supersession_v1';
+function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return (typeof k==='string'&&k.charAt(0)==='_')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted));
+  var meta={},succ={};Object.keys(cards).forEach(function(id){if(rowMeta[id])meta[id]=rowMeta[id];
+    if(successorsOf[id]){succ[id]=successorsOf[id];Object.keys(successorsOf[id]).forEach(function(s2){if(rowMeta[s2])meta[s2]=rowMeta[s2]})}});
+  localStorage.setItem(SUPER_K,JSON.stringify({m:meta,s:succ}))}catch(e){}}
 // Restored through the same ingest as every other source, so an un-acknowledged anaphylaxis
 // record in the cache is a lockout from first paint. Underscore fields an older build cached
 // are dropped on the way in.
 function loadCache(){try{
   localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
   var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(g)ghosted=JSON.parse(g);
+  try{var sr=JSON.parse(localStorage.getItem(SUPER_K)||'null');if(sr&&sr.m&&sr.s){
+    Object.keys(sr.m).forEach(function(id){rowMeta[id]=Object.assign(rowMeta[id]||{},sr.m[id])});
+    Object.keys(sr.s).forEach(function(id){successorsOf[id]=Object.assign(successorsOf[id]||{},sr.s[id])})}}catch(e){}
   if(c){var o=JSON.parse(c);Object.keys(o).forEach(function(id){noteRow(o[id])});Object.keys(o).forEach(function(id){ingestDeclaration(o[id],'cache')})}}catch(e){}}
 function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
 

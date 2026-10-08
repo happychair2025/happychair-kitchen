@@ -91,6 +91,26 @@ PASS  C3 · same-visit successor by board read: A hidden, off the lockout
 PASS  C3 · B leaves the board: A does NOT come back
 PASS  invariant · every owed anaphylaxis record is on the lockout or queued
 
-ALL 66 CHECKS PASS
+──── (x) SELF-REFERENCE, CYCLES AND OLDER "SUCCESSORS" HIDE NOTHING ────
+PASS  S1 · a row naming ITSELF stays on the board, owed and alarming
+PASS  S2 · a cycle P ↔ Q hides NEITHER: both owed
+PASS  a "successor" OLDER than the record it names hides nothing
+PASS  none of these records was written to by the board
+
+──── (y) RELOAD — prepare: chain A ← B ← C in the cache, first board read delayed ────
+PASS  pre-reload: A hidden
+
+──── (y) RELOAD — before the first board read ────
+PASS  no board read yet (the cache is all the board has)
+PASS  A restored from the cache is still hidden (registry travelled with the cache)
+PASS  C from the cache is shown but not escalated
+PASS  a hold on an unconfirmed cached card writes NOTHING
+PASS  …and says so on the row: "Checking with the server — hold again in a moment."
+
+──── (y) RELOAD — after the first board read ────
+PASS  A still hidden and never written
+PASS  C confirmed: live, owed, on the lockout
+
+ALL 78 CHECKS PASS
 
 network: no request left the local server

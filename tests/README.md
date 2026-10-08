@@ -328,7 +328,14 @@ same asset_id and the same non-null guest_session_id; `db-proposals/20261008_sup
 makes the database refuse such rows); (w) a chain A ← B ← C hides A when only B's superseded_at
 landed — A never reaches the lockout, not even for an instant, and is never written — and A does not
 come back when its successor leaves the board. A hold cancelled because a successor arrived is said
-on the successor. 66 checks. A timed-out write now reads as UNKNOWN —
+on the successor. Fifth round: (x) a row naming itself, a cycle P ↔ Q, and a "successor" older than
+the record it names hide nothing — a reference counts only if it is not a self-reference, the successor
+is strictly newer, the predecessor does not name the successor back, and both rows' rehearsal/live
+kind is KNOWN from the server and equal (a kind only inferred for a realtime row does not count);
+(y) a reload with the first board read delayed: the supersession registry travels with the cache, so
+a replaced record restored from the cache stays hidden; a hold on a cached card that no board read has
+confirmed writes nothing and says "Checking with the server — hold again in a moment."; after the read
+the replaced record is still hidden and never written, and the live one is owed. 78 checks. A timed-out write now reads as UNKNOWN —
 "No response — couldn't confirm. Hold to try again." / row "Not confirmed — tap to check";
 "NOT recorded" is kept only for an explicit refusal.
 
