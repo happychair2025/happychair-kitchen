@@ -57,6 +57,10 @@ function sheetContract(name,{title,served,wait,instr,hold:holdLbl,back}){
  ok('walk wrote exactly the four milestones, to X only',window.__W__.slice(W0).map(v=>v.__target).every(id=>id===X)&&window.__W__.length-W0===4,window.__W__.length-W0);
 
  const L='copy0001-l';
+ // W2-K1 (lockout priority): an owed anaphylaxis record takes the screen from a lockout at a routine
+ // step, so the fixture's un-acknowledged Closure Test record would replace L at Prep. This section
+ // checks COPY at every stage of one lockout, so that record is acknowledged (elsewhere) first.
+ Object.assign(window.__ROWS.find(x=>x.id==='ba65384b-cccc'),{kitchen_ack_at:hrs(0.02),kitchen_ack_by:'Kitchen Display',status:'acknowledged'});
  window.__ROWS.push(Object.assign({},window.__ROWS.find(x=>x.id===X),{id:L,served_at:null,verified_at:null,protocol_confirmed_at:null,kitchen_ack_at:null,status:'pending',created_at:hrs(0.01)}));
  await reconcile(); await w(300);
  for(const [stage,sub] of [['ack','Confirm the kitchen has received this allergy.'],['prep','Clear and separate the prep area, utensils and surfaces.'],['done','Next: Second Check.']]){

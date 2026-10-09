@@ -14,6 +14,7 @@ wait
 # headless Chrome could stall before running the page at all.
 run safety-continuity 'inst=1&rows=none' safety-continuity
 run safety-continuity-2 'inst=1&rows=none' safety-continuity-2
+run lockout-priority 'inst=1&rows=none' lockout-priority
 run safety-continuity 'inst=1&rows=none&cold=1' safety-continuity.cold
 wait
 # Matrices, concatenated in the order the committed results record them.
@@ -30,7 +31,7 @@ for l in en es zh-CN; do for v in 1280x800 1180x820 1024x768 820x1180 390x844; d
 rm -rf "$T"
 echo "harness logs: $L"
 rc=0
-for f in kitchen-copy kitchen-i18n-cycle kitchen-i18n kitchen-layout kitchen-milestones record-sheet second-check-success sheet-coherence ux-pass kitchen-i18n-boot safety-continuity safety-continuity-2 safety-continuity.cold; do
+for f in kitchen-copy kitchen-i18n-cycle kitchen-i18n kitchen-layout kitchen-milestones record-sheet second-check-success sheet-coherence ux-pass kitchen-i18n-boot safety-continuity safety-continuity-2 safety-continuity.cold lockout-priority; do
   r=$(grep -E 'CHECKS PASS|pass, |TIMEOUT|stalled' "tests/$f.results.txt" | sort | uniq -c | tr -s ' ' | tr '\n' ';'); echo "$f: $r"
   if grep -qE '^FAIL|TIMEOUT|stalled|WATCHDOG' "tests/$f.results.txt"; then rc=1; fi
 done

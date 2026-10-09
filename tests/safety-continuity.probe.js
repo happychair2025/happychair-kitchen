@@ -137,17 +137,21 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await shot('b-lockout-1-of-2');
  await hold(lkBtn());persist(R2);
  ok('R2 acknowledged — R3 untouched',MW(R2).length===1&&MW(R3).length===0);
- ok('still on R2 (prep) with R3 waiting: "1 of 2"',lockoutId===R2&&lockoutStage==='prep'&&/^1 of 2\b/.test(lkQ()),lkQ());
+ // W2-K1 (Product Owner, Oct 9 2026): an un-acknowledged record takes priority over a lockout at a
+ // routine step. R2 is now at Prep, so R3 takes the screen; R2 waits at the FRONT of the routine queue.
+ ok('R3 (un-acknowledged) takes the screen from R2 at Prep; R2 waits: "1 of 2"',lockoutId===R3&&lockoutStage==='ack'&&/SECOND/.test(lkTxt())&&lockoutRoutine[0]===R2&&/^1 of 2\b/.test(lkQ()),lockoutId+' '+lkQ());
+ ok('R2 keeps its acknowledgement and is not written again',!!cards[R2].kitchen_ack_at&&MW(R2).length===1);
  const b1=alarms.length;await w(ALARM_REPEAT_MS+1200);
  ok('alarm continues: R3 is still unacknowledged',alarms.length>b1);
- await hold(lkBtn());persist(R2);
- document.querySelector('#lockoutContent .lockout-back').click();await w(200);
- ok('Back opens the NEXT lockout: R3',lkOn()&&lockoutId===R3&&lockoutStage==='ack'&&/SECOND/.test(lkTxt()));
- ok('no queue line for the last one',lkQ()==='');
  await shot('b-lockout-second');
  await hold(lkBtn());persist(R3);
  ok('R3 acknowledged individually, exactly once',MW(R3).filter(x=>'kitchen_ack_at' in x).length===1&&MW(R2).filter(x=>'kitchen_ack_at' in x).length===1);
+ ok('R3 confirmed in place (Prep); R2 still waiting',lockoutId===R3&&lockoutStage==='prep'&&/^1 of 2\b/.test(lkQ()),lkQ());
  await hold(lkBtn());persist(R3);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+ ok('Back returns R2 at its own step (Prep)',lkOn()&&lockoutId===R2&&lockoutStage==='prep'&&/FIRST/.test(lkTxt()));
+ ok('no queue line for the last one',lkQ()==='');
+ await hold(lkBtn());persist(R2);
+ document.querySelector('#lockoutContent .lockout-back').click();await w(200);
  ok('both handled, board clear of lockouts',!lkOn()&&lockoutQueue.length===0);
 
  // ── (d) ───────────────────────────────────────────────────────────────────────────────────
@@ -244,8 +248,14 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('slider volume untouched by the alarm',Math.abs(volume-0.3)<1e-9,volume);
  ok('"1 of 3"',/^1 of 3\b/.test(lkQ()),lkQ());
  setVolume(60);
- for(const id of ['h1000000-a','h2000000-b','h3000000-c']){await until(()=>lockoutId===id,1500);await hold(lkBtn());persist(id);await hold(lkBtn());persist(id);document.querySelector('#lockoutContent .lockout-back').click();await w(200)}
- ok('burst cleared one at a time',!lkOn()&&lockoutQueue.length===0);
+ // W2-K1: each acknowledgement puts that record at Prep, so the next un-acknowledged one takes the
+ // screen; the Prep steps follow once none is owed. Every record still handled one at a time.
+ const hIds=['h1000000-a','h2000000-b','h3000000-c'],hSeen=[];
+ for(let i=0;i<12&&lkOn();i++){const id=lockoutId;hSeen.push(id.slice(0,2)+':'+lockoutStage);
+   if(lockoutStage==='done'){document.querySelector('#lockoutContent .lockout-back').click();await w(200)}
+   else{await hold(lkBtn());persist(id)}}
+ ok('burst: all three acknowledged before any Prep step is shown',hSeen.slice(0,3).every(x=>/:ack$/.test(x))&&new Set(hSeen.slice(0,3)).size===3,hSeen.join(' '));
+ ok('burst cleared one at a time, each acknowledged once',!lkOn()&&lockoutQueue.length===0&&lockoutRoutine.length===0&&hIds.every(id=>MW(id).filter(x=>'kitchen_ack_at' in x).length===1&&MW(id).filter(x=>'protocol_confirmed_at' in x).length===1),hSeen.join(' '));
 
  // ── (c) prepare: reload with audio locked ─────────────────────────────────────────────────
  H('(c) RELOAD WITH AUDIO LOCKED');

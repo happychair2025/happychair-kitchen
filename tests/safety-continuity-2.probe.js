@@ -107,15 +107,17 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('lockout shows the honest count: "Also at this table: 1 other allergy record"',/Also at this table: 1 other allergy record\b/.test(lkTxt()),(document.getElementById('lkAlso')||{}).textContent);
  ok('no claim of correction or replacement',!/correct|replac|supersed|update/i.test((document.getElementById('lkAlso')||{}).textContent||''));
  ok('row carries the same count',/Also at this table: 1 other allergy record/.test(document.querySelector('[data-k="card:'+F2+'"]').innerText));
- ok('"1 of 2" — the second waits',/^1 of 2\b/.test(lkQ()),lkQ());
+ // W2-K1: F1 is at Prep now, so the un-acknowledged F2 takes the screen; F1 waits in the routine queue.
+ ok('"1 of 2" — the un-acknowledged second takes the screen, the first waits at Prep',lockoutId===F2&&lockoutStage==='ack'&&lockoutRoutine[0]===F1&&/^1 of 2\b/.test(lkQ()),lockoutId+' '+lkQ());
  await shot('f-two-records-one-table');
  const f1a=alarms.length;await w(ALARM_REPEAT_MS+1200);
  ok('alarm continues: the second is un-acknowledged',alarms.length>f1a);
- await hold(lkBtn());persist(F1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
- ok('Back → the second record\'s own lockout at Confirm Received',lockoutId===F2&&lockoutStage==='ack'&&/Peanut/.test(lkTxt())&&!/Sesame,/.test(lkTxt()));
+ ok('the second record\'s own lockout at Confirm Received',lockoutId===F2&&lockoutStage==='ack'&&/Peanut/.test(lkTxt())&&!/Sesame,/.test(lkTxt()));
  await hold(lkBtn());persist(F2);
  ok('second acknowledged separately, once',MW(F2).filter(x=>'kitchen_ack_at' in x).length===1&&MW(F1).filter(x=>'kitchen_ack_at' in x).length===1);
  await hold(lkBtn());persist(F2);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+ ok('Back → the first returns at its Prep step',lockoutId===F1&&lockoutStage==='prep'&&/Sesame/.test(lkTxt()));
+ await hold(lkBtn());persist(F1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
  H('(f) …supersession still replaces');
  const f3=fRow(F3,{allergens:['Peanut','Fish'],supersedes_id:F2});
  window.__ROWS.find(x=>x.id===F2).superseded_at=new Date().toISOString();window.__ROWS.push(f3);
@@ -160,8 +162,11 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  window.__PEND.shift()();await w(300);
  ok('the in-flight ack lands on its own record only',!!cards[O1].kitchen_ack_at&&!cards[O2].kitchen_ack_at&&JSON.stringify(cards[O1].allergens)==='["Sesame"]');
  ok('the new record is still owed: alarm pending, queued',alarmPending()&&(lockoutQueue.indexOf(O2)>=0||lockoutId===O2));
- persist(O1);await hold(lkBtn());persist(O1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
- await hold(lkBtn());persist(O2);await hold(lkBtn());persist(O2);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+ // W2-K1: once the in-flight ack has settled, O1 is at Prep and the owed O2 takes the screen.
+ ok('after the ack settled, the owed arrival takes the screen; the host waits at Prep',lockoutId===O2&&lockoutStage==='ack'&&lockoutRoutine[0]===O1);
+ persist(O1);await hold(lkBtn());persist(O2);await hold(lkBtn());persist(O2);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
+ ok('Back → the host returns at Prep',lockoutId===O1&&lockoutStage==='prep');
+ await hold(lkBtn());persist(O1);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
 
  // ── (p) generation guard: content changes / record superseded while a write is in flight ────────
  H('(p) A WRITE THAT RESOLVES AFTER THE RECORD CHANGED IS STALE');

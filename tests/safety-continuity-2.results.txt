@@ -13,10 +13,11 @@ PASS  the first is acknowledged; the second is not
 PASS  lockout shows the honest count: "Also at this table: 1 other allergy record"   → Also at this table: 1 other allergy record
 PASS  no claim of correction or replacement
 PASS  row carries the same count
-PASS  "1 of 2" — the second waits   → 1 of 2 — the next allergy opens after this one.
+PASS  "1 of 2" — the un-acknowledged second takes the screen, the first waits at Prep   → f2000000-second 1 of 2 — the next allergy opens after this one.
 PASS  alarm continues: the second is un-acknowledged
-PASS  Back → the second record's own lockout at Confirm Received
+PASS  the second record's own lockout at Confirm Received
 PASS  second acknowledged separately, once
+PASS  Back → the first returns at its Prep step
 
 ──── (f) …supersession still replaces ────
 PASS  the corrected record leaves the board
@@ -33,6 +34,8 @@ PASS  K · the unknown-state message is cleared by the read
 ──── (o) ANOTHER DECLARATION ARRIVES WHILE AN ACK WRITE IS IN FLIGHT ────
 PASS  the in-flight ack lands on its own record only
 PASS  the new record is still owed: alarm pending, queued
+PASS  after the ack settled, the owed arrival takes the screen; the host waits at Prep
+PASS  Back → the host returns at Prep
 
 ──── (p) A WRITE THAT RESOLVES AFTER THE RECORD CHANGED IS STALE ────
 PASS  at Prep
@@ -111,6 +114,6 @@ PASS  …and says so on the row: "Not confirmed with the server yet — nothing 
 PASS  A still hidden and never written
 PASS  C confirmed: live, owed, on the lockout
 
-ALL 78 CHECKS PASS
+ALL 81 CHECKS PASS
 
 network: no request left the local server

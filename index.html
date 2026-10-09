@@ -1633,7 +1633,13 @@ function refuseSuperseded(id){
   renderCards();
 }
 function writeIsStale(id,c,gen){return cards[id]!==c||(c._gen||0)!==gen||isSupersededRow(c)}
-async function settleStale(id,field){
+// _settling (UI-ephemeral, never cached): a lockout write's outcome is still being decided by this
+// board read, so the lockout policy treats the write as not yet settled. Cleared when the settle
+// ends, and the lockouts are re-synced then — a preemption that waited on it happens now.
+function settleEnd(c){if(c&&c._settling){delete c._settling;syncLockouts()}}
+async function settleStale(id,field){var c0=cards[id];try{return await settleStaleRead(id,field)}finally{settleEnd(c0)}}
+async function settleNoRow(id,field,errKey){var c0=cards[id];try{return await settleNoRowRead(id,field,errKey)}finally{settleEnd(c0)}}
+async function settleStaleRead(id,field){
   var okRead=await boardRead();
   var c=cards[id];renderCards();
   if(!c)return;                                   // left the board: syncLockouts moves on
@@ -1641,7 +1647,7 @@ async function settleStale(id,field){
   showNotice(id,'note.changed_while_saving');
   if(lockoutId===id)renderLockout(id,lockoutStageFor(c));
 }
-async function settleNoRow(id,field,errKey){
+async function settleNoRowRead(id,field,errKey){
   var okRead=await boardRead();
   var c=cards[id];if(!c)return;
   if(!okRead){showUnconfirmed(id,field);return}
@@ -1693,8 +1699,8 @@ async function doAck(id,origin){
   renderCards();
   var r=await writeDeclaration(id,{kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'},{col:'kitchen_ack_at'});
   delete c._writing;
-  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();await settleStale(id,'kitchen_ack_at');return}
-  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();await settleNoRow(id,'kitchen_ack_at','err.ack');return}
+  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;c._settling=1;renderCards();await settleStale(id,'kitchen_ack_at');return}
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;c._settling=1;renderCards();await settleNoRow(id,'kitchen_ack_at','err.ack');return}
   // Rejection clears the attempt and nothing needs reverting — no safety field was ever
   // mutated. Escalation (and the repeating alarm) continue with no manual intervention.
   if(r.error){console.error('[kitchen] acknowledge failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;
@@ -1730,8 +1736,8 @@ async function confirmProtocol(id,origin){
   renderCards();
   var r=await writeDeclaration(id,{protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by},{col:'protocol_confirmed_at'});
   delete c._writing;
-  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleStale(id,'protocol_confirmed_at');return}
-  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'protocol_confirmed_at','err.prep');return}
+  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleStale(id,'protocol_confirmed_at');return}
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleNoRow(id,'protocol_confirmed_at','err.prep');return}
   if(r.error){console.error('[kitchen] protocol confirm failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
     var k=writeFailed(id,'err.prep',r,'protocol_confirmed_at');
     if(lockoutId===id)renderLockout(id,'prep',k);return}
@@ -2227,22 +2233,69 @@ var lockoutQueue=[];
 function lockoutEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!c.kitchen_ack_at&&!isSupersededRow(c)}
 
 // ── QUEUE POLICY — the ONLY place lockout ordering is decided ─────────────────────────────
-// Current rule: arrival order, and the record on screen keeps the screen until the operator leaves
-// it (Back), even once it is past acknowledgement. That means an un-acknowledged arrival can wait
-// behind a lockout that is at its Prep step (head-of-line blocking). DECISION PENDING with the
-// Product Owner (W1-3 verifier item 3) — change it HERE and nowhere else:
-//   lockoutPreempts(newId)  → true to put a new arrival on screen at once (the displaced record is
-//                              requeued at the front by renderLockout, never dropped);
-//   lockoutNextId()         → which waiting record is shown next.
-function lockoutPreempts(newId){return false}
-function lockoutNextId(){lockoutWaiting();return lockoutQueue[0]||null}
+// Product Owner decision (W2-K1, Oct 9 2026): an UN-ACKNOWLEDGED anaphylaxis lockout takes priority
+// over a lockout that is at a ROUTINE step (Prep, or any stage after acknowledgement).
+//   · Un-acknowledged records wait in lockoutQueue and are shown oldest first (created_at).
+//   · A record displaced while at a routine step waits in lockoutRoutine — the ROUTINE queue — and
+//     goes back to its FRONT. It is shown again, at the stage its own record says it is at, once no
+//     un-acknowledged record is waiting. Nothing is dropped, rewritten or acknowledged by this:
+//     preemption changes only what is on screen.
+//   · A lockout at its ACK step is never preempted — not by a routine record, and not by another
+//     un-acknowledged one (switching between two owed acknowledgements gains nothing and pulls the
+//     record out from under the cook's eyes). Sole exception: within the very task that put it up,
+//     before anything is painted, so a same-moment burst still opens on its oldest record.
+//   · An in-flight write for the on-screen record is never interrupted: while it is outstanding
+//     (_writing) or its outcome is being settled by a board read (_settling), the arrival waits. It
+//     takes the screen once the write has settled — success, refusal or timeout.
+//   · A HOLD running on a routine step when it is preempted is cancelled: it has written nothing and
+//     writes nothing (renderLockout cancels the displaced record's hold).
+//   · The on-screen record acknowledged by ANOTHER display while a routine record waits: it has lost
+//     the priority it was shown for, so the waiting routine record returns (see syncLockouts).
+var lockoutRoutine=[];
+function lockoutRoutineEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!!c.kitchen_ack_at&&!isSupersededRow(c)}
+function lockoutRoutineWaiting(){
+  lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId&&lockoutQueue.indexOf(q)<0&&lockoutRoutineEligible(cards[q])});
+  return lockoutRoutine.length;
+}
+// The on-screen record is at a routine step: database-confirmed acknowledged AND drawn past the
+// ack step (a record acknowledged elsewhere is still at 'ack' until syncLockouts redraws it).
+function lockoutAtRoutine(){var c=lockoutId&&cards[lockoutId];return !!(c&&c.kitchen_ack_at&&lockoutStage&&lockoutStage!=='ack')}
+function lockoutBusy(){var c=lockoutId&&cards[lockoutId];return !!(c&&(c._writing||c._settling))}
+// A burst of owed arrivals in ONE task (several realtime events, one board read) is decided as a
+// whole: while the record on screen was put there in this same task — nothing has been painted, so
+// no cook has seen it — an OLDER owed arrival takes its place. After that task, an owed record on
+// screen at its ack step keeps the screen.
+var lockoutFreshId=null;
+function lockoutMarkFresh(){lockoutFreshId=lockoutId;setTimeout(function(){lockoutFreshId=null},0)}
+function lockoutPreempts(newId){
+  if(!lockoutId||!lockoutEligible(cards[newId])||lockoutBusy())return false;
+  if(lockoutAtRoutine())return true;
+  return lockoutFreshId===lockoutId&&!holdTimers[lockoutId]&&lockoutEligible(cards[lockoutId])&&lockoutOldest(newId,lockoutId)<0;
+}
+function lockoutOldest(a,b){var ta=new Date(cards[a].created_at).getTime(),tb=new Date(cards[b].created_at).getTime();
+  return ta!==tb?ta-tb:(a<b?-1:a>b?1:0)}
+function lockoutNextId(){
+  if(lockoutWaiting())return lockoutQueue.slice().sort(lockoutOldest)[0];
+  lockoutRoutineWaiting();return lockoutRoutine[0]||null;
+}
+// Applied after every board change (syncLockouts): a routine lockout that is free to yield yields to
+// the oldest waiting un-acknowledged record.
+function lockoutApplyPriority(){
+  if(!lockoutId||!lockoutAtRoutine()||lockoutBusy())return;
+  if(lockoutWaiting())renderLockout(lockoutNextId(),'ack');
+}
+// What a record returning from the routine queue shows besides its stage: only a still-current
+// failure of ITS lockout step, never an unrelated row message.
+function lockoutReturnErr(c){var e=c&&c._error;return e==='err.prep'||e==='err.timeout'||e==='err.unconfirmed'?e:null}
 
 // Idempotent. Returns true only for a declaration this screen was not already holding.
 function enqueueLockout(id){
   if(!lockoutEligible(cards[id]))return false;
   if(lockoutId===id||lockoutQueue.indexOf(id)>=0)return false;
-  if(lockoutId&&!lockoutPreempts(id))lockoutQueue.push(id);
-  else renderLockout(id,'ack');
+  lockoutQueue.push(id);
+  // Not preempting: it waits. Preempting (or nothing on screen): the OLDEST waiting
+  // un-acknowledged record takes the screen — which is this one unless an older one waits.
+  if(!lockoutId||lockoutPreempts(id)){renderLockout(lockoutNextId(),'ack');lockoutMarkFresh()}
   updateLockoutQueue();
   return true;
 }
@@ -2283,14 +2336,16 @@ function lockoutWaiting(){
 // "1 of N", in place — a text update never rebuilds the hold button under a finger.
 function updateLockoutQueue(){
   var el=document.getElementById('lkQueue');if(!el)return;
-  var n=lockoutId?1+lockoutWaiting():0;
+  var n=lockoutId?1+lockoutWaiting()+lockoutRoutineWaiting():0;
   el.hidden=n<2;el.textContent=n<2?'':tt('lock.queue',{n:n});
   var al=document.getElementById('lkAlso'),m=lockoutId?sameVisitOthers(cards[lockoutId]):0;
   if(al){al.hidden=!m;al.textContent=m?tt('card.also_here',{n:m}):''}
 }
 function advanceLockout(){
   var next=lockoutNextId();
-  if(next)renderLockout(next,'ack');   // renderLockout takes it out of the queue
+  // renderLockout takes it out of its queue. A record returning from the routine queue comes back
+  // at the stage its record is at now.
+  if(next)renderLockout(next,lockoutStageFor(cards[next]),cards[next].kitchen_ack_at?lockoutReturnErr(cards[next]):null);
 }
 // Run after every board change (end of renderCards). Keeps the screen consistent with the
 // records: a lockout whose record left the board closes and the next takes its place; any
@@ -2303,9 +2358,15 @@ function syncLockouts(){
   if(lockoutId&&!holdInProgress()){
     var c=cards[lockoutId];
     // Acknowledged on another display: the screen must not keep asking for a step that is done.
-    if(lockoutStage==='ack'&&c.kitchen_ack_at&&!lockoutWriting())renderLockout(lockoutId,'prep');
+    // If a routine record is waiting (it was displaced for this one) and no un-acknowledged record
+    // is, the waiting one returns; this record goes to the front of the routine queue at its Prep.
+    if(lockoutStage==='ack'&&c.kitchen_ack_at&&!lockoutWriting()){
+      if(!lockoutWaiting()&&lockoutRoutineWaiting()){var back=lockoutRoutine[0];renderLockout(back,lockoutStageFor(cards[back]),lockoutReturnErr(cards[back]))}
+      else renderLockout(lockoutId,'prep');
+    }
     else if(c._assetLabel!==lockoutLabel&&!lockoutWriting())renderLockout(lockoutId,lockoutStage,lockoutErr);
   }
+  lockoutApplyPriority();
   updateLockoutQueue();
 }
 function lockoutWriting(){return !!(lockoutId&&cards[lockoutId]&&cards[lockoutId]._writing)}
@@ -2378,9 +2439,18 @@ function renderLockout(id,stage,err){
     +'<div class="lk-lang">'+langSwitchHtml()+'</div>';
   // Drawing a different record over one still owed puts the displaced one back at the FRONT of
   // the queue — never drops it.
-  if(lockoutId&&lockoutId!==id&&lockoutEligible(cards[lockoutId])&&lockoutQueue.indexOf(lockoutId)<0)lockoutQueue.unshift(lockoutId);
+  // A record displaced at a routine step goes to the FRONT of the routine queue. Either way a hold
+  // still running on the displaced record is cancelled — its button is gone, and it must not
+  // complete (and write) against a record no longer on screen.
+  if(lockoutId&&lockoutId!==id){
+    if(holdTimers[lockoutId]){cancelAnimationFrame(holdTimers[lockoutId]);delete holdTimers[lockoutId]}
+    if(lockoutEligible(cards[lockoutId])){if(lockoutQueue.indexOf(lockoutId)<0)lockoutQueue.unshift(lockoutId)}
+    else if(lockoutRoutineEligible(cards[lockoutId])){
+      lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId});lockoutRoutine.unshift(lockoutId)}
+  }
   lockoutId=id;lockoutLabel=c._assetLabel;
   lockoutQueue=lockoutQueue.filter(function(q){return q!==id});
+  lockoutRoutine=lockoutRoutine.filter(function(q){return q!==id});
   lk.classList.add('on');
   updateLockoutQueue();
 }
