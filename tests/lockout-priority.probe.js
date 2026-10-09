@@ -3,7 +3,7 @@
 // Rule: an UN-ACKNOWLEDGED anaphylaxis lockout takes priority over a lockout at a ROUTINE step (Prep,
 // or any stage after acknowledgement). Un-acknowledged records are shown oldest first (created_at).
 // A routine lockout is never interrupted while its write is in flight or being settled; a HOLD running
-// on it is cancelled and writes nothing; it returns to the FRONT of the routine queue with its
+// on it is cancelled and writes nothing; it joins the routine queue (first displaced, first back) with its
 // identity, timestamps and acknowledgement untouched. Ack-stage lockouts are never preempted.
 // (1) simultaneous arrivals: 3 un-acknowledged (out of created_at order) + 1 at Prep.
 // (2) arrival during an in-flight Prep write — success, timeout, and a guarded no-row settle.
@@ -90,13 +90,15 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await toPrep(A);
  ok('A acknowledged here and at Prep',lockoutId===A&&lockoutStage==='prep'&&ACKW(A)===1);
  const idA=ident(A);let a0=alarms.length;
- // Three arrive in ONE moment, in an order that is NOT their created_at order.
- ins(rowObj(U1,{table_label:'T2',guest_name:'Newest',created_at:minsAgo(2)}));
- ins(rowObj(U2,{table_label:'T3',guest_name:'Oldest',created_at:minsAgo(9)}));
- ins(rowObj(U3,{table_label:'T4',guest_name:'Middle',created_at:minsAgo(5)}));
+ // Three arrive in ONE moment, in an order that is NOT their created_at order. Ages are seconds, inside
+ // the 30 s anaphylaxis ack window, so the separate (unchanged) escalation tick cannot add an alarm of
+ // its own to the count below.
+ ins(rowObj(U1,{table_label:'T2',guest_name:'Newest',created_at:minsAgo(0.05)}));
+ ins(rowObj(U2,{table_label:'T3',guest_name:'Oldest',created_at:minsAgo(0.15)}));
+ ins(rowObj(U3,{table_label:'T4',guest_name:'Middle',created_at:minsAgo(0.1)}));
  await w(200);
  ok('an un-acknowledged arrival takes the screen from Prep at once',lockoutStage==='ack'&&[U1,U2,U3].indexOf(lockoutId)>=0,lockoutId);
- ok('A waits at the FRONT of the routine queue',lockoutRoutine[0]===A);
+ ok('A waits in the routine queue (first displaced)',lockoutRoutine[0]===A);
  ok('A is unchanged — identity, timestamps, acknowledgement',ident(A)===idA&&MW(A).length===1);
  ok('all three owed records are held (on screen or queued) — none lost',[U1,U2,U3].every(id=>lockoutId===id||lockoutQueue.indexOf(id)>=0));
  ok('"1 of 4" — the routine record is counted, not hidden',/^1 of 4\b/.test(lkQ()),lkQ());
@@ -105,12 +107,12 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await shot('1-burst');
  // Expected: U2, U3, U1 acknowledged in created_at order (the same-moment burst opens on its OLDEST
  // even though U1 arrived first); each acknowledgement here puts that record at Prep, so the next
- // owed one takes over; then the Prep steps return, most recently displaced first, A last.
+ // owed one takes over; then the Prep steps return FIRST-displaced-first: A, then U2, then U3.
  const seen1=await clearAll();
  ok('the burst opened on its OLDEST record and owed records were shown oldest first',seen1.slice(0,3).join(' ')==='u20:ack u30:ack u10:ack',seen1.join(' '));
  ok('every owed record acknowledged before any Prep step returns',seen1.findIndex(s=>/:(prep|done)$/.test(s))===3,seen1.join(' '));
  ok('each acknowledged exactly once; A never acknowledged again',[U1,U2,U3].every(id=>ACKW(id)===1)&&ACKW(A)===1,[A,U1,U2,U3].map(ACKW).join());
- ok('A returned at its Prep step (last displaced → last back) and was confirmed once',seen1.slice(-2).join(' ')==='a10:prep a10:done'&&PREPW(A)===1,seen1.join(' '));
+ ok('routine steps return first-displaced-first: A, U2, U3 (FIFO)',seen1.slice(3).join(' ')==='u10:prep u10:done a10:prep a10:done u20:prep u20:done u30:prep u30:done'&&PREPW(A)===1,seen1.join(' '));
  ok('board clear of lockouts',!lkOn()&&lockoutQueue.length===0&&lockoutRoutine.length===0);
 
  // ── (2a) ────────────────────────────────────────────────────────────────────────────────────
@@ -130,7 +132,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  window.__PEND.shift()();await w(300);
  ok('B\'s write settled and was confirmed (chime) while B was on screen',acks.length===ack0+1&&acks[acks.length-1]===B&&!!cards[B].protocol_confirmed_at);
  ok('B drew its completed stage before yielding',window.__LKLOG.indexOf(B+'|done')>=0&&window.__LKLOG.lastIndexOf(B+'|done')<window.__LKLOG.lastIndexOf(V+'|ack'));
- ok('then the owed arrival takes the screen; B waits at the front of the routine queue',lockoutId===V&&lockoutStage==='ack'&&lockoutRoutine[0]===B);
+ ok('then the owed arrival takes the screen; B waits in the routine queue',lockoutId===V&&lockoutStage==='ack'&&lockoutRoutine[0]===B);
  ok('B written exactly once',PREPW(B)===1);
  persist(B);
  const seen2a=await clearAll();
@@ -181,7 +183,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('the Prep hold was cancelled',!holdTimers[E]);
  await w(HOLD_MS+400);mu(eb);await w(200);
  ok('…and wrote NOTHING — not to E, not to the arrival',(window.__W__||[]).length===nW&&PREPW(E)===0&&ACKW(Y)===0,(window.__W__||[]).slice(nW).map(x=>x.__target).join());
- ok('E unchanged and at the front of the routine queue',ident(E)===idE&&lockoutRoutine[0]===E);
+ ok('E unchanged and waiting in the routine queue',ident(E)===idE&&lockoutRoutine[0]===E);
  ok('the continued press did not start a hold on the arrival',!holdTimers[Y]&&!cards[Y].kitchen_ack_at);
  await shot('3-mid-hold-preempted');
  await hold(lkBtn());persist(Y);await hold(lkBtn());persist(Y);lkBack().click();await w(200);
@@ -220,18 +222,18 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ins(rowObj(P,{table_label:'T11',guest_name:'Prep Here',created_at:minsAgo(40)}));
  await toPrep(P);
  a0=alarms.length;
- window.__ROWS.push(rowObj(Q1,{table_label:'T12',guest_name:'Newer Owed',created_at:minsAgo(3)}),
-   rowObj(Q2,{table_label:'T13',guest_name:'Older Owed',created_at:minsAgo(12)}),
+ window.__ROWS.push(rowObj(Q1,{table_label:'T12',guest_name:'Newer Owed',created_at:minsAgo(0.03)}),
+   rowObj(Q2,{table_label:'T13',guest_name:'Older Owed',created_at:minsAgo(0.13)}),
    rowObj(Q3,{table_label:'T14',guest_name:'Acked Elsewhere',created_at:minsAgo(15),kitchen_ack_at:minsAgo(14),kitchen_ack_by:'Other Display',status:'acknowledged'}),
    rowObj(Q4,{table_label:'T15',guest_name:'Severe',severity:'severe',created_at:minsAgo(20)}));
  await until(()=>lockoutId!==P,RECONCILE_MS+2500);await w(200);
  ok('the OLDEST owed record takes the screen from Prep',lockoutId===Q2&&lockoutStage==='ack',lockoutId);
- ok('the newer owed record waits; P at the front of the routine queue',lockoutQueue.indexOf(Q1)>=0&&lockoutRoutine[0]===P);
+ ok('the newer owed record waits; P first in the routine queue',lockoutQueue.indexOf(Q1)>=0&&lockoutRoutine[0]===P);
  ok('records already acknowledged elsewhere, and non-anaphylaxis records, are never lockouts',lockoutQueue.indexOf(Q3)<0&&lockoutRoutine.indexOf(Q3)<0&&lockoutQueue.indexOf(Q4)<0&&lockoutId!==Q3);
  ok('nothing lost: every record on the board',[P,Q1,Q2,Q3,Q4].every(id=>!!document.querySelector('[data-k="card:'+id+'"]')));
  ok('one alarm for the read',alarms.length-a0===1,alarms.length-a0);
  const seen5=await clearAll();
- ok('owed first, oldest first; then the Prep steps, P last',seen5.join(' ')==='q20:ack q10:ack q10:prep q10:done q20:prep q20:done p10:prep p10:done',seen5.join(' '));
+ ok('owed first, oldest first; then the Prep steps first-displaced-first (P, then Q2)',seen5.join(' ')==='q20:ack q10:ack q10:prep q10:done p10:prep p10:done q20:prep q20:done',seen5.join(' '));
  ok('each written once; Q3 never written by this display',ACKW(Q1)===1&&ACKW(Q2)===1&&ACKW(P)===1&&MW(Q3).length===0);
 
  // ── (6) ─────────────────────────────────────────────────────────────────────────────────────

@@ -2237,7 +2237,7 @@ function lockoutEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOp
 // over a lockout that is at a ROUTINE step (Prep, or any stage after acknowledgement).
 //   · Un-acknowledged records wait in lockoutQueue and are shown oldest first (created_at).
 //   · A record displaced while at a routine step waits in lockoutRoutine — the ROUTINE queue — and
-//     goes back to its FRONT. It is shown again, at the stage its own record says it is at, once no
+//     joins the BACK of it — first displaced, first back (FIFO; integrator decision). It is shown again, at the stage its own record says it is at, once no
 //     un-acknowledged record is waiting. Nothing is dropped, rewritten or acknowledged by this:
 //     preemption changes only what is on screen.
 //   · A lockout at its ACK step is never preempted — not by a routine record, and not by another
@@ -2359,7 +2359,7 @@ function syncLockouts(){
     var c=cards[lockoutId];
     // Acknowledged on another display: the screen must not keep asking for a step that is done.
     // If a routine record is waiting (it was displaced for this one) and no un-acknowledged record
-    // is, the waiting one returns; this record goes to the front of the routine queue at its Prep.
+    // is, the waiting one returns; this record joins the back of the routine queue at its Prep.
     if(lockoutStage==='ack'&&c.kitchen_ack_at&&!lockoutWriting()){
       if(!lockoutWaiting()&&lockoutRoutineWaiting()){var back=lockoutRoutine[0];renderLockout(back,lockoutStageFor(cards[back]),lockoutReturnErr(cards[back]))}
       else renderLockout(lockoutId,'prep');
@@ -2439,14 +2439,15 @@ function renderLockout(id,stage,err){
     +'<div class="lk-lang">'+langSwitchHtml()+'</div>';
   // Drawing a different record over one still owed puts the displaced one back at the FRONT of
   // the queue — never drops it.
-  // A record displaced at a routine step goes to the FRONT of the routine queue. Either way a hold
+  // A record displaced at a routine step joins the BACK of the routine queue (first displaced, first
+  // back). Either way a hold
   // still running on the displaced record is cancelled — its button is gone, and it must not
   // complete (and write) against a record no longer on screen.
   if(lockoutId&&lockoutId!==id){
     if(holdTimers[lockoutId]){cancelAnimationFrame(holdTimers[lockoutId]);delete holdTimers[lockoutId]}
     if(lockoutEligible(cards[lockoutId])){if(lockoutQueue.indexOf(lockoutId)<0)lockoutQueue.unshift(lockoutId)}
     else if(lockoutRoutineEligible(cards[lockoutId])){
-      lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId});lockoutRoutine.unshift(lockoutId)}
+      lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId});lockoutRoutine.push(lockoutId)}
   }
   lockoutId=id;lockoutLabel=c._assetLabel;
   lockoutQueue=lockoutQueue.filter(function(q){return q!==id});

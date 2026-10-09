@@ -5,16 +5,16 @@ PASS  a real tap unlocks audio
 ──── (1) SIMULTANEOUS ARRIVALS: 3 UN-ACKNOWLEDGED + 1 AT PREP ────
 PASS  A acknowledged here and at Prep
 PASS  an un-acknowledged arrival takes the screen from Prep at once   → u2000000-oldest
-PASS  A waits at the FRONT of the routine queue
+PASS  A waits in the routine queue (first displaced)
 PASS  A is unchanged — identity, timestamps, acknowledgement
 PASS  all three owed records are held (on screen or queued) — none lost
 PASS  "1 of 4" — the routine record is counted, not hidden   → 1 of 4 — the next allergy opens after this one.
 PASS  ONE alarm for the burst (single-flight, unchanged)   → 1
 PASS  nothing acknowledged by the arrival or the preemption
-PASS  the burst opened on its OLDEST record and owed records were shown oldest first   → u20:ack u30:ack u10:ack u10:prep u10:done u30:prep u30:done u20:prep u20:done a10:prep a10:done
-PASS  every owed record acknowledged before any Prep step returns   → u20:ack u30:ack u10:ack u10:prep u10:done u30:prep u30:done u20:prep u20:done a10:prep a10:done
+PASS  the burst opened on its OLDEST record and owed records were shown oldest first   → u20:ack u30:ack u10:ack u10:prep u10:done a10:prep a10:done u20:prep u20:done u30:prep u30:done
+PASS  every owed record acknowledged before any Prep step returns   → u20:ack u30:ack u10:ack u10:prep u10:done a10:prep a10:done u20:prep u20:done u30:prep u30:done
 PASS  each acknowledged exactly once; A never acknowledged again   → 1,1,1,1
-PASS  A returned at its Prep step (last displaced → last back) and was confirmed once   → u20:ack u30:ack u10:ack u10:prep u10:done u30:prep u30:done u20:prep u20:done a10:prep a10:done
+PASS  routine steps return first-displaced-first: A, U2, U3 (FIFO)   → u20:ack u30:ack u10:ack u10:prep u10:done a10:prep a10:done u20:prep u20:done u30:prep u30:done
 PASS  board clear of lockouts
 
 ──── (2a) ARRIVAL DURING AN IN-FLIGHT PREP WRITE — it settles (success) first ────
@@ -24,14 +24,14 @@ PASS  the arrival is queued, owed and alarmed
 PASS  …still not interrupted 1.5 s later
 PASS  B's write settled and was confirmed (chime) while B was on screen
 PASS  B drew its completed stage before yielding
-PASS  then the owed arrival takes the screen; B waits at the front of the routine queue
+PASS  then the owed arrival takes the screen; B waits in the routine queue
 PASS  B written exactly once
 PASS  V acknowledged; B returns at its own stage (done) and is dismissed with Back   → v10:ack v10:prep v10:done b10:done
 PASS  no further writes to B
 
 ──── (2b) ARRIVAL DURING AN IN-FLIGHT PREP WRITE — it settles by timing out first ────
 PASS  C's hung write is not interrupted
-PASS  the arrival takes the screen only once the write timed out   → 11154ms
+PASS  the arrival takes the screen only once the write timed out   → 11152ms
 PASS  C reverted (Prep not recorded) and waits in the routine queue
 PASS  C returns at Prep and still says the outcome is unknown   → ALLERGY RECEIVED / No response — couldn't confirm. Hold to try again. / T7 · Terrace / HUNG P.
 PASS  C confirmed on retry; nothing else written
@@ -45,7 +45,7 @@ PASS  the settle flag never persists
 PASS  the arrival takes the screen at once (no write was in flight)
 PASS  the Prep hold was cancelled
 PASS  …and wrote NOTHING — not to E, not to the arrival
-PASS  E unchanged and at the front of the routine queue
+PASS  E unchanged and waiting in the routine queue
 PASS  the continued press did not start a hold on the arrival
 PASS  E returns at Prep with nothing recorded
 PASS  E's Prep recorded once, by its own completed hold
@@ -63,11 +63,11 @@ PASS  board clear
 
 ──── (5) RECONCILE WITH MIXED STATES (socket dead) ────
 PASS  the OLDEST owed record takes the screen from Prep   → q2000000-older
-PASS  the newer owed record waits; P at the front of the routine queue
+PASS  the newer owed record waits; P first in the routine queue
 PASS  records already acknowledged elsewhere, and non-anaphylaxis records, are never lockouts
 PASS  nothing lost: every record on the board
 PASS  one alarm for the read   → 1
-PASS  owed first, oldest first; then the Prep steps, P last   → q20:ack q10:ack q10:prep q10:done q20:prep q20:done p10:prep p10:done
+PASS  owed first, oldest first; then the Prep steps first-displaced-first (P, then Q2)   → q20:ack q10:ack q10:prep q10:done p10:prep p10:done q20:prep q20:done
 PASS  each written once; Q3 never written by this display
 
 ──── (6) ALARM BEHAVIOUR UNCHANGED ────

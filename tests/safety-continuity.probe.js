@@ -138,7 +138,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await hold(lkBtn());persist(R2);
  ok('R2 acknowledged — R3 untouched',MW(R2).length===1&&MW(R3).length===0);
  // W2-K1 (Product Owner, Oct 9 2026): an un-acknowledged record takes priority over a lockout at a
- // routine step. R2 is now at Prep, so R3 takes the screen; R2 waits at the FRONT of the routine queue.
+ // routine step. R2 is now at Prep, so R3 takes the screen; R2 waits in the routine queue.
  ok('R3 (un-acknowledged) takes the screen from R2 at Prep; R2 waits: "1 of 2"',lockoutId===R3&&lockoutStage==='ack'&&/SECOND/.test(lkTxt())&&lockoutRoutine[0]===R2&&/^1 of 2\b/.test(lkQ()),lockoutId+' '+lkQ());
  ok('R2 keeps its acknowledgement and is not written again',!!cards[R2].kitchen_ack_at&&MW(R2).length===1);
  const b1=alarms.length;await w(ALARM_REPEAT_MS+1200);
