@@ -22,6 +22,9 @@ PASS  the Prep write is in flight
 PASS  the arrival does NOT interrupt the in-flight write: B stays on screen at Prep
 PASS  the arrival is queued, owed and alarmed
 PASS  …still not interrupted 1.5 s later
+PASS  PAINTED: B's outcome ("Prep Area Cleared") is on screen after the write settles   → b1000000-prep-write:done
+PASS  …while the owed arrival keeps alarming and is counted ("1 of 2")   → 1 of 2 — the next allergy opens after this one.
+PASS  B keeps the screen for the dwell
 PASS  B's write settled and was confirmed (chime) while B was on screen
 PASS  B drew its completed stage before yielding
 PASS  then the owed arrival takes the screen; B waits in the routine queue
@@ -31,7 +34,7 @@ PASS  no further writes to B
 
 ──── (2b) ARRIVAL DURING AN IN-FLIGHT PREP WRITE — it settles by timing out first ────
 PASS  C's hung write is not interrupted
-PASS  the arrival takes the screen only once the write timed out   → 11152ms
+PASS  the arrival takes the screen only once the write timed out   → 12661ms
 PASS  C reverted (Prep not recorded) and waits in the routine queue
 PASS  C returns at Prep and still says the outcome is unknown   → ALLERGY RECEIVED / No response — couldn't confirm. Hold to try again. / T7 · Terrace / HUNG P.
 PASS  C confirmed on retry; nothing else written
@@ -40,6 +43,15 @@ PASS  C confirmed on retry; nothing else written
 PASS  while the follow-up read was settling the write, D kept the screen   → d1000000-prep-norow
 PASS  D settled honestly ("already recorded"), then the owed arrival took the screen
 PASS  the settle flag never persists
+
+──── (2d) A PREP WRITE REFUSED while an owed record waits — the refusal is painted and kept ────
+PASS  the arrival waits while the write is in flight
+PASS  PAINTED: the refusal ("NOT recorded") is on the lockout for the cook who held   → r2000000-refused:prep
+PASS  refusal: nothing recorded, no confirmation chime
+PASS  after the dwell the owed arrival takes the screen
+PASS  the row message has expired by now (8 s)
+PASS  PAINTED: R returns at Prep STILL saying the step was NOT recorded   → r2000000-refused:prep ALLERGY RECEIVED / Prep NOT recorded — try again / T19 · Terrace
+PASS  a successful retry replaces the refusal with "Prep Area Cleared"
 
 ──── (3) ARRIVAL MID-HOLD AT PREP — the hold is cancelled, nothing is written ────
 PASS  the arrival takes the screen at once (no write was in flight)
@@ -88,6 +100,6 @@ PASS  "1 of 2"   → 1 of 2 — the next allergy opens after this one.
 PASS  acknowledged records keep their recorded state
 PASS  the reload wrote no milestone   → 0
 
-ALL 65 CHECKS PASS
+ALL 75 CHECKS PASS
 
 network: no request left the local server

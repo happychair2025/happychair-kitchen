@@ -136,6 +136,9 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('label comes from the board read (P5 · Terrace)',/P5 · Terrace/.test(lkTxt()));
  await shot('b-lockout-1-of-2');
  await hold(lkBtn());persist(R2);
+ // W2-K1: R2's outcome stays painted for LOCKOUT_DWELL_MS before a waiting owed record takes over.
+ ok('R2 confirmed in place first (outcome dwell): R2 at Prep',lockoutId===R2&&lockoutStage==='prep');
+ await w(LOCKOUT_DWELL_MS+150);
  ok('R2 acknowledged — R3 untouched',MW(R2).length===1&&MW(R3).length===0);
  // W2-K1 (Product Owner, Oct 9 2026): an un-acknowledged record takes priority over a lockout at a
  // routine step. R2 is now at Prep, so R3 takes the screen; R2 waits in the routine queue.
@@ -253,7 +256,7 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  const hIds=['h1000000-a','h2000000-b','h3000000-c'],hSeen=[];
  for(let i=0;i<12&&lkOn();i++){const id=lockoutId;hSeen.push(id.slice(0,2)+':'+lockoutStage);
    if(lockoutStage==='done'){document.querySelector('#lockoutContent .lockout-back').click();await w(200)}
-   else{await hold(lkBtn());persist(id)}}
+   else{await hold(lkBtn());persist(id);await w(LOCKOUT_DWELL_MS+150)}}
  ok('burst: all three acknowledged before any Prep step is shown',hSeen.slice(0,3).every(x=>/:ack$/.test(x))&&new Set(hSeen.slice(0,3)).size===3,hSeen.join(' '));
  ok('burst cleared one at a time, each acknowledged once',!lkOn()&&lockoutQueue.length===0&&lockoutRoutine.length===0&&hIds.every(id=>MW(id).filter(x=>'kitchen_ack_at' in x).length===1&&MW(id).filter(x=>'protocol_confirmed_at' in x).length===1),hSeen.join(' '));
 

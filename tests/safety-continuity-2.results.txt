@@ -7,7 +7,7 @@ PASS  first record on the lockout
 PASS  two cards, not one
 PASS  the first card is unchanged by the second   → ["Sesame"]
 PASS  second record has its own lockout, queued
-PASS  alarm sounded for the second record   → 2
+PASS  alarm sounded for the second record   → 1
 PASS  the hold on the first completed on the first — its content never changed
 PASS  the first is acknowledged; the second is not
 PASS  lockout shows the honest count: "Also at this table: 1 other allergy record"   → Also at this table: 1 other allergy record

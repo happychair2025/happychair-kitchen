@@ -10,6 +10,7 @@
 // (3) arrival mid-hold at Prep: the hold is cancelled, nothing is written.
 // (4) foreign acknowledgement of the preempting record → the preempted one returns.
 // (5) reconcile (socket dead) with mixed states → correct ordering, nothing lost.
+// (2d) a Prep refusal while an owed record waits: painted (two animation frames), kept until it returns.
 // (6) alarm behaviour unchanged throughout (sounds on owed arrivals, never on preemption / return /
 //     acknowledgement, repeats while anything is owed, stops when nothing is).
 // (7) reload with mixed states → oldest owed record first, nothing lost.
@@ -32,6 +33,11 @@ const MW=id=>(window.__W__||[]).filter(x=>x.__target===id);
 const ACKW=id=>MW(id).filter(x=>'kitchen_ack_at' in x).length, PREPW=id=>MW(id).filter(x=>'protocol_confirmed_at' in x).length;
 const md=b=>b.dispatchEvent(new MouseEvent('mousedown',{bubbles:true})), mu=b=>b.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
 async function hold(b,ms){md(b);await w(ms||1350);mu(b);await w(200)}
+// After a lockout write settles its outcome stays on screen for LOCKOUT_DWELL_MS before a waiting
+// owed record may take over; DWELL() waits that out.
+const DWELL=()=>w(LOCKOUT_DWELL_MS+150);
+// What is actually PAINTED: two animation frames after the change, read the DOM.
+const painted=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r({id:lockoutId,stage:lockoutStage,text:lkTxt()}))));
 function rowObj(id,o){return Object.assign({id:id,asset_id:'a-'+id,table_label:'P5',zone_name:'Terrace',guest_name:'Probe Guest',
   allergens:['Sesame'],severity:'anaphylaxis',cross_contact:false,notes:null,status:'pending',created_at:minsAgo(1),
   kitchen_ack_at:null,kitchen_ack_by:null,protocol_confirmed_at:null,protocol_confirmed_by:null,verified_at:null,
@@ -51,11 +57,11 @@ const _ca=chimeAnaphylaxis;chimeAnaphylaxis=function(){alarms.push(Date.now());r
 const acks=[];
 const _ck=chimeAck;chimeAck=function(){acks.push(lockoutId);return _ck.apply(this,arguments)};
 // Bring the given record to Prep on the lockout (acknowledged here, written once).
-async function toPrep(id){await until(()=>lockoutId===id,RECONCILE_MS+2000);await hold(lkBtn());persist(id)}
+async function toPrep(id){await until(()=>lockoutId===id,RECONCILE_MS+2000);await hold(lkBtn());persist(id);await DWELL()}
 // Clear whatever is on the lockout, step by step, recording what was shown.
 async function clearAll(){const seen=[];
   for(let i=0;i<30&&lkOn();i++){const id=lockoutId;seen.push(id.slice(0,3)+':'+lockoutStage);
-    if(lockoutStage==='done'){lkBack().click();await w(200)}else{await hold(lkBtn());persist(id)}}
+    if(lockoutStage==='done'){lkBack().click();await w(200)}else{await hold(lkBtn());persist(id);await DWELL()}}
   return seen}
 async function done(){
   T.push('');T.push(st.fail===0?('ALL '+st.pass+' CHECKS PASS'):(st.pass+' pass, '+st.fail+' FAIL'));
@@ -129,7 +135,13 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  await w(1500);
  ok('…still not interrupted 1.5 s later',lockoutId===B&&cards[B]._writing===true);
  const ack0=acks.length;
- window.__PEND.shift()();await w(300);
+ window.__PEND.shift()();
+ const pB=await painted();
+ ok('PAINTED: B\'s outcome ("Prep Area Cleared") is on screen after the write settles',pB.id===B&&pB.stage==='done'&&/PREP AREA CLEARED/i.test(pB.text),pB.id+':'+pB.stage);
+ ok('…while the owed arrival keeps alarming and is counted ("1 of 2")',alarmPending()&&/^1 of 2\b/.test(lkQ()),lkQ());
+ await w(LOCKOUT_DWELL_MS-500);
+ ok('B keeps the screen for the dwell',lockoutId===B&&lockoutStage==='done');
+ await w(800);
  ok('B\'s write settled and was confirmed (chime) while B was on screen',acks.length===ack0+1&&acks[acks.length-1]===B&&!!cards[B].protocol_confirmed_at);
  ok('B drew its completed stage before yielding',window.__LKLOG.indexOf(B+'|done')>=0&&window.__LKLOG.lastIndexOf(B+'|done')<window.__LKLOG.lastIndexOf(V+'|ack'));
  ok('then the owed arrival takes the screen; B waits in the routine queue',lockoutId===V&&lockoutStage==='ack'&&lockoutRoutine[0]===B);
@@ -165,11 +177,37 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  window.__ROWS.find(r=>r.id===D).protocol_confirmed_at=minsAgo(0.2);
  const _br=boardRead;const during=[];
  boardRead=async function(){ins(rowObj(X,{table_label:'T10',guest_name:'Arrives Mid-Settle'}));await w(600);during.push(lockoutId);return _br.apply(this,arguments)};
- await hold(lkBtn());await w(1200);boardRead=_br;
+ await hold(lkBtn());await w(1200+LOCKOUT_DWELL_MS);boardRead=_br;
  ok('while the follow-up read was settling the write, D kept the screen',during.length===1&&during[0]===D,during.join());
  ok('D settled honestly ("already recorded"), then the owed arrival took the screen',lockoutId===X&&lockoutStage==='ack'&&!!cards[D].protocol_confirmed_at&&cards[D]._notice==='note.already_recorded'&&lockoutRoutine[0]===D);
  ok('the settle flag never persists',!cards[D]._settling);
  await clearAll();
+
+ // ── (2d) ────────────────────────────────────────────────────────────────────────────────────
+ H('(2d) A PREP WRITE REFUSED while an owed record waits — the refusal is painted and kept');
+ {const R='r2000000-refused',V2='v2000000-arrival';
+  ins(rowObj(R,{table_label:'T19',guest_name:'Refused Prep',created_at:minsAgo(20)}));
+  await toPrep(R);
+  const _wd=writeDeclaration;let gate;const g=new Promise(r=>gate=r);
+  writeDeclaration=async function(id,p,gd){if(id===R&&'protocol_confirmed_at' in p){window.__W__.push(Object.assign({__target:id},p));await g;return {data:null,error:{message:'refused'}}}return _wd.apply(this,arguments)};
+  const ack0=acks.length;await hold(lkBtn());
+  ins(rowObj(V2,{table_label:'T20',guest_name:'Arrives Mid-Refusal'}));await w(200);
+  ok('the arrival waits while the write is in flight',lockoutId===R&&lockoutQueue.indexOf(V2)>=0);
+  gate();await w(0);
+  const pR=await painted();writeDeclaration=_wd;
+  ok('PAINTED: the refusal ("NOT recorded") is on the lockout for the cook who held',pR.id===R&&pR.stage==='prep'&&/NOT recorded/i.test(pR.text),pR.id+':'+pR.stage);
+  ok('refusal: nothing recorded, no confirmation chime',!cards[R].protocol_confirmed_at&&acks.length===ack0);
+  await DWELL();
+  ok('after the dwell the owed arrival takes the screen',lockoutId===V2&&lockoutStage==='ack');
+  await w(8500);
+  ok('the row message has expired by now (8 s)',!cards[R]._error,cards[R]._error);
+  await hold(lkBtn());persist(V2);await hold(lkBtn());persist(V2);lkBack().click();
+  const pR2=await painted();
+  ok('PAINTED: R returns at Prep STILL saying the step was NOT recorded',pR2.id===R&&pR2.stage==='prep'&&/NOT recorded/i.test(pR2.text),pR2.id+':'+pR2.stage+' '+pR2.text.split('\n').slice(0,3).join(' / '));
+  await hold(lkBtn());persist(R);
+  const pR3=await painted();
+  ok('a successful retry replaces the refusal with "Prep Area Cleared"',pR3.id===R&&pR3.stage==='done'&&/PREP AREA CLEARED/i.test(pR3.text)&&!/NOT recorded/i.test(pR3.text));
+  lkBack().click();await w(200);}
 
  // ── (3) ─────────────────────────────────────────────────────────────────────────────────────
  H('(3) ARRIVAL MID-HOLD AT PREP — the hold is cancelled, nothing is written');

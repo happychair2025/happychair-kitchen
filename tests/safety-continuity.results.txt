@@ -6,7 +6,7 @@ PASS  prompt taken down only once audio runs
 PASS  board empty, nothing pending
 
 ──── (a) SOCKET DEAD — FOUND BY THE BOARD READ ONLY ────
-PASS  lockout within one reconcile cycle   → 4800ms (cycle 5000ms)
+PASS  lockout within one reconcile cycle   → 4749ms (cycle 5000ms)
 PASS  no realtime event was delivered
 PASS  lockout shows the record: T3 · Main Hall, allergens, ANAPHYLAXIS
 PASS  alarm sounded on arrival   → 1 alarm(s)
@@ -14,7 +14,7 @@ PASS  exactly one delivery write   → 1
 PASS  ...delivered_to_kitchen_at + device_id, guarded IS NULL
 PASS  ...bounded (abort signal attached)
 PASS  no milestone was written by ingest
-PASS  alarm repeats while unacknowledged   → 2 repeat(s) in 16200ms
+PASS  alarm repeats while unacknowledged   → 1 repeat(s) in 16200ms
 PASS  still exactly one delivery write after further board reads   → 1
 PASS  refused ack: lockout still asks for Confirm Received, error shown
 PASS  alarm continues after a refused ack (not merely dismissed)   → 1
@@ -31,6 +31,7 @@ PASS  alarm sounded
 PASS  one delivery write each
 PASS  the anonymous client was never used for a label
 PASS  label comes from the board read (P5 · Terrace)
+PASS  R2 confirmed in place first (outcome dwell): R2 at Prep
 PASS  R2 acknowledged — R3 untouched
 PASS  R3 (un-acknowledged) takes the screen from R2 at Prep; R2 waits: "1 of 2"   → b3000000-anaph-second 1 of 2 — the next allergy opens after this one.
 PASS  R2 keeps its acknowledgement and is not written again
@@ -43,7 +44,7 @@ PASS  both handled, board clear of lockouts
 
 ──── (d) A WRITE THAT HANGS ────
 PASS  write in flight: guarded
-PASS  bounded: released after the timeout   → 11155ms
+PASS  bounded: released after the timeout   → 11158ms
 PASS  state reverted (no ack, no pending ack)
 PASS  row says the outcome is unknown: "Not confirmed — tap to check"   → Not confirmed — tap to check
 PASS  the hold is available again on the row
@@ -68,7 +69,7 @@ PASS  one delivery write each for R4..R7
 PASS  ack write is guarded IS NULL
 PASS  timed out: lockout still asks for Confirm Received
 PASS  the retry was guarded and matched nothing
-PASS  recorded time NOT rewritten (board read shows the committed one)   → 2026-10-09T14:53:55.797Z vs 2026-10-09T14:53:55.797Z
+PASS  recorded time NOT rewritten (board read shows the committed one)   → 2026-10-09T15:37:53.721Z vs 2026-10-09T15:37:53.721Z
 PASS  "Already recorded — this hold changed nothing." on the lockout
 PASS  lockout shows the recorded state (Prep), no confirmation chime claimed
 
@@ -102,6 +103,6 @@ PASS  delivery written once for the new record
 PASS  the lockout is there, unchanged
 PASS  no anonymous client use anywhere in the run
 
-ALL 84 CHECKS PASS
+ALL 85 CHECKS PASS
 
 network: no request left the local server

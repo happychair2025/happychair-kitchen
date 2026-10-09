@@ -1636,7 +1636,7 @@ function writeIsStale(id,c,gen){return cards[id]!==c||(c._gen||0)!==gen||isSuper
 // _settling (UI-ephemeral, never cached): a lockout write's outcome is still being decided by this
 // board read, so the lockout policy treats the write as not yet settled. Cleared when the settle
 // ends, and the lockouts are re-synced then — a preemption that waited on it happens now.
-function settleEnd(c){if(c&&c._settling){delete c._settling;syncLockouts()}}
+function settleEnd(c){if(c&&c._settling){delete c._settling;if(cards[c.id]===c)lockoutDwell(c.id);syncLockouts()}}
 async function settleStale(id,field){var c0=cards[id];try{return await settleStaleRead(id,field)}finally{settleEnd(c0)}}
 async function settleNoRow(id,field,errKey){var c0=cards[id];try{return await settleNoRowRead(id,field,errKey)}finally{settleEnd(c0)}}
 async function settleStaleRead(id,field){
@@ -1698,7 +1698,7 @@ async function doAck(id,origin){
   if(origin==='sheet'&&recordOpenId===id)recordFlow={id:id,a:'ack',phase:'saving'};
   renderCards();
   var r=await writeDeclaration(id,{kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'},{col:'kitchen_ack_at'});
-  delete c._writing;
+  delete c._writing;lockoutDwell(id);
   if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;c._settling=1;renderCards();await settleStale(id,'kitchen_ack_at');return}
   if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;c._settling=1;renderCards();await settleNoRow(id,'kitchen_ack_at','err.ack');return}
   // Rejection clears the attempt and nothing needs reverting — no safety field was ever
@@ -1735,7 +1735,7 @@ async function confirmProtocol(id,origin){
   c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
   renderCards();
   var r=await writeDeclaration(id,{protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by},{col:'protocol_confirmed_at'});
-  delete c._writing;
+  delete c._writing;lockoutDwell(id);
   if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleStale(id,'protocol_confirmed_at');return}
   if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleNoRow(id,'protocol_confirmed_at','err.prep');return}
   if(r.error){console.error('[kitchen] protocol confirm failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
@@ -2260,7 +2260,17 @@ function lockoutRoutineWaiting(){
 // The on-screen record is at a routine step: database-confirmed acknowledged AND drawn past the
 // ack step (a record acknowledged elsewhere is still at 'ack' until syncLockouts redraws it).
 function lockoutAtRoutine(){var c=lockoutId&&cards[lockoutId];return !!(c&&c.kitchen_ack_at&&lockoutStage&&lockoutStage!=='ack')}
-function lockoutBusy(){var c=lockoutId&&cards[lockoutId];return !!(c&&(c._writing||c._settling))}
+function lockoutBusy(){var c=lockoutId&&cards[lockoutId];return !!(c&&(c._writing||c._settling||(c._dwellUntil&&Date.now()<c._dwellUntil)))}
+// OUTCOME DWELL. When a write for the record ON the lockout settles — success, refusal, timeout, or
+// the end of a settling board read — its outcome is drawn in place ("Prep Area Cleared", "NOT
+// recorded", "No response"). A waiting owed record must not replace it in the same task, before it
+// is ever painted (§11: the cook who held must see what happened). So the record keeps the screen for
+// LOCKOUT_DWELL_MS; the waiting record is still alarming and counted in "1 of N" meanwhile, and takes
+// the screen when the dwell ends. _dwellUntil is UI-ephemeral (never cached).
+var LOCKOUT_DWELL_MS=1500;
+function lockoutDwell(id){var c=cards[id];if(!c||lockoutId!==id)return;
+  c._dwellUntil=Date.now()+LOCKOUT_DWELL_MS;
+  setTimeout(function(){if(cards[id]===c&&c._dwellUntil&&Date.now()>=c._dwellUntil){delete c._dwellUntil;syncLockouts()}},LOCKOUT_DWELL_MS+20)}
 // A burst of owed arrivals in ONE task (several realtime events, one board read) is decided as a
 // whole: while the record on screen was put there in this same task — nothing has been painted, so
 // no cook has seen it — an OLDER owed arrival takes its place. After that task, an owed record on
@@ -2286,7 +2296,12 @@ function lockoutApplyPriority(){
 }
 // What a record returning from the routine queue shows besides its stage: only a still-current
 // failure of ITS lockout step, never an unrelated row message.
-function lockoutReturnErr(c){var e=c&&c._error;return e==='err.prep'||e==='err.timeout'||e==='err.unconfirmed'?e:null}
+// A refusal shown on the lockout when the record was displaced is KEPT with the record
+// (_lockoutErr — the row message expires after 8 s), so it returns still saying the step was NOT
+// recorded — but only while the record is still at that step.
+function lockoutReturnErr(c){if(!c)return null;
+  if(c._lockoutErr&&c._lockoutErr.stage===lockoutStageFor(c))return c._lockoutErr.err;
+  var e=c._error;return e==='err.prep'||e==='err.timeout'||e==='err.unconfirmed'?e:null}
 
 // Idempotent. Returns true only for a declaration this screen was not already holding.
 function enqueueLockout(id){
@@ -2400,6 +2415,9 @@ function alarmTick(){
 }
 
 function renderLockout(id,stage,err){
+  // What the displaced record (if any) was showing, and its hold button — read BEFORE the content
+  // below is replaced.
+  var prevStage=lockoutStage,prevErr=lockoutErr,prevBtn=document.querySelector('#lockoutContent .hold-btn');
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
   if(!c)return;
   var allergens=(c.allergens||[]).join(', '),gn=guestLabel(c);
@@ -2444,14 +2462,19 @@ function renderLockout(id,stage,err){
   // still running on the displaced record is cancelled — its button is gone, and it must not
   // complete (and write) against a record no longer on screen.
   if(lockoutId&&lockoutId!==id){
-    if(holdTimers[lockoutId]){cancelAnimationFrame(holdTimers[lockoutId]);delete holdTimers[lockoutId]}
+    // Only the LOCKOUT button's hold: holdTimers is keyed by record, and a hold elsewhere (a board
+    // row) is not this screen's to cancel. endHold also resets the button and its fill.
+    if(holdTimers[lockoutId]&&prevBtn&&prevBtn.classList.contains('holding'))endHold(lockoutId,prevBtn);
     if(lockoutEligible(cards[lockoutId])){if(lockoutQueue.indexOf(lockoutId)<0)lockoutQueue.unshift(lockoutId)}
     else if(lockoutRoutineEligible(cards[lockoutId])){
+      var dc=cards[lockoutId],de=prevErr||lockoutReturnErr(dc);
+      if(de)dc._lockoutErr={err:de,stage:prevStage};else delete dc._lockoutErr;
       lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId});lockoutRoutine.push(lockoutId)}
   }
   lockoutId=id;lockoutLabel=c._assetLabel;
   lockoutQueue=lockoutQueue.filter(function(q){return q!==id});
   lockoutRoutine=lockoutRoutine.filter(function(q){return q!==id});
+  delete c._lockoutErr;
   lk.classList.add('on');
   updateLockoutQueue();
 }
@@ -2494,7 +2517,7 @@ function checkEscalations(){
   // — that predicate includes _ackPending and would restore the false-safety defect.
   Object.keys(cards).forEach(function(id){var c=cards[id];if(c.kitchen_ack_at||c.closed_at||c.served_at||c._fromCache)return;
     var elapsed=Date.now()-new Date(c.created_at).getTime();var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
-    if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity))soundAlarm();else chimeStandard()}   // anaphylaxis through the single-flight alarm
+    if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity)){if(Date.now()-lastAlarmAt>=1500)soundAlarm()}else chimeStandard()}   // anaphylaxis through the single-flight alarm; an alarm that has just sounded (an arrival in the same moment, e.g. a reconnect read) is not doubled
   });
 }
 

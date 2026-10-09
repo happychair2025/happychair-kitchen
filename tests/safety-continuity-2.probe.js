@@ -107,7 +107,9 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  ok('lockout shows the honest count: "Also at this table: 1 other allergy record"',/Also at this table: 1 other allergy record\b/.test(lkTxt()),(document.getElementById('lkAlso')||{}).textContent);
  ok('no claim of correction or replacement',!/correct|replac|supersed|update/i.test((document.getElementById('lkAlso')||{}).textContent||''));
  ok('row carries the same count',/Also at this table: 1 other allergy record/.test(document.querySelector('[data-k="card:'+F2+'"]').innerText));
- // W2-K1: F1 is at Prep now, so the un-acknowledged F2 takes the screen; F1 waits in the routine queue.
+ // W2-K1: F1 is at Prep now, so — after F1's outcome has been on screen for the dwell — the
+ // un-acknowledged F2 takes the screen; F1 waits in the routine queue.
+ await w(LOCKOUT_DWELL_MS+150);
  ok('"1 of 2" — the un-acknowledged second takes the screen, the first waits at Prep',lockoutId===F2&&lockoutStage==='ack'&&lockoutRoutine[0]===F1&&/^1 of 2\b/.test(lkQ()),lockoutId+' '+lkQ());
  await shot('f-two-records-one-table');
  const f1a=alarms.length;await w(ALARM_REPEAT_MS+1200);
@@ -162,7 +164,9 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  window.__PEND.shift()();await w(300);
  ok('the in-flight ack lands on its own record only',!!cards[O1].kitchen_ack_at&&!cards[O2].kitchen_ack_at&&JSON.stringify(cards[O1].allergens)==='["Sesame"]');
  ok('the new record is still owed: alarm pending, queued',alarmPending()&&(lockoutQueue.indexOf(O2)>=0||lockoutId===O2));
- // W2-K1: once the in-flight ack has settled, O1 is at Prep and the owed O2 takes the screen.
+ // W2-K1: once the in-flight ack has settled (and its outcome dwell has passed), O1 is at Prep and
+ // the owed O2 takes the screen.
+ await w(LOCKOUT_DWELL_MS+150);
  ok('after the ack settled, the owed arrival takes the screen; the host waits at Prep',lockoutId===O2&&lockoutStage==='ack'&&lockoutRoutine[0]===O1);
  persist(O1);await hold(lkBtn());persist(O2);await hold(lkBtn());persist(O2);document.querySelector('#lockoutContent .lockout-back').click();await w(200);
  ok('Back → the host returns at Prep',lockoutId===O1&&lockoutStage==='prep');
