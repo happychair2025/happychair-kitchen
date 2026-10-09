@@ -68,7 +68,7 @@ const srv=http.createServer(async(q,s)=>{
     // retries never collide.
     const dbg=20000+((port+attempt*7)%20000);
     ud=fs.mkdtempSync(path.join(os.tmpdir(),'hc-kitchen-'));
-    ch=spawn(CHROME,['--headless=new','--disable-gpu','--hide-scrollbars','--no-first-run','--user-data-dir='+ud,
+    ch=spawn(CHROME,['--headless=new','--mute-audio','--disable-gpu','--hide-scrollbars','--no-first-run','--user-data-dir='+ud,
       '--autoplay-policy=user-gesture-required','--remote-debugging-port='+dbg,'--window-size=1280,900','about:blank'],{stdio:'ignore'});
     let t;for(let i=0;i<75&&!t;i++){await new Promise(r=>setTimeout(r,200));try{t=(await (await fetch('http://127.0.0.1:'+dbg+'/json')).json()).find(x=>x.type==='page')}catch(e){}}
     if(!t)throw new Error('chrome did not start');
