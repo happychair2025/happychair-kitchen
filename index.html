@@ -65,9 +65,9 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 /* Kitchen had NO focus styling of any kind. That was tolerable while every control was a
    div; it stopped being tolerable when the hold buttons became real keyboard-operable
    <button>s — a safety control you can focus but cannot see focused. One rule, all of them. */
-.hold-btn:focus,.r-act:focus,.hdr-btn:focus,.vfy-x:focus,.vd-st:focus,.earlier-tg:focus{outline:none}
+.hold-btn:focus,.r-act:focus,.hdr-btn:focus,.vfy-x:focus,.vd-st:focus,.row-retry:focus{outline:none}
 .hold-btn:focus-visible,.r-act:focus-visible,.hdr-btn:focus-visible,.vfy-x:focus-visible,
-.vd-st:focus-visible,.earlier-tg:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.vd-st:focus-visible,.row-retry:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 .vd-st{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;padding:6px 10px;
   border-radius:7px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);cursor:pointer;
   min-height:32px;white-space:nowrap}
@@ -109,20 +109,19 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .row .r-act--srv{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
 /* Same table, more than one open submission. A statement of fact, not a merge. */
 .r-el{font-size:12px;color:var(--t3);font-variant-numeric:tabular-nums;margin-left:auto;padding-right:4px}
-/* EARLIER — present, preserved, and quiet. Carried-over open work lives here: amber, never
-   red, never pulsing — unresolved, but not this service's urgency. */
-.earlier-l{opacity:.8}
-.sec-sev{font-size:12px;font-weight:800;letter-spacing:.06em;padding:2px 8px;border-radius:5px;margin-left:8px;border:1px solid}
-.sec-sev.r{color:var(--danger);border-color:rgba(239,68,68,.5)}
-.sec-sev.a{color:var(--warn);border-color:rgba(245,158,11,.5)}
+/* FROM EARLIER SERVICE — open work a closed service did not complete. Fully actionable and
+   never collapsed (C4): it is neutral-labelled, not dimmed, because dimming reads as "done". */
+.carried-note{font-size:13px;color:var(--t2);margin:-4px 0 10px 2px}
+/* Carried over: amber, never red, never pulsing — unresolved, but not this service's urgency. */
 .row.carried{border-color:rgba(245,158,11,.35)}
 .r-carried{flex:0 0 100%;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--warn)}
 .r-carried-note{margin-left:auto;font-size:14px;font-weight:600;color:var(--t2);padding:0 6px}
 .vfy-carried{font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--warn);margin:6px 0 2px}
-.earlier-tg{background:none;border:1px solid var(--b2);color:var(--t2);font:inherit;font-size:12px;
-  padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
-.earlier-note{font-size:13px;color:var(--t3);margin:-4px 0 10px 2px}
-.earlier-wrap{opacity:.62}
+/* A write that did not land, stated ON the row. The whole strip opens the record, where the
+   hold is — retrying a safety milestone is still a hold, never a tap. */
+.row-retry{display:block;width:100%;margin:-4px 0 8px;padding:8px 12px;border-radius:0 0 8px 8px;cursor:pointer;
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger);
+  font:inherit;font-size:14px;font-weight:700;text-align:center;min-height:44px}
 .row{display:flex;align-items:center;flex-wrap:wrap;gap:10px 12px;padding:14px 16px;background:var(--s1);border-radius:10px 10px 0 0;cursor:pointer;position:relative;border:1px solid transparent;border-bottom:none}
 .row.closed{border-radius:10px;border-bottom:1px solid transparent;margin-bottom:6px}
 .row.pulse-r{animation:rp 1.2s ease infinite}
@@ -198,11 +197,23 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .empty svg{margin-bottom:20px}
 .empty-text{font-size:24px;font-weight:600;color:var(--t2)}
 .audio-prompt{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
-.audio-prompt-btn{padding:24px 48px;background:var(--s1);border:2px solid var(--warn);border-radius:16px;font-size:22px;font-weight:700;color:var(--warn);cursor:pointer;font-family:inherit}
+.audio-prompt-btn{padding:24px 48px;min-height:44px;background:var(--s1);border:2px solid var(--warn);border-radius:16px;font-size:22px;font-weight:700;color:var(--warn);cursor:pointer;font-family:inherit}
 .lockout{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);padding:64px 40px 40px;overflow-y:auto}
 @media (max-width:600px){.lockout{padding:64px 16px 40px}}
 .lockout.on{display:flex;flex-direction:column}
 .lockout .lockout-card{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center}
+/* "1 of N": how many anaphylaxis alerts are waiting behind this one. Neutral — a count, not a
+   severity — and updated in place so it never rebuilds the hold under a finger. */
+.lk-queue{font-size:18px;font-weight:700;color:var(--t1);border:1px solid var(--b2);background:var(--s2);
+  border-radius:8px;padding:6px 14px;margin-bottom:14px;text-align:center}
+.row-note{margin:-4px 0 8px;padding:8px 12px;border-radius:0 0 8px 8px;background:var(--s2);border:1px solid var(--b2);
+  color:var(--t1);font-size:14px;font-weight:600;text-align:center}
+.lk-also{font-size:16px;font-weight:600;color:var(--t2);margin-bottom:12px;text-align:center}
+.r-also{font-size:12px;font-weight:600;color:var(--t2);white-space:nowrap}
+.vfy-also{font-size:14px;font-weight:600;color:var(--t2);margin:2px 0 4px}
+.lk-note,.vfy-note{max-width:500px;width:100%;margin-bottom:14px;padding:10px 14px;border-radius:8px;text-align:center;
+  font-size:17px;font-weight:700;color:var(--t1);border:1px solid var(--b2);background:var(--s2)}
+.vfy-note{max-width:none;font-size:14px;margin:8px 0}
 .lockout-title{font-size:32px;font-weight:800;color:var(--danger);margin-bottom:12px;text-align:center}
 .lockout-sub{font-size:20px;color:var(--t2);margin-bottom:32px;text-align:center}
 body.dimmed .main{opacity:.3;transition:opacity 1s}
@@ -269,7 +280,7 @@ body.dimmed .summary{opacity:.3}
 </head>
 <body>
 <div id="app">
-<div class="audio-prompt" id="audioPrompt" onclick="activateAudio()"><div class="audio-prompt-btn" data-i18n="app.activate">Tap to Activate · HC Kitchen</div></div>
+<div class="audio-prompt" id="audioPrompt" onclick="activateAudio()"><div class="audio-prompt-btn" data-i18n="app.activate">Tap to enable allergy alarms</div></div>
 <div class="hdr">
 <div class="hdr-logo" id="venueLogo">H</div>
 <div class="hdr-venue" id="venueName" data-i18n="brand">HC Kitchen</div>
@@ -311,7 +322,7 @@ var ACK_TIMEOUT=90000,ACK_TIMEOUT_ANAPH=30000;
 // Ceiling for a READ. Reads have no side effect, so a timeout here is always safe to
 // treat as a plain failure. 10s is "slow venue AP but working" territory; past it the
 // board is silently wrong and a resync is the recovery, not a longer wait.
-// WRITES ARE DELIBERATELY NOT BOUNDED — see boundRead().
+// Writes are bounded separately (WRITE_TIMEOUT_MS, boundWrite) with revert-and-retry semantics.
 var READ_TIMEOUT_MS=10000;
 // Reconciliation. The board must not depend on a realtime channel-drop event to discover
 // missed declarations: a socket can stay "connected" and silently stop delivering. Polled
@@ -320,10 +331,6 @@ var READ_TIMEOUT_MS=10000;
 // because its request hangs — nothing else would ever mark the board degraded.
 var RECONCILE_MS=5000,STALE_AFTER_MS=15000;
 var reconcileInFlight=false,lastReconcileOk=0,reconcileTimer=null;
-// Continuation rows merged into another card by the realtime INSERT branch. That branch
-// mutates cards[host] and never creates cards[d.id], so without this registry a
-// reconciliation read would return the merged row and render it AGAIN as its own card.
-var mergedInto={};
 var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Sour cream','Buttermilk'],milk:['Whole milk','Skim milk','Cream','Butter','Cheese','Whey','Casein','Lactose','Ghee','Yogurt','Ice cream'],eggs:['Whole eggs','Egg whites','Egg yolks','Mayonnaise','Meringue','Albumin','Lysozyme','Aioli'],peanuts:['Peanut oil','Peanut butter','Peanut flour','Ground nuts','Mixed nuts','Satay','Arachis oil'],'tree nuts':['Almonds','Cashews','Walnuts','Pecans','Pistachios','Macadamia','Hazelnuts','Brazil nuts','Pine nuts','Marzipan','Praline','Nougat'],fish:['Cod','Salmon','Tuna','Bass','Anchovy','Sardine','Fish sauce','Worcestershire','Caesar dressing','Fish stock','Surimi'],shellfish:['Shrimp','Crab','Lobster','Crawfish','Mussels','Clams','Oysters','Scallops','Squid','Calamari'],wheat:['Flour','Bread','Pasta','Breadcrumbs','Couscous','Semolina','Durum','Spelt','Farro','Seitan','Soy sauce','Roux'],soy:['Soy sauce','Tofu','Tempeh','Edamame','Miso','Soy lecithin','Soybean oil','Soy protein','Tamari'],sesame:['Sesame oil','Sesame seeds','Tahini','Hummus','Halva','Sesame paste','Gomashio'],gluten:['Wheat flour','Barley','Rye','Bread','Pasta','Beer','Soy sauce','Breadcrumbs','Couscous','Malt','Seitan'],mustard:['Yellow mustard','Dijon','Whole grain mustard','Mustard powder','Mustard seed','Mustard oil'],celery:['Celery stalks','Celery salt','Celery seed','Celeriac','Celery powder','Soup stock'],lupin:['Lupin flour','Lupin seeds','Lupin beans','Some breads','Some pastries'],mollusks:['Clams','Mussels','Oysters','Scallops','Snails','Squid','Octopus','Calamari'],'sulfur dioxide':['Wine','Dried fruit','Pickled foods','Vinegar','Some juices','Molasses']};
 // .trim() is PREVENTATIVE, not a fix for observed data — no live row carries whitespace
 // in `allergens`. It defends against a confirmed WRITE-side defect in tableside, where
@@ -338,10 +345,45 @@ var ALLERGEN_DEFS={dairy:['Milk','Butter','Cream','Cheese','Whey','Casein','Lact
 // belongs in the curated reference table where it can be reviewed, not in a lookup.
 function getAllergenDef(n){return ALLERGEN_DEFS[(n||'').trim().toLowerCase()]||null}
 
-function activateAudio(){ctx=new(window.AudioContext||window.webkitAudioContext)();ctx.resume();audioReady=true;document.getElementById('audioPrompt').style.display='none';playChime(440,.1)}
-function playChime(f,d,v){if(!audioReady||!ctx)return;var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime((v||.3)*volume,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.start();o.stop(ctx.currentTime+d)}
+// AUDIO IS A SAFETY DEPENDENCY, NOT A PREFERENCE. A browser will not play sound until a person
+// has touched the page, so a board that reloads (crash, update, tablet wake) comes back SILENT —
+// lockouts would appear with no alarm at all. The prompt is therefore up from first paint, above
+// everything including the lockout, and it is only taken down once the AudioContext reports
+// 'running'. A tap that does not actually unlock audio (no user activation, a refused resume)
+// leaves it up. audioReady used to be set unconditionally on the tap, which claimed an alarm
+// path the browser had not granted.
+//
+// If the context later stops running (iOS interruption, a suspended tab) the prompt comes back
+// on the next tick rather than letting the board look live while it cannot sound.
+var audioPrimed=false;
+function audioStateCheck(){
+  var ok=!!ctx&&ctx.state==='running';
+  audioReady=ok;
+  var el=document.getElementById('audioPrompt');if(el)el.style.display=ok?'none':'';
+  if(ok&&!audioPrimed){audioPrimed=true;playChime(440,.1)}
+  return ok;
+}
+function activateAudio(){
+  var p=null;
+  try{
+    if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();ctx.onstatechange=audioStateCheck}
+    p=ctx.resume();
+  }catch(e){console.error('[kitchen] audio unlock failed:',e)}
+  Promise.resolve(p).then(audioStateCheck,audioStateCheck);
+}
+// vol overrides the slider for this tone only (the anaphylaxis alarm plays at full volume and
+// ignores mute); at schedules it on the AudioContext clock. Returns the oscillator so a caller can
+// stop it. The global `volume` is never mutated by a chime.
+function playChime(f,d,v,vol,at){if(!audioReady||!ctx)return null;var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;var s0=at||ctx.currentTime;g.gain.setValueAtTime((v||.3)*(vol==null?volume:vol),s0);g.gain.exponentialRampToValueAtTime(.001,s0+d);o.start(s0);o.stop(s0+d);return o}
 function chimeStandard(){if(muted)return;playChime(440,.3,.25);setTimeout(function(){playChime(554,.3,.2)},50)}
-function chimeAnaphylaxis(){var sv=volume;volume=1;playChime(880,.15,.4);setTimeout(function(){playChime(880,.15,.4)},250);setTimeout(function(){playChime(880,.15,.4);volume=sv},500)}
+// SINGLE-FLIGHT. Three beeps scheduled on the audio clock at full volume. A new alarm stops the
+// one still sounding before it starts, so alarms never stack, and the slider volume is never
+// touched — the previous version set volume=1 and restored it from a value captured while an
+// overlapping alarm had already set it to 1, leaving every later chime at full volume.
+var anaphNodes=[];
+function chimeAnaphylaxis(){if(!audioReady||!ctx)return;
+  anaphNodes.forEach(function(o){try{o.stop()}catch(e){}});anaphNodes=[];
+  var t=ctx.currentTime;[0,.25,.5].forEach(function(dt){var o=playChime(880,.15,.4,1,t+dt);if(o)anaphNodes.push(o)})}
 function chimeAck(){playChime(1200,.05,.15)}
 function setVolume(v){volume=v/100;if(volume===0)muted=true;else muted=false;updateVolIcon()}
 function toggleMute(){muted=!muted;if(!muted){volume=0.6;document.getElementById('volSlider').value=60}else{document.getElementById('volSlider').value=0}updateVolIcon()}
@@ -354,7 +396,16 @@ function toggleContrast(){document.body.classList.toggle('hc-mode');document.get
 // sheet carries it while open. This used to also force the inline panel open so the message
 // could be seen; there is no inline panel now.
 // message is a catalog KEY (err.*), rendered with th() so it follows a language change.
-function showRowError(id,message){var c=cards[id];if(!c)return;c._error=message;renderCards();renderRecord();setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;renderCards();renderRecord()}},8000)}
+//
+// opts.persist — a TIMED-OUT write keeps its message until it is resolved: a later successful
+// write clears it, and so does a board read showing the milestone did land after all
+// (opts.field names that milestone; see afterIngest). An 8-second toast is not enough for a write
+// whose outcome this display never learned.
+function showRowError(id,message,opts){var c=cards[id];if(!c)return;c._error=message;
+  if(opts&&opts.field)c._errField=opts.field;else delete c._errField;
+  renderCards();renderRecord();
+  if(opts&&opts.persist)return;
+  setTimeout(function(){if(cards[id]&&cards[id]._error===message){delete cards[id]._error;delete cards[id]._errField;renderCards();renderRecord()}},8000)}
 
 // Under 24h this stays h:mm:ss and keeps ticking every second. At/over 24h it rolls to
 // admin's day-scale form ("3d 23h", src/utils/formatTime.ts formatElapsed, added in
@@ -403,29 +454,9 @@ function owedStep(c){
 }
 function fmtTime(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString(LOCALE_TAG[locale],{hour:'2-digit',minute:'2-digit'})}
 function isAnaph(sev){return(sev||'').toLowerCase()==='anaphylaxis'}
-// Ascending risk order. SEV_RANK is derived from SEV_ORDER so the list and the
-// ranking cannot drift apart — the same shape tableside uses (happychair-tableside
-// a720b36), so the writer and this reader agree on what "higher risk" means. The two
-// are separate repos with no shared package; matching the shape is the only
-// guarantee available.
-var SEV_ORDER=['unsure','discomfort','severe','anaphylaxis'];
-var SEV_RANK=SEV_ORDER.reduce(function(a,v,i){a[v]=i;return a},{});
-// Higher of two severities, never a downgrade. The two unrecognised cases are
-// DELIBERATELY asymmetric. This reads like an inconsistency to a fast reader and is
-// not one — do not collapse them into a single branch:
-//  - unrecognised INCOMING is skipped, never ranked lowest. Ranking an unknown as
-//    lowest is a silent claim that we know it to be safe, and we do not. Skipping
-//    can only ever preserve what is already on the card.
-//  - unrecognised CURRENT yields to a known value, because a known severity is
-//    strictly better signal for isAnaph / sevCol / checkEscalations downstream.
-// Both directions resolve toward the value we can actually reason about.
-function maxSeverity(cur,inc){
-  var ri=SEV_RANK[(inc||'').toLowerCase()];
-  if(ri===undefined)return cur;
-  var rc=SEV_RANK[(cur||'').toLowerCase()];
-  if(rc===undefined)return inc;
-  return ri>rc?inc:cur;
-}
+// (SEV_ORDER / SEV_RANK / maxSeverity lived here. They existed only to merge a continuation
+// declaration's severity into an existing card. Client-side merging is gone — every declaration
+// is its own card — so they were removed rather than left dormant.)
 // Escape EVERY value interpolated into innerHTML. This file builds every surface by
 // string concatenation, and `allergens` / `notes` are guest-controlled free text that
 // arrives through an UNAUTHENTICATED insert — anyone holding the publishable key can
@@ -471,7 +502,7 @@ function esc(v){
 var I18N={
  en:{
   'brand':'HC Kitchen',
-  'app.activate':'Tap to Activate · HC Kitchen',
+  'app.activate':'Tap to enable allergy alarms',
   'hdr.kitchen':'{venue} · Kitchen',
   'hdr.contrast':'Contrast',
   'lang.label':'Display language',
@@ -485,10 +516,8 @@ var I18N={
   'board.needs':'Needs You',
   'board.working':'In Progress',
   'board.done':'Done This Service',
-  'board.earlier':'Earlier',
-  'board.show':'Show',
-  'board.hide':'Hide',
-  'board.earlier_note':'Still open from an earlier service. Not part of the service running now. A manager closes these out in the Shift Record.',
+  'board.carried':'From Earlier Service',
+  'board.carried_note':'Still open from an earlier service. Closing that service did not complete it. A manager closes these out in the Shift Record.',
   'row.carried':'EARLIER SERVICE',
   'row.carried_note':'Manager closes out',
   'title.carried':'Earlier service — still open',
@@ -510,6 +539,7 @@ var I18N={
   'row.second_check':'Second Check →',
   'row.second_check_aria':'Open the second check',
   'row.mark_served':'Mark Served',
+  'row.not_saved':'Not saved — tap to retry',
   'sev.anaphylaxis':'ANAPHYLAXIS',
   'sev.severe':'SEVERE',
   'sev.discomfort':'DISCOMFORT',
@@ -554,6 +584,7 @@ var I18N={
   'nav.back':'Back to Kitchen Board',
   'nav.close':'Close',
   'lock.next':'Next: Second Check.',
+  'lock.queue':'1 of {n} — the next allergy opens after this one.',
   'misc.table':'Table',
   'misc.guest':'Guest',
   'err.not_paired':'Display not paired — pair it in Set Up.',
@@ -562,6 +593,15 @@ var I18N={
   'err.verify':'Second Check NOT recorded — try again',
   'err.serve':'Served NOT recorded — try again',
   'err.minimize':'Hidden locally, but couldn\'t sync — try again',
+  'err.timeout':'No response — couldn\'t confirm. Hold to try again.',
+  'note.already_recorded':'Already recorded — this hold changed nothing.',
+  'note.checking':'Not confirmed with the server yet — nothing was recorded. This step can be recorded once the board reconnects; the record stays open.',
+  'note.superseded':'The record you were holding was replaced by this newer one — nothing was recorded.',
+  'card.also_here.one':'Also at this table: {n} other allergy record',
+  'card.also_here.other':'Also at this table: {n} other allergy records',
+  'row.unconfirmed':'Not confirmed — tap to check',
+  'err.unconfirmed':'Couldn\'t confirm — check the record.',
+  'note.changed_while_saving':'This record changed while saving — showing what is recorded.',
   'pair.title':'Pair this display',
   'pair.body':'In Happy Chair, open {path} and tap {action}, then enter the 6-digit code it shows.',
   'pair.button':'Pair Display',
@@ -575,7 +615,7 @@ var I18N={
  },
  es:{
   'brand':'HC Kitchen',
-  'app.activate':'Toca para activar · HC Kitchen',
+  'app.activate':'Toca para activar las alarmas de alergias',
   'hdr.kitchen':'{venue} · Cocina',
   'hdr.contrast':'Contraste',
   'lang.label':'Idioma de la pantalla',
@@ -589,10 +629,8 @@ var I18N={
   'board.needs':'Requiere acción',
   'board.working':'En curso',
   'board.done':'Terminadas en este servicio',
-  'board.earlier':'Anteriores',
-  'board.show':'Mostrar',
-  'board.hide':'Ocultar',
-  'board.earlier_note':'Siguen abiertas desde un servicio anterior. No forman parte del servicio en curso. Un gerente las cierra en el Shift Record.',
+  'board.carried':'De un servicio anterior',
+  'board.carried_note':'Sigue abierta desde un servicio anterior. Cerrar ese servicio no la completó. Un gerente las cierra en el Shift Record.',
   'row.carried':'SERVICIO ANTERIOR',
   'row.carried_note':'La cierra un gerente',
   'title.carried':'Servicio anterior — sigue abierta',
@@ -614,6 +652,7 @@ var I18N={
   'row.second_check':'Segunda revisión →',
   'row.second_check_aria':'Abrir la segunda revisión',
   'row.mark_served':'Marcar como servida',
+  'row.not_saved':'No se guardó — toca para reintentar',
   'sev.anaphylaxis':'ANAFILAXIA',
   'sev.severe':'GRAVE',
   'sev.discomfort':'MALESTAR',
@@ -658,6 +697,7 @@ var I18N={
   'nav.back':'Volver a la pantalla de cocina',
   'nav.close':'Cerrar',
   'lock.next':'Siguiente: segunda revisión.',
+  'lock.queue':'1 de {n} — la siguiente alergia se abre después de esta.',
   'misc.table':'Mesa',
   'misc.guest':'Huésped',
   'err.not_paired':'Pantalla sin vincular — vincúlala en Set Up.',
@@ -666,6 +706,15 @@ var I18N={
   'err.verify':'Segunda revisión NO registrada — inténtalo de nuevo',
   'err.serve':'Servida NO registrada — inténtalo de nuevo',
   'err.minimize':'Oculta en esta pantalla, pero no se sincronizó — inténtalo de nuevo',
+  'err.timeout':'Sin respuesta — no se pudo confirmar. Mantén presionado para intentarlo de nuevo.',
+  'note.already_recorded':'Ya estaba registrado — esta acción no cambió nada.',
+  'note.checking':'Aún no confirmado con el servidor — no se registró nada. Este paso se podrá registrar cuando el tablero se reconecte; el registro sigue abierto.',
+  'note.superseded':'El registro que mantenías presionado fue sustituido por este más reciente — no se registró nada.',
+  'card.also_here.one':'También en esta mesa: {n} registro de alergia más',
+  'card.also_here.other':'También en esta mesa: {n} registros de alergia más',
+  'row.unconfirmed':'Sin confirmar — toca para revisar',
+  'err.unconfirmed':'No se pudo confirmar — revisa el registro.',
+  'note.changed_while_saving':'Este registro cambió mientras se guardaba — se muestra lo registrado.',
   'pair.title':'Vincular esta pantalla',
   'pair.body':'En Happy Chair, abre {path} y toca {action}; luego escribe el código de 6 dígitos que aparece.',
   'pair.button':'Vincular pantalla',
@@ -679,7 +728,7 @@ var I18N={
  },
  'zh-CN':{
   'brand':'HC Kitchen',
-  'app.activate':'点按以启用 · HC Kitchen',
+  'app.activate':'点按以启用过敏警报',
   'hdr.kitchen':'{venue} · 厨房',
   'hdr.contrast':'对比度',
   'lang.label':'显示语言',
@@ -693,10 +742,8 @@ var I18N={
   'board.needs':'需要处理',
   'board.working':'进行中',
   'board.done':'本餐段已完成',
-  'board.earlier':'更早的记录',
-  'board.show':'显示',
-  'board.hide':'隐藏',
-  'board.earlier_note':'来自之前餐段，仍未结案。不属于当前餐段。由经理在 Shift Record 中结案。',
+  'board.carried':'之前餐段遗留',
+  'board.carried_note':'之前餐段遗留，仍未完成。关闭该餐段并不会完成它。由经理在 Shift Record 中结案。',
   'row.carried':'之前的餐段',
   'row.carried_note':'由经理结案',
   'title.carried':'之前的餐段 — 仍未结案',
@@ -718,6 +765,7 @@ var I18N={
   'row.second_check':'二次检查 →',
   'row.second_check_aria':'打开二次检查',
   'row.mark_served':'标记已出餐',
+  'row.not_saved':'未保存 — 点按重试',
   'sev.anaphylaxis':'过敏性休克',
   'sev.severe':'严重',
   'sev.discomfort':'不适',
@@ -762,6 +810,7 @@ var I18N={
   'nav.back':'返回厨房看板',
   'nav.close':'关闭',
   'lock.next':'下一步：二次检查。',
+  'lock.queue':'第 1 条，共 {n} 条 — 完成此条后显示下一条。',
   'misc.table':'餐桌',
   'misc.guest':'顾客',
   'err.not_paired':'显示屏未配对 — 请在 Set Up 中配对。',
@@ -770,6 +819,15 @@ var I18N={
   'err.verify':'未记录二次检查 — 请重试',
   'err.serve':'未记录出餐 — 请重试',
   'err.minimize':'已在此屏隐藏，但未同步 — 请重试',
+  'err.timeout':'无响应 — 无法确认。请长按重试。',
+  'note.already_recorded':'已有记录 — 此次长按未作任何更改。',
+  'note.checking':'尚未与服务器核对 — 未记录任何内容。看板重新连接后才能记录此步骤；该记录仍保持未完成。',
+  'note.superseded':'你长按的记录已被这条更新的记录取代 — 未作任何记录。',
+  'card.also_here.one':'此桌另有 {n} 条过敏记录',
+  'card.also_here.other':'此桌另有 {n} 条过敏记录',
+  'row.unconfirmed':'未确认 — 点按查看',
+  'err.unconfirmed':'无法确认 — 请查看记录。',
+  'note.changed_while_saving':'保存期间此记录已变更 — 显示已记录的内容。',
   'pair.title':'配对此显示屏',
   'pair.body':'在 Happy Chair 中打开 {path}，点按 {action}，然后输入显示的 6 位数字代码。',
   'pair.button':'配对显示屏',
@@ -935,10 +993,6 @@ async function loadDeviceLocale(){
 
 var CK='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
-// The restaurant is practising. The card is real and was written through the real path —
-// there is simply nobody sitting at that table. A cook must be able to tell those apart
-// before they read a severity, so this is the first thing on the card.
-var earlierOpen=false;
 
 
 // refreshRehearsalIds() and refreshCurrentIds() lived here. Both asked the server about a
@@ -949,82 +1003,34 @@ var earlierOpen=false;
 // Pure functions only (no DOM, no network, no globals). tests/carried-over.test.mjs extracts
 // this block by its BEGIN/END markers and runs it in node — keep it self-contained.
 //
-// kitchen_board() returns current-service rows (carried_over=false) and, from migration
-// 20261012100000 on, OPEN rows from a service that is no longer current (carried_over=true).
-// An older kitchen_board() has no carried_over column: every row is then current, which is
-// exactly today's behaviour. The flag is read as `=== true` so absent / null / false all mean
-// current — never the other way round.
+// Every row the board holds came from kitchen_board(), which applied membership server-side
+// before returning it. A row is either current-service work, or OPEN work an EARLIER service
+// left unresolved — flagged carried_over=true by the server (C4: a service closing never hides
+// unresolved safety work; admin migration 20261012100000). There is deliberately no age test
+// anywhere. A board read from a server that predates carried_over never sets it, and every row
+// reads as current — exactly the behaviour before this change. The flag is read as === true.
 //
-// A carried-over record is unresolved and must stay visible (C4), but it is NOT this
-// service's work: no alarm, no lockout, no chime, no escalation, no Kitchen milestone. The
-// board cannot write it anyway (the venue-device UPDATE policy is current-service only), and
-// a late stamp would be evidence nobody produced at the time. A manager closes it out in the
-// Shift Record.
+// PRODUCT OWNER DECISION (PR #5, binding): a carried-over record is VISIBLE — its own labelled
+// band — but NOT ACTIONABLE and NEVER ALARMING on this board. No lockout (neither queue: the
+// un-acknowledged lockoutQueue nor the routine/displaced lockoutRoutine), no anaphylaxis alarm,
+// no repeating alarm, no escalation chime, no standard chime, no Kitchen milestone, no delivery
+// write. A manager closes it out in the Shift Record (allergyshield_close_record). The venue
+// device cannot write it anyway (the UPDATE policy is current-service only), and a late stamp
+// would be evidence nobody produced at the time.
 function isCarriedOver(c){ return !!(c&&c.carried_over===true) }
-
-// Every row the board holds came from kitchen_board(), which applied membership server-side.
-// There is deliberately no age test anywhere: a record is current because its SERVICE is, and
-// a record from an ended service says so itself.
 function inCurrentService(c){ return !!c&&!isCarriedOver(c) }
 
-// Still outstanding — nothing has completed it. Read from the row's own stamps so it stays
-// correct between reconciles and immediately after an optimistic local write.
-function isOpenWork(c){
-  return !!c&&!c.superseded_at&&!c.served_at&&!c.closed_at;
-}
-
-// UI predicate — confirmed OR attempt-in-progress (see the ack-contract comment further down).
-// Safety code must read kitchen_ack_at directly and must NOT use isAcked().
-function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
-
-// THE GATE for every alarm path: escalation chime, anaphylaxis chime, lockout, standard chime.
-// Every caller goes through this, whatever the ingest path (boot cache, reconcile, realtime
-// INSERT/UPDATE).
+// THE GATE. Every alarm / lockout / chime / escalation eligibility check includes this.
 function alarmEligible(c){ return !!c&&!isCarriedOver(c) }
 
-// Kitchen milestones (Confirm Received, Confirm Prep, Second Check, Mark Served). Never on a
-// carried-over record.
-function actionable(c){ return !!c&&!isCarriedOver(c)&&isOpenWork(c) }
-
-// A realtime merge folds a continuation into an existing card. Never across the carried-over
-// boundary: same table or same guest does not make an old record part of this service's one.
-function canMergeInto(host,d){ return !!host&&!isCarriedOver(host)&&!isCarriedOver(d) }
-
-// The columns kitchen_board() computes. A raw realtime row never carries them, so an UPDATE
-// must keep the card's own values (exactly as service_kind is kept) — otherwise a carried-over
-// card would silently become "current" on its next write and reach the alarm paths.
+// The columns kitchen_board() computes. A raw realtime UPDATE row never carries them, and the
+// card keeps its own values (foldDeclaration copies only what the row has). A completed BOARD
+// READ is the truth: a read without them (older kitchen_board, or the server rolled back) clears
+// them, so a stale cached flag cannot outlive its source.
 var BOARD_COMPUTED=['carried_over','record_service_date','service_label'];
-function keepBoardComputed(prev,raw){
-  var out={};
-  BOARD_COMPUTED.forEach(function(k){ if(raw&&k in raw)out[k]=raw[k]; else if(prev&&k in prev)out[k]=prev[k] });
-  return out;
-}
-// After a successful board read the server is the truth for these columns: a read without
-// them (older kitchen_board) clears them, so a stale cached flag cannot outlive its source.
 function syncBoardComputed(cur,row){
   BOARD_COMPUTED.forEach(function(k){ if(row&&k in row)cur[k]=row[k]; else delete cur[k] });
   return cur;
-}
-
-// Which band a card belongs to. Carried-over never enters NEEDS / WORKING / DONE.
-function boardBand(c){
-  if(isCarriedOver(c))return 'earlier';
-  if(!isOpenWork(c))return 'served';
-  return isAcked(c)?'working':'needs';
-}
-
-// The EARLIER header: its count and the most serious open severity, as a WORD, so the band can
-// be collapsed without hiding what is in it.
-function earlierSummary(list){
-  var n=0,sev=null;
-  (list||[]).forEach(function(c){
-    if(!isCarriedOver(c)||!isOpenWork(c))return;
-    n++;
-    var s=(c.severity||'').toLowerCase();
-    if(s==='anaphylaxis')sev='anaphylaxis';
-    else if(s==='severe'&&sev!=='anaphylaxis')sev='severe';
-  });
-  return {n:n,sev:sev};
 }
 
 // "Dinner · Oct 9". record_service_date is a venue calendar date (YYYY-MM-DD) and is formatted
@@ -1042,7 +1048,12 @@ function serviceRefText(c,localeTag){
 }
 // ═══ CARRIED-OVER RULES — END ══════════════════════════════════════════════════════════════
 
-function toggleEarlier(){earlierOpen=!earlierOpen;renderCards()}
+// Still outstanding — nothing has completed it. Read from the row's own stamps so it stays
+// correct between reconciles and immediately after an optimistic local write.
+function isOpenWork(c){
+  return !!c&&!c.superseded_at&&!c.served_at&&!c.closed_at;
+}
+
 
 // service_kind arrives on the row from the authenticated read.
 function isRehearsal(c){ return !!(c&&c.service_kind==='rehearsal') }
@@ -1078,7 +1089,8 @@ function guestLabel(c){
 //
 // isAcked() is the UI predicate — confirmed OR attempt-in-progress — so the card still
 // advances the instant the operator finishes the hold. Safety code must use
-// kitchen_ack_at directly and must NOT use isAcked(). (Defined in CARRIED-OVER RULES above.)
+// kitchen_ack_at directly and must NOT use isAcked().
+function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
 
 // DECLARATION SUPERSESSION.
 // A guest correction does not edit a declaration — it inserts a new one carrying
@@ -1089,50 +1101,73 @@ function guestLabel(c){
 //
 // Two independent signals, because the guest writes them as two statements and only the
 // first is safety-critical. If the second never lands, `superseded_at` is null on a row
-// that has genuinely been replaced — so a row is ALSO treated as superseded when another
-// declaration on this board names it. Either signal alone is sufficient.
+// that has genuinely been replaced — so a row is ALSO treated as superseded when a successor
+// names it in supersedes_id. Either signal alone is sufficient — BUT a reference counts ONLY when
+// the successor is from the SAME VISIT: same asset_id AND the same non-null guest_session_id (and
+// no rehearsal/live mismatch). Anyone holding the publishable key can insert a row at any table
+// naming any declaration; an unchecked reference let a row at another table make an
+// un-acknowledged anaphylaxis record vanish with no lockout and no alarm. A reference that does not
+// match is ignored: the record it names stays fully live.
+//
+// The references are kept in a page-life registry fed by EVERY row read — including rows that are
+// themselves superseded and dropped — before any of them is ingested, so a chain A ← B ← C still
+// hides A when only B's superseded_at landed, and A does not reappear if B later leaves the board.
+// A valid supersession is permanent.
+var rowMeta={},successorsOf={};
+// rowMeta holds only what the SERVER said about a row. service_kind in particular is taken only from
+// rows that carry it (board reads, cache of board reads) — never the kind a realtime row inherits
+// locally — so a rehearsal/live mismatch cannot be hidden behind a guess.
+function noteRow(d){
+  if(!d||!d.id)return;
+  var m=rowMeta[d.id]||(rowMeta[d.id]={});
+  ['asset_id','guest_session_id','service_kind','created_at','supersedes_id'].forEach(function(k){if(d[k]!==undefined&&d[k]!==null)m[k]=d[k]});
+  if(d.supersedes_id)(successorsOf[d.supersedes_id]=successorsOf[d.supersedes_id]||{})[d.id]=true;
+}
+// A reference counts only if ALL hold: not a self-reference; same asset_id; same non-null
+// guest_session_id; rehearsal/live kind KNOWN for both and equal; the successor created STRICTLY
+// later; and the predecessor does not itself name the successor (a cycle — neither member of a
+// cycle is ever hidden).
+function sameVisit(predId,succId){
+  if(!predId||!succId||predId===succId)return false;
+  var p=rowMeta[predId],q=rowMeta[succId];if(!p||!q)return false;
+  if(!p.asset_id||p.asset_id!==q.asset_id)return false;
+  if(!p.guest_session_id||p.guest_session_id!==q.guest_session_id)return false;
+  if(!p.service_kind||!q.service_kind||p.service_kind!==q.service_kind)return false;
+  var tp=Date.parse(p.created_at),tq=Date.parse(q.created_at);
+  if(!(tq>tp))return false;
+  if(p.supersedes_id===succId)return false;
+  return true;
+}
+function validSuccessorOf(id){var m=successorsOf[id];if(!m)return null;
+  return Object.keys(m).find(function(s){return sameVisit(id,s)})||null}
+// Is this row a correction of a record from its own visit? (Drives the UPDATED badge — a
+// reference that is not honoured must not be presented as a correction either.)
+function isValidCorrection(c){return !!(c&&c.supersedes_id&&sameVisit(c.supersedes_id,c.id))}
 function isSupersededRow(c){
   if(!c)return false;
   if(c.superseded_at)return true;
-  var id=c.id;
-  return Object.keys(cards).some(function(k){return cards[k].supersedes_id===id});
+  return !!validSuccessorOf(c.id);
 }
 
 var LIFECYCLE_TS=['delivered_to_kitchen_at','kitchen_ack_at','protocol_confirmed_at','verified_at','served_at','closed_at','minimized_at'];
 var STATUS_RANK={pending:0,acknowledged:1,escalated:1,resolved:2};
 function statusMax(a,b){var ra=STATUS_RANK[a],rb=STATUS_RANK[b];if(ra===undefined)return b;if(rb===undefined)return a;return rb>ra?b:a}
 
-// Union, order-preserving, case-insensitive. Required, not cosmetic: the fold is monotonic,
-// so without dedupe every 5s reconcile would concatenate a row's allergens onto themselves.
-function unionAllergens(a,b){
-  var out=[],seen={};
-  (a||[]).concat(b||[]).forEach(function(x){
-    var k=String(x==null?'':x).trim().toLowerCase();
-    if(!k||seen[k])return;seen[k]=true;out.push(x);
-  });
-  return out;
-}
 
 // Fold an authoritative database row over a card already held.
-// Reconciliation may ADD newly discovered truth; it must not regress, duplicate,
-// misattribute or erase established safety truth. Concretely:
+// Reconciliation may ADD newly discovered truth; it must not regress or erase established
+// safety truth:
 //  - underscore UI fields are never copied from `d` and never dropped from `cur`
-//  - allergens union / severity maxSeverity / cross_contact OR, so a locally merged-up
-//    card can never be pulled back down to its own row's lower values (MAX severity holds)
 //  - lifecycle timestamps never unset (see LIFECYCLE_TS above)
 //  - status never regresses (rank max)
-//  - _reackRequired re-applies the merge's forced re-acknowledgement, which the database
-//    row does not know about and would otherwise silently restore
+// Content (allergens, severity, cross-contact) is the database row's own: every declaration is
+// its own card, so there is no locally merged-up content to protect.
 function foldDeclaration(cur,d){
   var keep={};LIFECYCLE_TS.forEach(function(k){if(cur[k])keep[k]=cur[k]});
-  var allergens=unionAllergens(cur.allergens,d.allergens);
-  var severity=maxSeverity(cur.severity,d.severity);
-  var xc=!!(cur.cross_contact||d.cross_contact);
   var status=statusMax(cur.status,d.status);
   Object.keys(d).forEach(function(k){if(k.charAt(0)!=='_')cur[k]=d[k]});
   Object.keys(keep).forEach(function(k){cur[k]=keep[k]});
-  cur.allergens=allergens;cur.severity=severity;cur.cross_contact=xc;cur.status=status;
-  if(cur._reackRequired)cur.kitchen_ack_at=null;
+  cur.status=status;
   // Database provenance. If the row carries an acknowledgement, the attempt is settled —
   // whether it was this board's write landing after its response was lost, or another
   // board acknowledging first.
@@ -1140,26 +1175,161 @@ function foldDeclaration(cur,d){
   return cur;
 }
 
-// A merged-in continuation contributes CONTENT to its host and nothing else — it has no
-// card and no lifecycle of its own on this board.
-function foldMergedContent(host,d){
-  host.allergens=unionAllergens(host.allergens,d.allergens);
-  host.severity=maxSeverity(host.severity,d.severity);
-  host.cross_contact=!!(host.cross_contact||d.cross_contact);
+// NO CLIENT-SIDE MERGING. A second declaration from the same guest at the same table used to be
+// folded into the first card (union allergens, max severity) with the first card's
+// acknowledgement taken away locally for a "re-ack". The bookkeeping that required — a
+// re-ack the database did not know about, compare-and-set writes, racing displays, writes in
+// flight against content that changed under them — failed independent verification twice. It
+// is gone. Every allergen_declarations row is its own card, its own lockout, its own milestones
+// and its own acknowledgement: nothing is acknowledged that was not shown, and the board after a
+// live arrival is the same as the board after a reload. Whether a second record is a correction
+// or an addition is an open product question; the board asserts neither and only says how many
+// other open records share the table and guest session (sameVisitOthers).
+
+// ── SHARED INGEST ────────────────────────────────────────────────────────────────────────
+// ingestDeclaration(row, source) is the ONLY way a declaration enters or changes `cards`.
+// Sources: 'insert' (realtime INSERT), 'update' (realtime UPDATE), 'reconcile' (kitchen_board(),
+// which is also boot, reconnect and tab wake), 'cache' (offline redraw at boot).
+//
+// The escalation contract used to live in ONE of four ingest branches — the realtime new-card
+// branch. A declaration found by the read path (reload, missed socket event, tablet wake) got an
+// ordinary card: no lockout, no alarm, no delivery record, and the gap was invisible at both ends.
+// Now every source runs the same three steps (C7, refactor decisions 1 and 3):
+//   1. LOCKOUT — any un-acknowledged anaphylaxis record is enqueued, from ANY source
+//      (gated on database kitchen_ack_at), and the alarm starts.
+//   2. DELIVERY — delivered_to_kitchen_at (+ this display's device string, as before) is
+//      written ONCE per record, guarded server-side on IS NULL so a true first delivery is never
+//      overwritten by a later ingest. Never from 'cache' (the cache is not a delivery) or
+//      'update' (an UPDATE only touches a record already held).
+//   3. ONE UI-STATE CONTRACT (decision 5) — underscore fields are this page's UI state. They are
+//      never taken from an incoming row, never dropped from a held card by any path, and never
+//      persisted (cacheCards strips every one). So a card ends in the same UI state whichever
+//      path delivered the row, and a reload starts from records, not from stale UI latches.
+//
+// The service-point label is taken from the board read (table_label / zone_name). A realtime
+// row does not carry it, so it borrows the label of a held card on the same service point and
+// otherwise shows 'T?' until the board read — triggered at once — supplies it. Ingest never waits
+// for a label: the old per-INSERT assets lookup ran on the ANONYMOUS client, read the legacy
+// assets.zone text, and held every ingest step (lockout, alarm, delivery) behind its response.
+var deliveryAttempted={};
+// Monotonic ingest counter. A board read prunes only cards that were already held when the read
+// STARTED: a row that arrived (realtime) while the read was in flight is newer than that read's
+// snapshot and must not be removed by it.
+var ingestSeq=0,reconcileAgain=false;
+function stripUi(row){var o={};Object.keys(row||{}).forEach(function(k){if(k.charAt(0)!=='_')o[k]=row[k]});return o}
+function labelOf(c){return c&&c.table_label?c.table_label+(c.zone_name?' · '+c.zone_name:''):null}
+function dropCard(id){delete cards[id];delete ghosted[id]}
+// Other OPEN cards for the same table AND the same guest session (both known). A count, never a
+// relationship: the board does not claim which record corrects or extends which.
+function sameVisitOthers(c){
+  if(!c||!c.guest_session_id||!c.asset_id)return 0;
+  return Object.keys(cards).filter(function(k){var o=cards[k];
+    return o!==c&&o.guest_session_id===c.guest_session_id&&o.asset_id===c.asset_id&&isOpenWork(o)&&!isSupersededRow(o)}).length;
+}
+
+function ingestDeclaration(row,source){
+  if(!row||!row.id)return null;
+  var d=stripUi(row),id=d.id,isNew=false,cur;
+  noteRow(d);
+  // A superseded declaration is history, not an active card, on every path.
+  if(d.superseded_at){dropCard(id);return null}
+  // A correction REPLACES its predecessor: the successor is its own card and the predecessor
+  // leaves the board.
+  // (A successor no longer DROPS its predecessor here: whether the reference counts is decided by
+  // isSupersededRow's same-visit rule, which hides a genuinely replaced predecessor everywhere.)
+  cur=cards[id];
+  var prevSig=cur?lockoutContentSig(cur):null;
+  if(cur){
+    // Any database-sourced row confirms a cache-restored card; from here escalation is decided on
+    // database truth.
+    if(source!=='cache')delete cur._fromCache;
+    if(source==='update'&&d.service_instance_id!==undefined&&d.service_instance_id!==cur.service_instance_id){
+      // service_kind / carried_over are computed by kitchen_board(), not columns. Kept across a
+      // raw UPDATE only while the row stays stamped to the same instance.
+      delete cur.service_kind;delete cur.carried_over;
+    }
+    // A card with a write outstanding is left alone by the board read: folding mid-write would
+    // race the optimistic value against a database row that does not have it yet.
+    if(!(source==='reconcile'&&cur._writing))foldDeclaration(cur,d);
+    if(source==='reconcile')syncBoardComputed(cur,d);
+  }else{
+    if(source==='update')return null;          // an UPDATE never introduces a card
+    cur=cards[id]=d;isNew=true;cur._seq=++ingestSeq;
+    if(source==='cache')cur._fromCache=true;
+    if(source==='insert'){
+      // Rehearsal identity for a raw realtime row, from a held card in the same instance.
+      if(cur.service_kind===undefined){var sib=Object.keys(cards).find(function(k){return k!==id&&cards[k].service_instance_id&&cards[k].service_instance_id===cur.service_instance_id&&cards[k].service_kind});
+        if(sib)cur.service_kind=cards[sib].service_kind}
+    }
+  }
+  afterIngest(cur,source,isNew,prevSig);
+  recordDelivery(id,d,source);
+  return cur;
+}
+
+function afterIngest(c,source,isNew,prevSig){
+  // Label: board read first; else a held card on the same service point; else 'T?'.
+  var l=labelOf(c);
+  if(!l){var sp=Object.keys(cards).find(function(k){return cards[k]!==c&&cards[k].asset_id===c.asset_id&&cards[k].table_label});
+    if(sp){c.table_label=cards[sp].table_label;c.zone_name=cards[sp].zone_name;l=labelOf(c)}}
+  c._assetLabel=l||c._assetLabel||'T?';
+  // A timed-out write whose milestone the database now shows DID land: the message was about
+  // an unknown outcome, and the outcome is now known.
+  if(c._errField&&c[c._errField]){delete c._error;delete c._errField}
+  // Escalation, identical on every path. Cache-restored cards are silent (lockoutEligible).
+  // A record already held whose actionable CONTENT changed is redrawn wherever it is shown, any
+  // hold or in-flight write on it is invalidated, and it alarms only if it is an un-acknowledged
+  // anaphylaxis record. Becoming acknowledged is not a content change and never alarms.
+  if(prevSig!=null&&!c._fromCache&&prevSig!==lockoutContentSig(c))recordContentChanged(c.id);
+  // SUPERSEDED BY REFERENCE. A successor names its predecessor (supersedes_id) even when the
+  // predecessor's own superseded_at never landed. The predecessor stops being actionable at once:
+  // its hold is cancelled, its generation moves on, and it leaves every band and the lockout.
+  var pred=c.supersedes_id&&cards[c.supersedes_id];
+  if(pred&&!pred._supersededSeen&&isValidCorrection(c)){
+    pred._supersededSeen=true;
+    // A hold in progress on the predecessor is cancelled — and SAID so on the successor, rather than
+    // letting the cook's hold silently vanish.
+    var wasHeld=!!holdTimers[pred.id]||(recordOpenId===pred.id&&recordHolding);
+    invalidateRecord(pred.id);
+    if(wasHeld)showNotice(c.id,'note.superseded');
+  }
+  if(lockoutEligible(c)){if(enqueueLockout(c.id))soundAlarm()}
+  else if(isNew&&source!=='cache'&&!isAnaph(c.severity)&&alarmEligible(c))chimeStandard();
+}
+
+// The delivery handshake: this record reached this display. Once per record per page life, and
+// conditional server-side (IS NULL) so it can never overwrite an earlier display's delivery.
+// Failure is logged and retried on the next ingest; it never blocks or delays ingest itself.
+function recordDelivery(id,d,source){
+  if(source==='cache'||source==='update')return;
+  // Not on a carried-over record: the board writes nothing to it (and the venue-device UPDATE
+  // policy is current-service only, so it would be refused).
+  if(isCarriedOver(cards[id]))return;
+  if(!paired()||deliveryAttempted[id]||(d&&d.delivered_to_kitchen_at))return;
+  deliveryAttempted[id]=true;
+  try{
+    var q=sbv.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',id);
+    if(q&&typeof q.is==='function')q=q.is('delivered_to_kitchen_at',null);
+    boundWrite(q).then(function(r){if(r.error){console.error('[kitchen] delivery handshake failed:',r.error);delete deliveryAttempted[id]}});
+  }catch(e){console.error('[kitchen] delivery handshake failed:',e);delete deliveryAttempted[id]}
 }
 
 function renderCards(){
   var area=document.getElementById('cardArea');
   var ids=Object.keys(cards);
-  var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at});
-  var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at});
+  // A superseded record (superseded_at, OR named by a successor's supersedes_id) is history and is
+  // not drawn in any band: it is not actionable and is not counted anywhere.
+  var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
+  var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
 
   // Four bands, and the question the board exists to answer is the first one.
-  // Membership in the current service comes from the server; openness from the row's own
-  // stamps. A record from an earlier service is never deleted and never hidden — it drops to
-  // EARLIER, where it cannot compete with live work.
-  var cur=visible.filter(function(id){return inCurrentService(cards[id])});
-  var earlier=visible.filter(function(id){return !inCurrentService(cards[id])});
+  // Membership comes from the server; openness from the row's own stamps. A record an EARLIER
+  // service left open sits in its own band directly below Needs You — labelled and expanded,
+  // never collapsed to a count (that would be hiding). It is NOT actionable here and never
+  // alarms (PO decision, PR #5): it leaves the band when a manager closes it out in the Shift
+  // Record, through the next board read.
+  var cur=visible.filter(function(id){return inCurrentService(cards[id])||!isOpenWork(cards[id])});
+  var earlier=visible.filter(function(id){return !inCurrentService(cards[id])&&isOpenWork(cards[id])});
   var needs=cur.filter(function(id){return isOpenWork(cards[id])&&!isAcked(cards[id])});
   var working=cur.filter(function(id){return isOpenWork(cards[id])&&isAcked(cards[id])});
   var served=cur.filter(function(id){return !isOpenWork(cards[id])});
@@ -1172,17 +1342,19 @@ function renderCards(){
   // The board may only assert a relationship it can prove. The one it can is supersedes_id —
   // a declaration that explicitly revises another — and that is already rendered as UPDATED.
   // Same guest name is not proof (two guests share a name), and same table is not proof at
-  // all. kitchen_board() does not return guest_session_id, so a same-visit claim is not
-  // available here even if it were wanted; the two live Tom records carry DIFFERENT sessions
-  // and no supersession, so nothing in the data says one replaces or extends the other.
-  // Two independent records, presented independently, is the honest rendering.
+  // all. Two independent records are presented independently. The only cue the board adds is
+  // a COUNT (sameVisitOthers) when another open record shares the table AND the guest session —
+  // both known. Realtime rows carry guest_session_id; board-read rows carry it only once the
+  // proposed kitchen_board() column is applied, so until then the cue appears only for records
+  // that arrived live on this page. The two live Tom records carry DIFFERENT sessions, so they
+  // show no cue.
 
   function sSort(a,b){var ca=cards[a],cb=cards[b];if(isAnaph(ca.severity)&&!isAnaph(cb.severity))return -1;if(!isAnaph(ca.severity)&&isAnaph(cb.severity))return 1;return new Date(ca.created_at)-new Date(cb.created_at)}
   needs.sort(sSort);working.sort(sSort);served.sort(sSort);earlier.sort(sSort);
 
   if(!needs.length&&!working.length&&!served.length&&!earlier.length&&!ghostIds.length){
     area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">'+th('board.empty')+'</div></div>';
-    updateSummary();resetDim();return;
+    updateSummary();resetDim();syncLockouts();return;
   }
 
   var h='';
@@ -1205,8 +1377,8 @@ function renderCards(){
 
     // Always the collapsed geometry now — a row has no expanded form to open into.
     if(!isSrv)rowCls=rowCls.replace('row ','row closed ');
-    // Carried over: no pulse (no urgency for this service), no action. Severity keeps its word
-    // and colour; the row says in words that it belongs to an earlier service.
+    // Carried over (PO decision, PR #5): no pulse — not this service's urgency — and no action.
+    // Severity keeps its word and colour; the row says in words where it is from and who closes it.
     var carried=isCarriedOver(c);
     if(carried){rowCls='row closed carried';accCol='var(--warn)'}
 
@@ -1264,9 +1436,19 @@ function renderCards(){
     if(c.cross_contact&&!isSrv)h+='<div class="r-xc '+(an?'r':'a')+'">'+th('chip.cross_contact')+'</div>';
     // Derived from supersedes_id, not from the ephemeral _updated flag: a corrected
     // declaration must still read as a correction after a reload or a reconciliation read.
-    if(c.supersedes_id&&!isSrv)h+='<div class="r-upd">'+th('row.updated')+'</div>';
+    if(isValidCorrection(c)&&!isSrv)h+='<div class="r-upd">'+th('row.updated')+'</div>';
+    // Same table AND same guest session, another open record: stated as a count, never as a
+    // relationship (which one corrects or extends the other is not known).
+    var also=isSrv?0:sameVisitOthers(c);
+    if(also)h+='<div class="r-also">'+th('card.also_here',{n:also})+'</div>';
     h+=act;
     h+='</div>';
+    // A write that did not land is stated on the row itself, not only inside the record. The
+    // strip opens the record, where the hold is: retrying a milestone is still a hold.
+    // A neutral notice (e.g. "Checking with the server") is stated on the row too.
+    if(!c._error&&c._notice)h+='<div class="row-note" role="status">'+th(c._notice)+'</div>';
+    var unk=c._error==='err.unconfirmed'||c._error==='err.timeout';   // outcome unknown, not refused
+    if(c._error)h+='<button type="button" class="row-retry" role="alert" onclick="openRecord(\''+esc(id)+'\')">'+th(unk?'row.unconfirmed':'row.not_saved')+'</button>';
 
     // NO EXPANDED PANEL. Everything that lived here — guest, cross-contact sentence, elapsed
     // time, the four-stage rail, the Avoid all blocks, guest notes — is in the record sheet,
@@ -1292,7 +1474,7 @@ function renderCards(){
   var seq=[];
   function sec(key,label,cls,n,extra){
     label=th(label);
-    seq.push({k:'sec:'+key,sig:label+'|'+n+'|'+(extra||''),cls:'sec-l'+(key==='earlier'?' earlier-l':''),
+    seq.push({k:'sec:'+key,sig:label+'|'+n+'|'+(extra||''),cls:'sec-l',
       html:label+' <span class="sec-ct '+cls+'">'+n+'</span><div class="sec-ln"></div>'+(extra||'')});
   }
   // Derived from the RECORD ONLY. It used to include the group size and the panel's open state
@@ -1300,29 +1482,23 @@ function renderCards(){
   // which made a card rebuild itself for a reason the data knew nothing about.
   function cardSig(id){
     var c=cards[id];
-    return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,c.supersedes_id,
+    return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,isValidCorrection(c)?1:0,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
-            c.served_at,c._error||'',c._ackPending?1:0,c.carried_over===true?1:0,c.service_label,c.record_service_date,locale].join('|');
+            c.served_at,c._error||'',c._notice||'',c._ackPending?1:0,sameVisitOthers(c),
+            isCarriedOver(c)?1:0,c.service_label,c.record_service_date,locale].join('|');
   }
   function pushCards(list){list.forEach(function(id){
     seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
 
   if(needs.length){ sec('needs','board.needs','red',needs.length); pushCards(needs) }
+  // FROM EARLIER SERVICE — below Needs You, above In Progress. Never collapsed.
+  if(earlier.length){
+    sec('carried','board.carried','amber',earlier.length);
+    seq.push({k:'carried-note',sig:locale,cls:'carried-note',html:th('board.carried_note')});
+    pushCards(earlier);
+  }
   if(working.length){ sec('working','board.working','amber',working.length); pushCards(working) }
   if(served.length){ sec('served','board.done','gray',served.length); pushCards(served) }
-  // EARLIER — preserved, never deleted, and deliberately quiet. Collapsed to a count so a
-  // prior service cannot compete with the one running now.
-  if(earlier.length){
-    // The count and the most serious open severity (as a WORD) stay in the header whether the
-    // band is open or collapsed — collapsing it never hides what is in it.
-    var es=earlierSummary(earlier.map(function(id){return cards[id]}));
-    sec('earlier','board.earlier','amber',earlier.length,
-        (es.sev?'<span class="sec-sev '+(es.sev==='anaphylaxis'?'r':'a')+'">'+sevLabel(es.sev)+'</span>':'')
-        +'<button class="earlier-tg" onclick="toggleEarlier()">'+th(earlierOpen?'board.hide':'board.show')+'</button>');
-    seq.push({k:'earlier-note',sig:locale,cls:'earlier-note',
-      html:th('board.earlier_note')});
-    if(earlierOpen)pushCards(earlier);
-  }
 
   var have={};
   Array.prototype.slice.call(area.children).forEach(function(n){
@@ -1352,6 +1528,7 @@ function renderCards(){
   renderGhosts(ghostIds);
   updateSummary();
   resetDim();
+  syncLockouts();
 }
 
 function renderGhosts(gIds){
@@ -1361,9 +1538,8 @@ function renderGhosts(gIds){
 }
 
 function updateSummary(){
-  // The summary bar is the CURRENT service. Carried-over work is counted, with its severity in
-  // words, in the EARLIER header instead — never folded into "needs action" here.
-  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at&&!isCarriedOver(cards[id])});
+  // The current service only. Carried-over work is counted in its own band, never in "need action".
+  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at&&!isSupersededRow(cards[id])&&!isCarriedOver(cards[id])});
   var tables=new Set(),alCount=0,anCount=0,unack=0;
   ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!isAcked(c))unack++});
   var p=[];
@@ -1451,6 +1627,132 @@ function holdKeyUp(e,id,el){
   e.preventDefault();endHold(id,el);
 }
 
+// ── BOUNDED WRITES ───────────────────────────────────────────────────────────────────────
+// Every AllergyShield write is bounded at WRITE_TIMEOUT_MS. Unbounded, a half-open connection
+// left the card latched in _writing for the rest of the page's life with nothing on screen to
+// say so — the hold stayed reachable but did nothing.
+//
+// A timeout is treated exactly as a refusal: full revert to the prior valid state (§12.1), a
+// visible "Not saved" on the card, the hold available again. It is NOT a claim that the database
+// refused — the abort cancels this client's wait, not the server's transaction. That is why the
+// revert is safe: lifecycle timestamps are set-once-forward in foldDeclaration, so if the write
+// did commit, the next board read (≤ RECONCILE_MS) restores the milestone from database truth and
+// clears the message. The board can be briefly behind the database; it can never be ahead of it.
+//
+// Promise.race, not only the abort signal: the bound must hold even if a client build ignores
+// the signal. Builder methods are feature-detected for the same reason boundRead detects
+// .retry() — the client is a floating jsdelivr @2 build.
+var WRITE_TIMEOUT_MS=10000;
+function boundWrite(q){
+  var ac=new AbortController(),timer=null;
+  if(q&&typeof q.abortSignal==='function')q=q.abortSignal(ac.signal);
+  var timeout=new Promise(function(r){timer=setTimeout(function(){
+    r({data:null,error:{message:'no response within '+WRITE_TIMEOUT_MS+'ms',code:'HC_TIMEOUT'},timedOut:true});
+    try{ac.abort()}catch(e){}
+  },WRITE_TIMEOUT_MS)});
+  var settled=Promise.resolve(q).then(function(r){return r||{}},function(e){return {data:null,error:e||{message:'rejected'}}});
+  return Promise.race([settled,timeout]).then(function(r){clearTimeout(timer);return r});
+}
+// A milestone write on one declaration. .select('id') so a write that matched NO row is an
+// error, not a silent success: PostgREST answers 204 whether 0 or N rows changed, and a row
+// can leave this display's write scope between the read and the hold (its service closed).
+// Without this the card would advance on screen while the database stayed unchanged.
+//
+// guard makes a MILESTONE write conditional, so it can only ever fill an empty milestone:
+//   {col:'verified_at'} → .is(col, null)
+// Without it, a retry after a timed-out write that had in fact committed rewrote the recorded
+// time — altering evidence. A guarded write that matches no row sets r.noRow; the caller then
+// re-reads the board to learn whether the milestone is already recorded (see settleNoRow).
+function writeDeclaration(id,patch,guard){
+  // Defence in depth: nothing is ever written to a carried-over record from this board.
+  if(isCarriedOver(cards[id]))return Promise.resolve({data:null,error:{message:'carried over',code:'HC_CARRIED_OVER'}});
+  var q=sbv.from('allergen_declarations').update(patch).eq('id',id);
+  if(guard&&q&&typeof q.is==='function')q=q.is(guard.col,null);
+  if(q&&typeof q.select==='function')q=q.select('id');
+  return boundWrite(q).then(function(r){
+    if(!r.error&&Array.isArray(r.data)&&r.data.length===0)
+      r={data:r.data,error:{message:'no row updated',code:'HC_NO_ROW'},noRow:true};
+    return r;
+  });
+}
+// A guarded milestone write matched no row: either the milestone is ALREADY recorded (another
+// display, or this display's own earlier write that committed after its timeout) or the record
+// has left this display's write scope. Which one is decided by reading the board, never guessed.
+// Already recorded → the record is redrawn in its recorded state with a neutral notice that this
+// hold changed nothing; this display never claims it recorded the step (no chime, no "done"
+// confirmation flow). Not recorded → the ordinary NOT-recorded error.
+async function boardRead(){
+  for(var i=0;i<120&&reconcileInFlight;i++)await new Promise(function(r){setTimeout(r,100)});
+  return reconcile();
+}
+function lockoutStageFor(c){return !c.kitchen_ack_at?'ack':!c.protocol_confirmed_at?'prep':'done'}
+// If the follow-up read itself fails, the outcome is UNKNOWN and the screen says exactly that —
+// never "NOT recorded", which would be a claim the board cannot make.
+function showUnconfirmed(id,field){
+  showRowError(id,'err.unconfirmed',{persist:1,field:field});
+  if(lockoutId===id&&cards[id])renderLockout(id,lockoutStageFor(cards[id]),'err.unconfirmed');
+}
+// GENERATION GUARD. A milestone write resolves against the record as it was when the hold
+// completed. If, while it was in flight, the record's content changed (recordContentChanged
+// moved _gen on) or the record left the board (superseded, pruned, replaced), the result is
+// stale: no chime, no lockout advance, no completed stage drawn from it. The optimistic change is
+// undone, the board is re-read, and the record is shown as the DATABASE has it, with a notice.
+// A superseded record (by either signal) is history: nothing is written to it. The hold that
+// reached here ends with an honest notice, and the board moves to the successor.
+// A milestone attempted on a carried-over record: nothing is written, the reason is stated.
+function refuseCarried(id){
+  invalidateRecord(id);
+  if(recordFlow&&recordFlow.id===id)recordFlow=null;
+  if(lockoutId===id)closeLockout();
+  showRowError(id,'err.carried');
+}
+function refuseSuperseded(id){
+  invalidateRecord(id);
+  if(recordFlow&&recordFlow.id===id)recordFlow=null;
+  if(lockoutId===id)closeLockout();
+  // The notice goes where the cook now is: the successor (its lockout or record), since the
+  // superseded record itself is no longer shown anywhere.
+  var succ=validSuccessorOf(id);if(succ&&!cards[succ])succ=null;
+  if(succ){showNotice(succ,'note.superseded');if(lockoutId===succ&&!holdInProgress())renderLockout(succ,lockoutStage,lockoutErr)}
+  renderCards();
+}
+function writeIsStale(id,c,gen){return cards[id]!==c||(c._gen||0)!==gen||isSupersededRow(c)}
+// _settling (UI-ephemeral, never cached): a lockout write's outcome is still being decided by this
+// board read, so the lockout policy treats the write as not yet settled. Cleared when the settle
+// ends, and the lockouts are re-synced then — a preemption that waited on it happens now.
+function settleEnd(c){if(c&&c._settling){delete c._settling;if(cards[c.id]===c)lockoutDwell(c.id);syncLockouts()}}
+async function settleStale(id,field){var c0=cards[id];try{return await settleStaleRead(id,field)}finally{settleEnd(c0)}}
+async function settleNoRow(id,field,errKey){var c0=cards[id];try{return await settleNoRowRead(id,field,errKey)}finally{settleEnd(c0)}}
+async function settleStaleRead(id,field){
+  var okRead=await boardRead();
+  var c=cards[id];renderCards();
+  if(!c)return;                                   // left the board: syncLockouts moves on
+  if(!okRead){showUnconfirmed(id,field);return}
+  showNotice(id,'note.changed_while_saving');
+  if(lockoutId===id)renderLockout(id,lockoutStageFor(c));
+}
+async function settleNoRowRead(id,field,errKey){
+  var okRead=await boardRead();
+  var c=cards[id];if(!c)return;
+  if(!okRead){showUnconfirmed(id,field);return}
+  if(c[field]){
+    showNotice(id,'note.already_recorded');
+    if(lockoutId===id)renderLockout(id,lockoutStageFor(c));
+  }else{
+    var k=writeFailed(id,errKey,{error:{code:'HC_NO_ROW'}},field);
+    if(lockoutId===id)renderLockout(id,lockoutStageFor(c),k);
+  }
+}
+function showNotice(id,key){var c=cards[id];if(!c)return;c._notice=key;delete c._error;delete c._errField;renderCards();renderRecord();
+  setTimeout(function(){if(cards[id]&&cards[id]._notice===key){delete cards[id]._notice;renderCards();renderRecord();
+    if(lockoutId===id&&!holdInProgress())renderLockout(id,lockoutStage,lockoutErr)}},8000)}
+// Which message a failed write shows. A timeout says the outcome is unknown and persists until
+// resolved; a refusal says the step was not recorded.
+function writeFailed(id,key,r,field){
+  if(r&&r.timedOut){showRowError(id,'err.timeout',{persist:1,field:field});return 'err.timeout'}
+  showRowError(id,key);return key;
+}
+
 // Optimistic-with-revert pattern: local state updates immediately so the UI
 // responds to the 1.5s hold completing, then the DB write follows. On failure
 // the local state is reverted to the prior valid state so the operator never
@@ -1458,22 +1760,21 @@ function holdKeyUp(e,id,el){
 // confirms — the chime now means "the database accepted the transition."
 // IN-FLIGHT GUARD (_writing) — on all five write paths below.
 // Without it a stalled write plus a repeating operator accumulates hung requests without
-// bound: the hold gesture stays reachable (or the modal button does), each repeat fires
-// another optimistic mutation and another request that never returns.
-// Contract: UI-ephemeral. Never written to the database. Never cached — see cacheCards().
-// It is cleared immediately after the await, BEFORE the error branch, so a failure cannot
-// leave a card permanently locked.
-// ⚠ On a HANG the await never returns, so the flag is never cleared and that card stays
-// blocked until a page reload. That is the intended trade — a locked card beats unbounded
-// hung requests — but it is a real consequence and nothing on screen announces it.
-// Surfacing it belongs to the write-path session along with indeterminate state.
+// bound. Contract: UI-ephemeral. Never written to the database. Never cached.
+// It is cleared immediately after the bounded await, BEFORE the error branch — and because the
+// await is now bounded, it is always cleared: a hung write ends as a timeout, not a latch.
 async function doAck(id,origin){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var c=cards[id];if(!c)return;
-  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
+  var gen=c._gen||0;
   // Optimistic UI only. kitchen_ack_at is NOT written here — a PATCH that hangs would
   // otherwise suppress escalation indefinitely on a card the database still shows
   // unacknowledged, and nothing would ever correct it.
@@ -1481,44 +1782,52 @@ async function doAck(id,origin){
   c._ackPending=ackAt;
   if(origin==='sheet'&&recordOpenId===id)recordFlow={id:id,a:'ack',phase:'saving'};
   renderCards();
-  var {error}=await sbv.from('allergen_declarations').update({kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'}).eq('id',id);
-  delete c._writing;
+  var r=await writeDeclaration(id,{kitchen_ack_at:ackAt,kitchen_ack_by:ackBy,status:'acknowledged'},{col:'kitchen_ack_at'});
+  delete c._writing;lockoutDwell(id);
+  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;c._settling=1;renderCards();await settleStale(id,'kitchen_ack_at');return}
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;c._settling=1;renderCards();await settleNoRow(id,'kitchen_ack_at','err.ack');return}
   // Rejection clears the attempt and nothing needs reverting — no safety field was ever
-  // mutated. Escalation resumes on the next 1s tick with no manual intervention.
-  if(error){console.error('[kitchen] acknowledge failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;renderCards();showRowError(id,'err.ack');
-    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'ack','err.ack');return}
+  // mutated. Escalation (and the repeating alarm) continue with no manual intervention.
+  if(r.error){console.error('[kitchen] acknowledge failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;delete c._ackPending;
+    var k=writeFailed(id,'err.ack',r,'kitchen_ack_at');
+    if(lockoutId===id)renderLockout(id,'ack',k);return}
   // Accepted. Only now is this confirmed truth.
   c.kitchen_ack_at=ackAt;c.kitchen_ack_by=ackBy;c.status='acknowledged';
   delete c._ackPending;
-  delete c._error;
-  // Re-acknowledgement satisfied; the database row now carries the fresh timestamp, so the
-  // fold must stop re-nulling it.
-  delete c._reackRequired;
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // Confirm where the operator is. The sheet confirms in place and exposes the next step; the
-  // lockout keeps the SAME card (table, guest, allergens, Avoid all) and replaces only its
-  // action with the next requirement, instead of swapping to a different screen.
+  // lockout keeps the SAME card and replaces only its action with the next requirement. A
+  // DIFFERENT record's lockout is never touched — it used to be overwritten by this one.
   if(origin==='sheet'){if(recordFlow&&recordFlow.id===id&&recordOpenId===id)recordFlow.phase='done'}
-  else if(isAnaph(c.severity)){showLockoutProtocol(id)}
-  else if(lockoutId===id){closeLockout()}
+  else if(lockoutId===id){if(isAnaph(c.severity))showLockoutProtocol(id);else closeLockout()}
+  else if(isAnaph(c.severity)&&!lockoutId){showLockoutProtocol(id)}
   renderCards();cacheCards();
 }
 
 async function confirmProtocol(id,origin){
   var c=cards[id];if(!c)return;
-  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
+  var gen=c._gen||0;
   var prev={protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by};
   if(origin==='sheet'&&recordOpenId===id)recordFlow={id:id,a:'prep',phase:'saving'};
   c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
   renderCards();
-  var {error}=await sbv.from('allergen_declarations').update({protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by}).eq('id',id);
-  delete c._writing;
-  if(error){console.error('[kitchen] protocol confirm failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,'err.prep');
-    if(origin==='lockout'&&lockoutId===id)renderLockout(id,'prep','err.prep');return}
-  delete c._error;
+  var r=await writeDeclaration(id,{protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by},{col:'protocol_confirmed_at'});
+  delete c._writing;lockoutDwell(id);
+  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleStale(id,'protocol_confirmed_at');return}
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleNoRow(id,'protocol_confirmed_at','err.prep');return}
+  if(r.error){console.error('[kitchen] protocol confirm failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
+    var k=writeFailed(id,'err.prep',r,'protocol_confirmed_at');
+    if(lockoutId===id)renderLockout(id,'prep',k);return}
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // Confirmed in place; the operator leaves when they choose. It used to closeLockout() here —
   // unconditionally, so it could also dismiss a DIFFERENT record's unacknowledged lockout.
@@ -1529,18 +1838,26 @@ async function confirmProtocol(id,origin){
 
 async function verifyDish(id,origin){
   var c=cards[id];if(!c)return;
-  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
+  var gen=c._gen||0;
   var prev={verified_at:c.verified_at,verified_by:c.verified_by};
   if(recordOpenId===id)recordFlow={id:id,a:'verify',phase:'saving'};
   c.verified_at=new Date().toISOString();c.verified_by=deviceName;
   renderCards();
-  var {error}=await sbv.from('allergen_declarations').update({verified_at:c.verified_at,verified_by:c.verified_by}).eq('id',id);
+  var r=await writeDeclaration(id,{verified_at:c.verified_at,verified_by:c.verified_by},{col:'verified_at'});
   delete c._writing;
-  if(error){console.error('[kitchen] verify failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,'err.verify');return}
-  delete c._error;
+  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleStale(id,'verified_at');return}
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'verified_at','err.verify');return}
+  if(r.error){console.error('[kitchen] verify failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
+    writeFailed(id,'err.verify',r,'verified_at');return}
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // Confirm IN PLACE. The sheet used to close here, so a deliberate safety hold ended with
   // the screen vanishing — indistinguishable from a crash. It stays open on a success state
@@ -1551,19 +1868,27 @@ async function verifyDish(id,origin){
 
 async function markServed(id,origin){
   var c=cards[id];if(!c)return;
-  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
+  // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
+  // known, so nothing is written to it.
+  if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
+  if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
+  var gen=c._gen||0;
   var prev={served_at:c.served_at,status:c.status};
   var inSheet=origin==='sheet'&&recordOpenId===id;
   if(inSheet)recordFlow={id:id,a:'serve',phase:'saving'};
   c.served_at=new Date().toISOString();c.status='resolved';
   renderCards();
-  var {error}=await sbv.from('allergen_declarations').update({served_at:c.served_at,status:'resolved'}).eq('id',id);
+  var r=await writeDeclaration(id,{served_at:c.served_at,status:'resolved'},{col:'served_at'});
   delete c._writing;
-  if(error){console.error('[kitchen] mark served failed:',error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();showRowError(id,'err.serve');return}
-  delete c._error;
+  if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleStale(id,'served_at');return}
+  if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'served_at','err.serve');return}
+  if(r.error){console.error('[kitchen] mark served failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
+    writeFailed(id,'err.serve',r,'served_at');return}
+  delete c._error;delete c._errField;delete c._notice;
   chimeAck();
   // From the sheet: confirm in place (Served Recorded) instead of vanishing. From a board row
   // there is no sheet to keep, so the row's existing behaviour stands.
@@ -1802,10 +2127,13 @@ function recordHeadHtml(c,title,done,okA){
     +'</span><span class="vfy-ok-t">'+th('ok.recorded',{time:fmtTime(okA==='ack'?c.kitchen_ack_at:c.protocol_confirmed_at)})+'</span></div>';
   // _error holds a catalog KEY, so the message follows a language change.
   if(c._error)h+='<div class="row-err">'+th(c._error)+'</div>';
+  else if(c._notice)h+='<div class="vfy-note" role="status">'+th(c._notice)+'</div>';
   // The row abbreviates and may truncate; the record never does.
   h+='<div class="vfy-tbl">'+esc(c._assetLabel||tt('misc.table'))+'</div>';
   if(c.guest_name&&String(c.guest_name).trim())
     h+='<div class="vfy-guest">'+esc(String(c.guest_name).trim())+'</div>';
+  var also=isSrv?0:sameVisitOthers(c);
+  if(also)h+='<div class="vfy-also">'+th('card.also_here',{n:also})+'</div>';
   h+='<div class="vfy-al'+(an?' an':'')+'">'+esc((c.allergens||[]).join(', '))+'</div>';
   h+='<div class="vfy-marks"><span class="vfy-sev'+(an?' an':'')+'">'+sevLabel(c.severity)+'</span>'
     +(c.cross_contact?'<span class="vfy-xc">'+th('chip.cross_contact')+'</span>':'')+'</div>';
@@ -1885,6 +2213,7 @@ function renderRecord(){
   if(recordHolding)return;           // never rebuild under a running gesture
 
   var c=cards[recordOpenId];
+  if(c&&isSupersededRow(c))c=null;   // replaced by a newer record: shown as no longer on the board
   if(!c){
     // The declaration left the board while the sheet was open — served elsewhere, closed, or
     // the service ended. Say so explicitly instead of silently dropping the operator back to
@@ -1917,7 +2246,7 @@ function renderRecord(){
   // be harmless but putting the formatted value here would rebuild the sheet every second.
   var sig=[id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,
            c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,c.served_at,
-           c._error||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA,locale].join('|');
+           c._error||'',c._notice||'',c._ackPending?1:0,vdVenueName||'',c.service_kind,okA,sameVisitOthers(c),locale].join('|');
   if(sig===recordSig)return;         // unchanged — leave the sheet exactly as it is
   recordSig=sig;
 
@@ -1939,8 +2268,8 @@ function renderRecord(){
 
 
 // A record from an earlier service. Same header, rail and reference as any record, so the cook
-// sees exactly what was declared and how far it got — and then, instead of a hold, the one
-// sentence that says who closes it out. Nothing on this sheet writes.
+// sees what was declared and how far it got — and then, instead of a hold, the one sentence that
+// says who closes it out. Nothing on this sheet writes.
 function renderCarriedRecord(c,lc){
   var ref=serviceRefText(c,LOCALE_TAG[locale]);
   var sig=['carried',c.id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
@@ -1964,7 +2293,7 @@ var CK_DONE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke=
 function renderSecondCheckDone(c,lc){
   var id=c.id;
   var sig=['done',id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
-           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||'',locale].join('|');
+           c.verified_at,c.served_at,c.service_kind,vdVenueName||'',c._error||'',c._notice||'',locale].join('|');
   if(sig===recordSig)return;
   recordSig=sig;
   var h=recordHeadHtml(c,'title.second_check_done',true,'');
@@ -1989,17 +2318,218 @@ function renderServedDone(c,lc){
   lc.innerHTML=h;
 }
 
-// Which declaration the single-slot lockout is showing, so a milestone only ever changes the
-// lockout that belongs to it.
+// ── ANAPHYLAXIS LOCKOUT QUEUE (refactor decision 2) ─────────────────────────────────────
+// The lockout is one screen, so it shows ONE declaration — lockoutId — and every other pending
+// anaphylaxis lockout waits in lockoutQueue in arrival order. A second arrival never overwrites
+// the first: showLockout() used to render straight into the single slot, so two declarations
+// in one moment left the first one's lockout replaced and never acknowledged on this screen.
+// Each is acknowledged individually; one hold never stands in for several cases.
+//
+// Eligibility is read from the record, never remembered: un-acknowledged (DATABASE-confirmed
+// kitchen_ack_at — never _ackPending), anaphylaxis, still open, not superseded. A queued entry
+// that stops being eligible (acknowledged on another display, served, superseded, pruned) is
+// skipped when its turn comes.
 var lockoutId=null;
 // Which stage (and error key) the lockout is showing, so a language change redraws it in place.
 var lockoutStage=null,lockoutErr=null;
-function showLockout(id){if(!alarmEligible(cards[id]))return;renderLockout(id,'ack')}
+var lockoutQueue=[];
+// _fromCache: a card restored from this tablet's cache and not yet confirmed by any database
+// read. It is drawn on the board (offline redraw) but raises NO lockout and NO alarm: the cache is
+// not evidence of current state, and a record acknowledged elsewhere since must not come back as a
+// lockout here. The first board read (or realtime row) that carries the record clears the flag,
+// and only then is escalation decided — from database truth.
+function lockoutEligible(c){return alarmEligible(c)&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!c.kitchen_ack_at&&!isSupersededRow(c)}
+
+// ── QUEUE POLICY — the ONLY place lockout ordering is decided ─────────────────────────────
+// Product Owner decision (W2-K1, Oct 9 2026): an UN-ACKNOWLEDGED anaphylaxis lockout takes priority
+// over a lockout that is at a ROUTINE step (Prep, or any stage after acknowledgement).
+//   · Un-acknowledged records wait in lockoutQueue and are shown oldest first (created_at).
+//   · A record displaced while at a routine step waits in lockoutRoutine — the ROUTINE queue — and
+//     joins the BACK of it — first displaced, first back (FIFO; integrator decision). It is shown again, at the stage its own record says it is at, once no
+//     un-acknowledged record is waiting. Nothing is dropped, rewritten or acknowledged by this:
+//     preemption changes only what is on screen.
+//   · A lockout at its ACK step is never preempted — not by a routine record, and not by another
+//     un-acknowledged one (switching between two owed acknowledgements gains nothing and pulls the
+//     record out from under the cook's eyes). Sole exception: within the very task that put it up,
+//     before anything is painted, so a same-moment burst still opens on its oldest record.
+//   · An in-flight write for the on-screen record is never interrupted: while it is outstanding
+//     (_writing) or its outcome is being settled by a board read (_settling), the arrival waits. It
+//     takes the screen once the write has settled — success, refusal or timeout.
+//   · A HOLD running on a routine step when it is preempted is cancelled: it has written nothing and
+//     writes nothing (renderLockout cancels the displaced record's hold).
+//   · The on-screen record acknowledged by ANOTHER display while a routine record waits: it has lost
+//     the priority it was shown for, so the waiting routine record returns (see syncLockouts).
+var lockoutRoutine=[];
+function lockoutRoutineEligible(c){return alarmEligible(c)&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!!c.kitchen_ack_at&&!isSupersededRow(c)}
+function lockoutRoutineWaiting(){
+  lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId&&lockoutQueue.indexOf(q)<0&&lockoutRoutineEligible(cards[q])});
+  return lockoutRoutine.length;
+}
+// The on-screen record is at a routine step: database-confirmed acknowledged AND drawn past the
+// ack step (a record acknowledged elsewhere is still at 'ack' until syncLockouts redraws it).
+function lockoutAtRoutine(){var c=lockoutId&&cards[lockoutId];return !!(c&&c.kitchen_ack_at&&lockoutStage&&lockoutStage!=='ack')}
+function lockoutBusy(){var c=lockoutId&&cards[lockoutId];return !!(c&&(c._writing||c._settling||(c._dwellUntil&&Date.now()<c._dwellUntil)))}
+// OUTCOME DWELL. When a write for the record ON the lockout settles — success, refusal, timeout, or
+// the end of a settling board read — its outcome is drawn in place ("Prep Area Cleared", "NOT
+// recorded", "No response"). A waiting owed record must not replace it in the same task, before it
+// is ever painted (§11: the cook who held must see what happened). So the record keeps the screen for
+// LOCKOUT_DWELL_MS; the waiting record is still alarming and counted in "1 of N" meanwhile, and takes
+// the screen when the dwell ends. _dwellUntil is UI-ephemeral (never cached).
+var LOCKOUT_DWELL_MS=1500;
+function lockoutDwell(id){var c=cards[id];if(!c||lockoutId!==id)return;
+  c._dwellUntil=Date.now()+LOCKOUT_DWELL_MS;
+  setTimeout(function(){if(cards[id]===c&&c._dwellUntil&&Date.now()>=c._dwellUntil){delete c._dwellUntil;syncLockouts()}},LOCKOUT_DWELL_MS+20)}
+// A burst of owed arrivals in ONE task (several realtime events, one board read) is decided as a
+// whole: while the record on screen was put there in this same task — nothing has been painted, so
+// no cook has seen it — an OLDER owed arrival takes its place. After that task, an owed record on
+// screen at its ack step keeps the screen.
+var lockoutFreshId=null;
+function lockoutMarkFresh(){lockoutFreshId=lockoutId;setTimeout(function(){lockoutFreshId=null},0)}
+function lockoutPreempts(newId){
+  if(!lockoutId||!lockoutEligible(cards[newId])||lockoutBusy())return false;
+  if(lockoutAtRoutine())return true;
+  return lockoutFreshId===lockoutId&&!holdTimers[lockoutId]&&lockoutEligible(cards[lockoutId])&&lockoutOldest(newId,lockoutId)<0;
+}
+function lockoutOldest(a,b){var ta=new Date(cards[a].created_at).getTime(),tb=new Date(cards[b].created_at).getTime();
+  return ta!==tb?ta-tb:(a<b?-1:a>b?1:0)}
+function lockoutNextId(){
+  if(lockoutWaiting())return lockoutQueue.slice().sort(lockoutOldest)[0];
+  lockoutRoutineWaiting();return lockoutRoutine[0]||null;
+}
+// Applied after every board change (syncLockouts): a routine lockout that is free to yield yields to
+// the oldest waiting un-acknowledged record.
+function lockoutApplyPriority(){
+  if(!lockoutId||!lockoutAtRoutine()||lockoutBusy())return;
+  if(lockoutWaiting())renderLockout(lockoutNextId(),'ack');
+}
+// What a record returning from the routine queue shows besides its stage: only a still-current
+// failure of ITS lockout step, never an unrelated row message.
+// A refusal shown on the lockout when the record was displaced is KEPT with the record
+// (_lockoutErr — the row message expires after 8 s), so it returns still saying the step was NOT
+// recorded — but only while the record is still at that step.
+function lockoutReturnErr(c){if(!c)return null;
+  if(c._lockoutErr&&c._lockoutErr.stage===lockoutStageFor(c))return c._lockoutErr.err;
+  var e=c._error;return e==='err.prep'||e==='err.timeout'||e==='err.unconfirmed'?e:null}
+
+// Idempotent. Returns true only for a declaration this screen was not already holding.
+function enqueueLockout(id){
+  if(!lockoutEligible(cards[id]))return false;
+  if(lockoutId===id||lockoutQueue.indexOf(id)>=0)return false;
+  lockoutQueue.push(id);
+  // Not preempting: it waits. Preempting (or nothing on screen): the OLDEST waiting
+  // un-acknowledged record takes the screen — which is this one unless an older one waits.
+  if(!lockoutId||lockoutPreempts(id)){renderLockout(lockoutNextId(),'ack');lockoutMarkFresh()}
+  updateLockoutQueue();
+  return true;
+}
+// What the cook acts on: allergens, severity, cross-contact. Deliberately NOT the milestones —
+// a record becoming acknowledged is progress, not new content, and must never alarm.
+function lockoutContentSig(c){
+  return c?[(c.allergens||[]).map(function(a){return String(a).trim().toLowerCase()}).sort().join(','),
+            (c.severity||'').toLowerCase(),!!c.cross_contact].join('|'):'';
+}
+// A held record's content changed (a database row says so — records are immutable in normal
+// operation, so this is rare and always significant). For EVERY severity: a hold that started on
+// the old content is cancelled, and the generation moves on so a write already in flight against
+// the old content cannot chime, advance or claim completion (see writeIsStale). Wherever the
+// record is shown it is redrawn; it alarms only if it is an un-acknowledged anaphylaxis record.
+function recordContentChanged(id){
+  var c=cards[id];if(!c)return;
+  invalidateRecord(id);
+  // No longer anaphylaxis: its lockout closes (the next waiting one opens). Never leave a
+  // lockout's ANAPHYLAXIS chip on a record that is not anaphylaxis.
+  if(lockoutId===id&&!isAnaph(c.severity)){closeLockout();return}
+  if(lockoutId===id)renderLockout(id,lockoutStage,lockoutErr);
+  if(lockoutEligible(c))soundAlarm();
+}
+// Cancels any hold on the record and moves its generation on, so nothing in progress against
+// the record as it was (a hold, or a write already in flight — see writeIsStale) can complete
+// against it. Used when its content changes, when it becomes superseded (by either signal), and
+// when its lockout closes.
+function invalidateRecord(id){
+  var c=cards[id];if(c)c._gen=(c._gen||0)+1;
+  if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
+  if(recordOpenId===id)recordHolding=false;
+}
+function showLockout(id){if(enqueueLockout(id))soundAlarm()}
+function lockoutWaiting(){
+  lockoutQueue=lockoutQueue.filter(function(q){return q!==lockoutId&&lockoutEligible(cards[q])});
+  return lockoutQueue.length;
+}
+// "1 of N", in place — a text update never rebuilds the hold button under a finger.
+function updateLockoutQueue(){
+  var el=document.getElementById('lkQueue');if(!el)return;
+  var n=lockoutId?1+lockoutWaiting()+lockoutRoutineWaiting():0;
+  el.hidden=n<2;el.textContent=n<2?'':tt('lock.queue',{n:n});
+  var al=document.getElementById('lkAlso'),m=lockoutId?sameVisitOthers(cards[lockoutId]):0;
+  if(al){al.hidden=!m;al.textContent=m?tt('card.also_here',{n:m}):''}
+}
+function advanceLockout(){
+  var next=lockoutNextId();
+  // renderLockout takes it out of its queue. A record returning from the routine queue comes back
+  // at the stage its record is at now.
+  if(next)renderLockout(next,lockoutStageFor(cards[next]),cards[next].kitchen_ack_at?lockoutReturnErr(cards[next]):null);
+}
+// Run after every board change (end of renderCards). Keeps the screen consistent with the
+// records: a lockout whose record left the board closes and the next takes its place; any
+// eligible record not yet held is enqueued (a safety net — ingest already enqueues); a label
+// that arrived after the lockout went up is drawn — but never while a hold is running.
+function syncLockouts(){
+  if(lockoutId&&(!cards[lockoutId]||isSupersededRow(cards[lockoutId])||cards[lockoutId].closed_at||cards[lockoutId].served_at||!alarmEligible(cards[lockoutId]))){closeLockout();}
+  Object.keys(cards).sort(function(a,b){return new Date(cards[a].created_at)-new Date(cards[b].created_at)})
+    .forEach(function(id){if(enqueueLockout(id))soundAlarm()});
+  if(lockoutId&&!holdInProgress()){
+    var c=cards[lockoutId];
+    // Acknowledged on another display: the screen must not keep asking for a step that is done.
+    // If a routine record is waiting (it was displaced for this one) and no un-acknowledged record
+    // is, the waiting one returns; this record joins the back of the routine queue at its Prep.
+    if(lockoutStage==='ack'&&c.kitchen_ack_at&&!lockoutWriting()){
+      if(!lockoutWaiting()&&lockoutRoutineWaiting()){var back=lockoutRoutine[0];renderLockout(back,lockoutStageFor(cards[back]),lockoutReturnErr(cards[back]))}
+      else renderLockout(lockoutId,'prep');
+    }
+    else if(c._assetLabel!==lockoutLabel&&!lockoutWriting())renderLockout(lockoutId,lockoutStage,lockoutErr);
+  }
+  lockoutApplyPriority();
+  updateLockoutQueue();
+}
+function lockoutWriting(){return !!(lockoutId&&cards[lockoutId]&&cards[lockoutId]._writing)}
+var lockoutLabel=null;
+
+// ── REPEATING ALARM ──────────────────────────────────────────────────────────────────────
+// Sounds when a lockout arrives and then every ALARM_REPEAT_MS for as long as ANY anaphylaxis
+// declaration on this board is un-acknowledged in the database. Not "until dismissed": nothing
+// short of a confirmed acknowledgement stops it, and a failed or timed-out acknowledgement does
+// not. Ignores mute (chimeAnaphylaxis forces full volume), as before.
+// lastAlarmAt only advances when a sound actually played, so a board whose audio is still locked
+// sounds on the first tick after the tap rather than waiting out a cycle it was silent through.
+// Cache-restored cards are not eligible (see lockoutEligible), so they never sound.
+var ALARM_REPEAT_MS=10000,lastAlarmAt=0;
+function alarmPending(){return Object.keys(cards).some(function(id){return lockoutEligible(cards[id])})}
+// SINGLE-FLIGHT PER TICK. Any number of requests in one task (a board read enqueuing N
+// lockouts at boot, an ingest plus its sync) produce ONE alarm, played at the end of the task.
+// chimeAnaphylaxis() itself stops a still-sounding alarm before starting, so alarms never stack.
+var alarmRequested=false;
+function soundAlarm(){
+  if(!audioReady||!ctx||ctx.state!=='running')return false;
+  lastAlarmAt=Date.now();
+  if(alarmRequested)return true;
+  alarmRequested=true;
+  setTimeout(function(){alarmRequested=false;if(audioReady)chimeAnaphylaxis()},0);
+  return true;
+}
+function alarmTick(){
+  if(ctx&&audioReady&&ctx.state!=='running')audioStateCheck();
+  if(alarmPending()&&Date.now()-lastAlarmAt>=ALARM_REPEAT_MS)soundAlarm();
+}
 
 function renderLockout(id,stage,err){
+  // What the displaced record (if any) was showing, and its hold button — read BEFORE the content
+  // below is replaced.
+  var prevStage=lockoutStage,prevErr=lockoutErr,prevBtn=document.querySelector('#lockoutContent .hold-btn');
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
-  // The blocking modal never shows a record it cannot be cleared from: a carried-over record
-  // has no acknowledgement on this board. (Also closes one that became carried-over while up.)
+  if(!c)return;
+  // Never for a carried-over record: it could not be cleared from this board. (If it is the one
+  // on screen — it became carried-over — the lockout closes and the next waiting one opens.)
   if(!alarmEligible(c)){if(lockoutId===id)closeLockout();return}
   var allergens=(c.allergens||[]).join(', '),gn=guestLabel(c);
   var avoidHtml='';
@@ -2012,7 +2542,6 @@ function renderLockout(id,stage,err){
   });
   // The blocking modal is the single most urgent thing this board ever shows. If it is a
   // rehearsal, that has to be the first line read — above the table, above the allergens.
-  if(!c)return;
   // Completed milestones sit directly under the rehearsal marker, above the record they
   // belong to, so confirmation never costs the cook the table, guest or allergens.
   lockoutStage=stage;lockoutErr=err||null;
@@ -2026,21 +2555,45 @@ function renderLockout(id,stage,err){
     // every other safety milestone — same HOLD_MS, fill, cancel-on-release/leave/blur, keys.
     ?'<div class="lockout-sub">'+stepDo('prep')+'</div><button type="button" class="hold-btn red" style="max-width:500px;width:100%;min-height:60px" aria-label="'+th('hold.prep')+'" '+HOLD_ATTRS(id,'prep')+'><div class="hold-fill"></div><span class="hold-lbl">'+th('hold.prep')+'</span></button>'
     :'<div class="lockout-sub">'+th('lock.next')+'</div><button type="button" class="lockout-back" onclick="closeLockout()">'+th('nav.back')+'</button>';
-  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div class="lk-chips" style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
+  // Order: REHEARSAL first (locked), then where it came from, then how many are waiting.
+  lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')
+    +'<div class="lk-queue" id="lkQueue" role="status" hidden></div>'
+    +'<div class="lk-also" id="lkAlso" hidden></div>'+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':c._notice?'<div class="lk-note" role="status">'+th(c._notice)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div class="lk-chips" style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
     // Guest notes were missing from the lockout entirely. Verbatim, esc()'d, labelled — the
     // same rule as the record sheet.
     +(c.notes?'<div class="lk-notes"><div class="al-notes-h">'+th('notes.heading')+'</div><div class="al-notes">'+esc(c.notes)+'</div></div>':'')
     +'<div class="lk-act">'+tail+provHtml()+'</div>'
     +'<div class="lk-lang">'+langSwitchHtml()+'</div>';
-  lockoutId=id;
+  // Drawing a different record over one still owed puts the displaced one back at the FRONT of
+  // the queue — never drops it.
+  // A record displaced at a routine step joins the BACK of the routine queue (first displaced, first
+  // back). Either way a hold
+  // still running on the displaced record is cancelled — its button is gone, and it must not
+  // complete (and write) against a record no longer on screen.
+  if(lockoutId&&lockoutId!==id){
+    // Only the LOCKOUT button's hold: holdTimers is keyed by record, and a hold elsewhere (a board
+    // row) is not this screen's to cancel. endHold also resets the button and its fill.
+    if(holdTimers[lockoutId]&&prevBtn&&prevBtn.classList.contains('holding'))endHold(lockoutId,prevBtn);
+    if(lockoutEligible(cards[lockoutId])){if(lockoutQueue.indexOf(lockoutId)<0)lockoutQueue.unshift(lockoutId)}
+    else if(lockoutRoutineEligible(cards[lockoutId])){
+      var dc=cards[lockoutId],de=prevErr||lockoutReturnErr(dc);
+      if(de)dc._lockoutErr={err:de,stage:prevStage};else delete dc._lockoutErr;
+      lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId});lockoutRoutine.push(lockoutId)}
+  }
+  lockoutId=id;lockoutLabel=c._assetLabel;
+  lockoutQueue=lockoutQueue.filter(function(q){return q!==id});
+  lockoutRoutine=lockoutRoutine.filter(function(q){return q!==id});
+  delete c._lockoutErr;
   lk.classList.add('on');
+  updateLockoutQueue();
 }
 
 // After Confirm Received: the SAME lockout card, now stating Allergy Received and offering the
 // existing next requirement. It used to replace the whole card with a different screen.
 function showLockoutProtocol(id){renderLockout(id,'prep')}
 
-function closeLockout(){lockoutId=null;lockoutStage=null;lockoutErr=null;document.getElementById('lockout').classList.remove('on')}
+// Leaving one lockout opens the next waiting one, if any.
+function closeLockout(){if(lockoutId)invalidateRecord(lockoutId);lockoutId=null;lockoutStage=null;lockoutErr=null;lockoutLabel=null;document.getElementById('lockout').classList.remove('on');advanceLockout()}
 
 // Minimize is a local UI preference (ghosting the card into the side rail).
 // The minimized_at write is bookkeeping for admin reporting. If the write
@@ -2052,9 +2605,11 @@ async function minimizeCard(id){
   if(cards[id]._writing)return;
   cards[id]._writing=true;
   ghosted[id]=true;renderCards();
-  var {error}=await sbv.from('allergen_declarations').update({minimized_at:new Date().toISOString()}).eq('id',id);
+  var r=await writeDeclaration(id,{minimized_at:new Date().toISOString()});
+  if(!cards[id])return;
   delete cards[id]._writing;
-  if(error){console.error('[kitchen] minimize bookkeeping failed:',error);showRowError(id,'err.minimize');return}
+  // Intent is preserved on failure or timeout (§12.5): the operator chose to hide it.
+  if(r.error){console.error('[kitchen] minimize bookkeeping failed:',r.error);showRowError(id,'err.minimize');return}
   delete cards[id]._error;
   cacheCards();
 }
@@ -2069,11 +2624,9 @@ function checkEscalations(){
   // acknowledgement only (see the contract above), so an in-flight or failed attempt does
   // not appear here and cannot suppress a required escalation. Do NOT substitute isAcked()
   // — that predicate includes _ackPending and would restore the false-safety defect.
-  // Carried-over records never escalate: they are not this service's acknowledgement window,
-  // and the board cannot acknowledge them (alarmEligible, CARRIED-OVER RULES).
-  Object.keys(cards).forEach(function(id){var c=cards[id];if(!alarmEligible(c))return;if(c.kitchen_ack_at||c.closed_at||c.served_at)return;
+  Object.keys(cards).forEach(function(id){var c=cards[id];if(!alarmEligible(c)||c.kitchen_ack_at||c.closed_at||c.served_at||c._fromCache)return;
     var elapsed=Date.now()-new Date(c.created_at).getTime();var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
-    if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity))chimeAnaphylaxis();else chimeStandard()}
+    if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity)){if(Date.now()-lastAlarmAt>=1500)soundAlarm()}else chimeStandard()}   // anaphylaxis through the single-flight alarm; an alarm that has just sounded (an arrival in the same moment, e.g. a reconnect read) is not doubled
   });
 }
 
@@ -2081,6 +2634,7 @@ setInterval(function(){
   Object.keys(cards).forEach(function(id){if(cards[id].closed_at||cards[id].served_at)return;
     var el=document.getElementById('timer-'+id),ow=el&&owedStep(cards[id]);if(ow)el.textContent=fmtTimer(ow.since)});
   checkEscalations();
+  alarmTick();
   // Covers the reconcile that neither succeeds nor fails because its request hangs: no
   // callback runs, so nothing else would ever mark the board degraded.
   if(online&&lastReconcileOk&&Date.now()-lastReconcileOk>STALE_AFTER_MS)setOnline(false);
@@ -2095,17 +2649,29 @@ document.addEventListener('touchstart',resetDim);document.addEventListener('mous
 // Changing the key is the only eviction path that exists. The removeItem calls clear
 // the old keys so a stale payload does not sit in storage indefinitely.
 var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
-// _writing is stripped on the way out. It is an in-flight guard, not state, and it is
-// cleared by the function that set it — but a write that HANGS never reaches its clear,
-// so the flag can still be set when some OTHER card's write succeeds and calls this.
-// Persisting it there would restore a permanently locked card on the next load, which is
-// precisely the failure the guard's clear-before-error-branch exists to avoid.
-// Stripped by name rather than by a general underscore strip: that broader change is
-// refactor decision 5 on kitchen-shared-ingest and is deliberately not taken here.
-function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return (k==='_writing'||k==='_ackPending')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted))}catch(e){}}
+// Refactor decision 5: EVERY underscore field is stripped on the way out. They are this page's
+// UI state (_writing, _ackPending, _escalated, _error, _notice, _gen, _assetLabel…), and a
+// reload must start from records, not from latches an earlier page life left set — an
+// _escalated restored from cache used to suppress the escalation a reloaded board owed.
+// The supersession registry travels with the cache, trimmed to what the cached cards need: the
+// cards' own metadata, every successor that names one of them, and those successors' metadata. So a
+// record hidden because something replaced it is still hidden when it is restored after a reload,
+// before any board read.
+var SUPER_K='hc_k_supersession_v1';
+function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return (typeof k==='string'&&k.charAt(0)==='_')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted));
+  var meta={},succ={};Object.keys(cards).forEach(function(id){if(rowMeta[id])meta[id]=rowMeta[id];
+    if(successorsOf[id]){succ[id]=successorsOf[id];Object.keys(successorsOf[id]).forEach(function(s2){if(rowMeta[s2])meta[s2]=rowMeta[s2]})}});
+  localStorage.setItem(SUPER_K,JSON.stringify({m:meta,s:succ}))}catch(e){}}
+// Restored through the same ingest as every other source, so an un-acknowledged anaphylaxis
+// record in the cache is a lockout from first paint. Underscore fields an older build cached
+// are dropped on the way in.
 function loadCache(){try{
   localStorage.removeItem('hc_k_cards');localStorage.removeItem('hc_k_ghosts');
-  var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(c)cards=JSON.parse(c);if(g)ghosted=JSON.parse(g)}catch(e){}}
+  var c=localStorage.getItem(CACHE_K);var g=localStorage.getItem(GHOST_K);if(g)ghosted=JSON.parse(g);
+  try{var sr=JSON.parse(localStorage.getItem(SUPER_K)||'null');if(sr&&sr.m&&sr.s){
+    Object.keys(sr.m).forEach(function(id){rowMeta[id]=Object.assign(rowMeta[id]||{},sr.m[id])});
+    Object.keys(sr.s).forEach(function(id){successorsOf[id]=Object.assign(successorsOf[id]||{},sr.s[id])})}}catch(e){}
+  if(c){var o=JSON.parse(c);Object.keys(o).forEach(function(id){noteRow(o[id])});Object.keys(o).forEach(function(id){ingestDeclaration(o[id],'cache')})}}catch(e){}}
 function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
 
 // Bounds a READ at READ_TIMEOUT_MS. `fetch` has no default timeout and supabase-js sets
@@ -2128,10 +2694,10 @@ function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var b
 // abort already bounds the whole operation including any retries. Disabling them only
 // avoids spending the budget on attempts we would not wait for.
 //
-// ⚠ WRITES ARE NOT ROUTED THROUGH THIS. A write that times out may still have COMMITTED
-// server-side — the abort cancels this client's wait, not the server's transaction — so
-// the existing revert-on-error would assert "not acknowledged" about a row the database
-// may show as acknowledged. That needs indeterminate-state handling, not a timeout.
+// ⚠ WRITES ARE NOT ROUTED THROUGH THIS — they use boundWrite(). A write that times out may still
+// have COMMITTED server-side (the abort cancels this client's wait, not the server's
+// transaction); boundWrite's callers handle that by reverting, saying "Not saved", and letting the
+// next board read restore any milestone that did land (set-once-forward fold).
 function boundRead(q){
   var ac=new AbortController();
   var timer=setTimeout(function(){ac.abort()},READ_TIMEOUT_MS);
@@ -2151,10 +2717,13 @@ function boundRead(q){
 // HEALTH IS SET HERE AND ONLY HERE. A socket event may DEGRADE the board but can never
 // promote it: a re-SUBSCRIBED channel proves a socket reconnected, not that this board
 // holds current data. Only a completed read proves that.
-async function reconcile(){
+// opts.again — the caller (a realtime INSERT) needs a read that STARTS after it; if one is
+// already in flight, one more runs as soon as it finishes.
+async function reconcile(opts){
   if(!venueId)return false;
-  if(reconcileInFlight)return false;
+  if(reconcileInFlight){if(opts&&opts.again)reconcileAgain=true;return false}
   reconcileInFlight=true;
+  var seq0=ingestSeq;
   try{
     // THE AUTHENTICATED BOARD READ. kitchen_board() takes NO ARGUMENTS: the venue comes from
     // the credential, and inclusion is "current service work", not an age window. The 36-hour
@@ -2166,29 +2735,10 @@ async function reconcile(){
     // Rehearsal identity and current-work classification both arrive inside the board read
     // now — service_kind per row, and membership already applied by the server.
     // Oldest-first so any escalation surfaces the longest-waiting case first.
-    res.data.slice().reverse().forEach(function(d){
-      var label=(d.table_label||'T?')+(d.zone_name?' · '+d.zone_name:'');
-      var host=mergedInto[d.id];
-      // never a second card — and never fold across the carried-over boundary
-      if(host&&cards[host]&&canMergeInto(cards[host],d)){foldMergedContent(cards[host],d);return}
-      if(host&&!(cards[host]&&canMergeInto(cards[host],d)))delete mergedInto[d.id];
-      // A superseded declaration is history, not an active card. Dropped rather than
-      // rendered so a corrected-away allergen or a lowered severity cannot sit on the board
-      // next to the current declaration.
-      if(d.superseded_at){ if(cards[d.id])delete cards[d.id]; return }
-      var cur=cards[d.id];
-      if(cur){
-        // A card with a write outstanding is left entirely alone. Folding mid-write would
-        // race the optimistic value against a database row that does not have it yet.
-        if(cur._writing)return;
-        foldDeclaration(cur,d);
-        syncBoardComputed(cur,d);
-        cur._assetLabel=label;
-      }else{
-        var seed={};Object.keys(d).forEach(function(k){if(k.charAt(0)!=='_')seed[k]=d[k]});
-        seed._assetLabel=label;cards[d.id]=seed;
-      }
-    });
+    // Every reference first, from every row (superseded ones included), so no row is escalated
+    // before the read has said whether something replaced it.
+    res.data.forEach(noteRow);
+    res.data.slice().reverse().forEach(function(d){ingestDeclaration(d,'reconcile')});
     // THE SERVER RESULT IS THE BOARD. Reconcile used to be additive only — it folded and
     // created, and removed a card solely when the row came back superseded. Anything ever
     // cached on this tablet therefore stayed on screen for ever, which is how a board ends up
@@ -2201,26 +2751,16 @@ async function reconcile(){
     // authoritative only while no successful read has happened.
     var seen={};res.data.forEach(function(d){seen[d.id]=1});
     Object.keys(cards).forEach(function(id){
-      if(seen[id]||cards[id]._writing)return;
-      delete cards[id];delete ghosted[id];delete mergedInto[id];
+      if(seen[id]||cards[id]._writing||(cards[id]._seq||0)>seq0)return;
+      dropCard(id);
     });
 
-    // A lockout up for a record that has since become carried-over is closed: it could never be
-    // cleared from this board.
-    if(lockoutId&&!alarmEligible(cards[lockoutId]))closeLockout();
     lastReconcileOk=Date.now();
     setOnline(true);
     renderCards();cacheCards();resetDim();
     return true;
-  }finally{reconcileInFlight=false}
-}
-
-// The single alarm decision for a row that just arrived. Every realtime ingest branch calls
-// this instead of chiming / locking out directly, so the carried-over gate cannot be missed.
-function ingestAlert(id){
-  var c=cards[id];
-  if(!alarmEligible(c))return;
-  if(isAnaph(c.severity)){chimeAnaphylaxis();showLockout(id)}else{chimeStandard()}
+  }finally{reconcileInFlight=false;
+    if(reconcileAgain){reconcileAgain=false;setTimeout(function(){reconcile()},0)}}
 }
 
 function startReconcileLoop(){
@@ -2232,100 +2772,18 @@ function subscribe(){
   if(!paired())return;
   sbv.channel('kitchen-'+venueId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
-      var d=payload.new;
-      // Bounded because a hang here blocks ingest ENTIRELY — every ingest step
-      // (the cards write, the severity branch, chimeAnaphylaxis, showLockout, the
-      // delivery handshake) sits inside this callback. A timeout converts that into
-      // the already-correct failure case: res.data is null, the label falls back to
-      // 'T?', and ingest proceeds.
-      boundRead(sb.from('assets').select('label,zone').eq('id',d.asset_id).single()).then(function(res){
-        d._assetLabel=(res.data?res.data.label:'T?')+(res.data&&res.data.zone?' · '+res.data.zone:'');
-        // Merge only a genuine continuation: same guest session AND same table.
-        // Both guards are load-bearing.
-        //  - Truthy check: guest_session_id is nullable and 6 of 9 live rows are
-        //    NULL, and `null === null` is true — without this, any NULL-session row
-        //    merged into the first open NULL-session card.
-        //  - asset_id check: a shared session id alone never proved same-table, so
-        //    two guests sharing one would concatenate across tables. A cook would
-        //    read allergens nobody at that table declared, and the guest who did
-        //    declare them would have no card at all.
-        // A correction never merges into its predecessor: it REPLACES it. The monotonic
-        // merge below (union allergens, MAX severity) is correct for a guest adding a
-        // second declaration, and exactly wrong for a correction, which may legitimately
-        // remove an allergen or lower a severity.
-        if(d.supersedes_id){
-          var prior=cards[d.supersedes_id];
-          if(prior){ prior.superseded_at=prior.superseded_at||new Date().toISOString(); delete cards[d.supersedes_id]; }
-          cards[d.id]=d; d._updated=true;
-          ingestAlert(d.id);
-          renderCards();cacheCards();resetDim();
-          return;
-        }
-        var existing=d.guest_session_id&&Object.keys(cards).find(function(id){
-          return cards[id].guest_session_id===d.guest_session_id&&cards[id].asset_id===d.asset_id&&!cards[id].closed_at
-            &&canMergeInto(cards[id],d)   // never into a carried-over card
-        });
-        if(existing){
-          var cur=cards[existing];
-          // Severity is reconciled, not silently kept. Previously the merge left the
-          // existing value in place, so a guest adding an anaphylaxis allergen to a
-          // discomfort session stayed 'discomfort' — the same severity flattening
-          // fixed on the writer side in tableside a720b36, reappearing on the reader.
-          var merged=maxSeverity(cur.severity,d.severity);
-          var upgraded=merged!==cur.severity;
-          cur._updated=true;
-          cur.allergens=(cur.allergens||[]).concat(d.allergens||[]);
-          cur.severity=merged;
-          // Cross-contact merges with the same never-downgrade shape as severity.
-          // Discarding d.cross_contact flattened it exactly as severity was flattened:
-          // the lockout's XC badge reads this field, and tableside computes it with
-          // some() across the declared allergens, so a merge that drops it loses a
-          // flag the guest did set.
-          cur.cross_contact=cur.cross_contact||d.cross_contact;
-          cur.kitchen_ack_at=null;
-          // Everything downstream of severity is re-derived, not just stored. Row
-          // colour (buildCard sevCol/rowCls) and the escalation timeout
-          // (checkEscalations isAnaph) read c.severity and pick it up on the render
-          // below. The _escalated latch does NOT — and this next line is the whole
-          // reason the timeout change takes effect. checkEscalations fires at most
-          // once per card (`!c._escalated`), so an upgraded card that already
-          // escalated as 'discomfort' would keep the 90s timeout it fired against and
-          // never get the 30s anaphylaxis one. That defect would have survived the
-          // severity fix and been invisible: severity correct on the card, escalation
-          // still slow. Not redundant — do not remove.
-          if(upgraded)delete cur._escalated;
-          // This row has no card of its own — it lives inside `existing`. Recorded so a
-          // reconciliation read folds it into the host instead of rendering it again.
-          mergedInto[d.id]=existing;
-          // The merge nulls kitchen_ack_at locally to force re-acknowledgement, but the
-          // database row still holds the old ack. Without this flag the next reconcile
-          // would restore it and silently drop the re-ack requirement.
-          cur._reackRequired=true;
-          ingestAlert(existing);
-        }
-        else{cards[d.id]=d;sbv.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});ingestAlert(d.id)}
-        renderCards();cacheCards();resetDim();
-      });
+      // Ingest FIRST, synchronously — lockout, alarm and delivery never wait on a lookup. The
+      // board read is asked for at once to supply the service-point label (and rehearsal
+      // identity) from the same authenticated source as every other row.
+      ingestDeclaration(payload.new,'insert');
+      renderCards();cacheCards();resetDim();
+      reconcile({again:true});
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'allergen_declarations',filter:'venue_id=eq.'+venueId},function(payload){
-      // _writing / _ackPending / _reackRequired / _error are carried across. Dropping
-      // _writing here would defeat the reconciliation in-flight guard, and dropping
-      // _ackPending would silently discard an attempt still outstanding.
-      var d=payload.new;if(cards[d.id]){var p=cards[d.id];var ui={_assetLabel:p._assetLabel,
-        // service_kind is computed by kitchen_board(), not a column, so a raw UPDATE row never
-        // carries it. Replacing the card wholesale erased rehearsal identity on every write —
-        // the REHEARSAL badge vanished at Mark Served. Carried only while the row is still
-        // stamped to the same instance; a restamp waits for the next board read.
-        service_kind:(d.service_instance_id===p.service_instance_id?p.service_kind:undefined),
-        _updated:p._updated,_escalated:p._escalated,_writing:p._writing,_ackPending:p._ackPending,_reackRequired:p._reackRequired,_error:p._error};
-        // carried_over / record_service_date / service_label are board-computed too: kept from
-        // the card, so a write on a carried-over record cannot turn it "current" and alarming.
-        Object.assign(ui,keepBoardComputed(p,d));
-        cards[d.id]=Object.assign(d,ui);
-      // Database provenance settles a pending attempt.
-      if(cards[d.id].kitchen_ack_at)delete cards[d.id]._ackPending;
-      Object.keys(cards[d.id]).forEach(function(k){if(cards[d.id][k]===undefined)delete cards[d.id][k]});
-      if(d.closed_at)delete ghosted[d.id];renderCards();cacheCards()}
+      var d=payload.new;if(!cards[d.id])return;
+      ingestDeclaration(d,'update');
+      if(d.closed_at)delete ghosted[d.id];
+      renderCards();cacheCards();
     })
     // TIMED_OUT was previously unhandled, so setOnline was never called for it and the
     // heartbeat kept whatever state it already had. realtime-js emits it on its own 10s
@@ -2390,7 +2848,7 @@ async function loadVenue(){
     vdRenderStatus();
     // Nothing on the board is trustworthy without a credential, so do not leave stale cached
     // cards implying live work.
-    cards={};renderCards();
+    cards={};lockoutQueue=[];if(lockoutId)closeLockout();renderCards();
     openPair();
     return;
   }

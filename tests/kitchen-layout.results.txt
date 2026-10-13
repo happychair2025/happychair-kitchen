@@ -62,7 +62,9 @@ PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 726 / 800
+PASS  [lockout done] lockout action in view without scrolling   → 687 / 800
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -88,13 +90,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 153 vs 106
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ en · viewport 1180×820 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -159,7 +163,9 @@ PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 746 / 820
+PASS  [lockout done] lockout action in view without scrolling   → 697 / 820
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -185,13 +191,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 153 vs 106
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ en · viewport 1024×768 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -256,7 +264,9 @@ PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 694 / 768
+PASS  [lockout done] lockout action in view without scrolling   → 687 / 768
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -282,13 +292,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 153 vs 106
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ en · viewport 820×1180 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -341,19 +353,21 @@ PASS  [served recorded] rail stages aligned on one line   → 649,649,649,649
 PASS  [served recorded] no English interface text
 PASS  [lockout received] lockout has its own EN | ES, inside the viewport
 PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout received] lockout action in view without scrolling   → 917 / 1180
+PASS  [lockout received] lockout action in view without scrolling   → 941 / 1180
 PASS  [lockout received] hold label fully inside its button   → 21/60
 PASS  [lockout received] hold button at least 52px tall   → 60
 PASS  [lockout received] no English interface text
 PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
 PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout prep] lockout action in view without scrolling   → 935 / 1180
+PASS  [lockout prep] lockout action in view without scrolling   → 959 / 1180
 PASS  [lockout prep] hold label fully inside its button   → 21/60
 PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 948 / 1180
+PASS  [lockout done] lockout action in view without scrolling   → 877 / 1180
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -379,13 +393,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 191 vs 144
 PASS  [offline] banner sits below the header, never behind it   → 91 vs 91
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ en · viewport 390×844 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -451,6 +467,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 751 / 844
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -476,13 +494,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 280 vs 233
 PASS  [offline] banner sits below the header, never behind it   → 157 vs 157
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ es · viewport 1280×800 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -548,6 +568,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 726 / 800
+PASS  [lockout done] hold label fully inside its button   → 43/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -573,13 +595,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 153 vs 106
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ es · viewport 1180×820 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -644,7 +668,9 @@ PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 746 / 820
+PASS  [lockout done] lockout action in view without scrolling   → 729 / 820
+PASS  [lockout done] hold label fully inside its button   → 43/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -670,13 +696,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 153 vs 106
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ es · viewport 1024×768 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -742,6 +770,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 694 / 768
+PASS  [lockout done] hold label fully inside its button   → 43/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -767,13 +797,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 191 vs 144
 PASS  [offline] banner sits below the header, never behind it   → 91 vs 91
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ es · viewport 820×1180 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -826,19 +858,21 @@ PASS  [served recorded] rail stages aligned on one line   → 642,642,642,642
 PASS  [served recorded] no English interface text
 PASS  [lockout received] lockout has its own EN | ES, inside the viewport
 PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout received] lockout action in view without scrolling   → 938 / 1180
+PASS  [lockout received] lockout action in view without scrolling   → 962 / 1180
 PASS  [lockout received] hold label fully inside its button   → 43/60
 PASS  [lockout received] hold button at least 52px tall   → 60
 PASS  [lockout received] no English interface text
 PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
 PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout prep] lockout action in view without scrolling   → 967 / 1180
+PASS  [lockout prep] lockout action in view without scrolling   → 992 / 1180
 PASS  [lockout prep] hold label fully inside its button   → 43/60
 PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 969 / 1180
+PASS  [lockout done] lockout action in view without scrolling   → 898 / 1180
+PASS  [lockout done] hold label fully inside its button   → 43/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -864,13 +898,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 191 vs 144
 PASS  [offline] banner sits below the header, never behind it   → 91 vs 91
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ es · viewport 390×844 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -936,6 +972,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 751 / 844
+PASS  [lockout done] hold label fully inside its button   → 43/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -961,13 +999,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 324 vs 277
 PASS  [offline] banner sits below the header, never behind it   → 201 vs 201
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ zh-CN · viewport 1280×800 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -1033,6 +1073,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 726 / 800
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -1058,13 +1100,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 160 vs 111
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ zh-CN · viewport 1180×820 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -1129,7 +1173,9 @@ PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 746 / 820
+PASS  [lockout done] lockout action in view without scrolling   → 731 / 820
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -1155,13 +1201,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 160 vs 111
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ zh-CN · viewport 1024×768 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -1227,6 +1275,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 694 / 768
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -1252,13 +1302,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 160 vs 111
 PASS  [offline] banner sits below the header, never behind it   → 53 vs 53
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ zh-CN · viewport 820×1180 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -1311,19 +1363,21 @@ PASS  [served recorded] rail stages aligned on one line   → 654,654,654,654
 PASS  [served recorded] no English interface text
 PASS  [lockout received] lockout has its own EN | ES, inside the viewport
 PASS  [lockout received] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout received] lockout action in view without scrolling   → 953 / 1180
+PASS  [lockout received] lockout action in view without scrolling   → 980 / 1180
 PASS  [lockout received] hold label fully inside its button   → 21/60
 PASS  [lockout received] hold button at least 52px tall   → 60
 PASS  [lockout received] no English interface text
 PASS  [lockout prep] lockout has its own EN | ES, inside the viewport
 PASS  [lockout prep] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout prep] lockout action in view without scrolling   → 973 / 1180
+PASS  [lockout prep] lockout action in view without scrolling   → 1000 / 1180
 PASS  [lockout prep] hold label fully inside its button   → 21/60
 PASS  [lockout prep] hold button at least 52px tall   → 60
 PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
-PASS  [lockout done] lockout action in view without scrolling   → 988 / 1180
+PASS  [lockout done] lockout action in view without scrolling   → 899 / 1180
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -1349,13 +1403,15 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 198 vs 149
 PASS  [offline] banner sits below the header, never behind it   → 91 vs 91
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+
 ════ zh-CN · viewport 390×844 ════
 PASS  [board] header: every control inside the viewport
 PASS  [board] header: venue name on one line, not clipped vertically
@@ -1421,6 +1477,8 @@ PASS  [lockout prep] no English interface text
 PASS  [lockout done] lockout has its own EN | ES, inside the viewport
 PASS  [lockout done] lockout EN | ES does not cover the rehearsal marker
 PASS  [lockout done] lockout action in view without scrolling   → 751 / 844
+PASS  [lockout done] hold label fully inside its button   → 21/60
+PASS  [lockout done] hold button at least 52px tall   → 60
 PASS  [lockout done] no English interface text
 PASS  [long allergens] board: all nine names shown, not clipped
 PASS  [long allergens] board: action still fully inside the row
@@ -1446,10 +1504,12 @@ PASS  [long allergens lockout] hold button at least 52px tall   → 60
 PASS  [long allergens lockout] no English interface text
 PASS  [long allergens lockout] no visible text under 11px
 PASS  [offline] banner fully visible, not clipped
+PASS  [offline] banner covers no part of the board   → 266 vs 217
 PASS  [offline] banner sits below the header, never behind it   → 159 vs 159
 PASS  [offline] in the display language
 PASS  [pairing] card inside the viewport, below the header
 PASS  [pairing] in the display language
 PASS  [pairing] validation message shown
 
-ALL 94 CHECKS PASS
+ALL 97 CHECKS PASS
+

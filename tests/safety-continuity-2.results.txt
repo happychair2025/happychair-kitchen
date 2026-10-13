@@ -1,0 +1,119 @@
+
+──── SETUP ────
+PASS  a real tap unlocks audio
+
+──── (f) TWO DECLARATIONS AT ONE TABLE, ONE GUEST SESSION — NO MERGING ────
+PASS  first record on the lockout
+PASS  two cards, not one
+PASS  the first card is unchanged by the second   → ["Sesame"]
+PASS  second record has its own lockout, queued
+PASS  alarm sounded for the second record   → 1
+PASS  the hold on the first completed on the first — its content never changed
+PASS  the first is acknowledged; the second is not
+PASS  lockout shows the honest count: "Also at this table: 1 other allergy record"   → Also at this table: 1 other allergy record
+PASS  no claim of correction or replacement
+PASS  row carries the same count
+PASS  "1 of 2" — the un-acknowledged second takes the screen, the first waits at Prep   → f2000000-second 1 of 2 — the next allergy opens after this one.
+PASS  alarm continues: the second is un-acknowledged
+PASS  the second record's own lockout at Confirm Received
+PASS  second acknowledged separately, once
+PASS  Back → the first returns at its Prep step
+
+──── (f) …supersession still replaces ────
+PASS  the corrected record leaves the board
+PASS  its successor is its own card with its own lockout
+PASS  successor row marked UPDATED
+
+──── (j) ACKNOWLEDGEMENT NEVER SOUNDS THE ALARM ────
+PASS  M2 · queued record acknowledged elsewhere: dropped from the queue, NO alarm   → alarms+0
+PASS  J · on-screen record acknowledged elsewhere: lockout → Prep, NO alarm   → stage=prep alarms+0
+PASS  K · own ack timed out; database has it
+PASS  K · board read restores it → Prep, NO alarm on confirmation   → alarms+0
+PASS  K · the unknown-state message is cleared by the read
+
+──── (o) ANOTHER DECLARATION ARRIVES WHILE AN ACK WRITE IS IN FLIGHT ────
+PASS  the in-flight ack lands on its own record only
+PASS  the new record is still owed: alarm pending, queued
+PASS  after the ack settled, the owed arrival takes the screen; the host waits at Prep
+PASS  Back → the host returns at Prep
+
+──── (p) A WRITE THAT RESOLVES AFTER THE RECORD CHANGED IS STALE ────
+PASS  at Prep
+PASS  content change redraws the lockout with the new content
+PASS  stale write: no confirmation chime
+PASS  stale write: notice, and the screen shows what the database has
+PASS  record superseded mid-write: no chime, no Prep drawn for it
+PASS  the successor holds the lockout at Confirm Received
+
+──── (q) GUARDED WRITE MATCHED NOTHING AND THE RE-READ FAILED ────
+PASS  says the state is unknown — never "NOT recorded"
+PASS  row: "Not confirmed — tap to check"
+PASS  record: "Couldn't confirm — check the record."
+PASS  next good read resolves it to the recorded state
+
+──── (r) A HOLD ON CHANGED CONTENT IS CANCELLED — ANY SEVERITY ────
+PASS  severe record: the stale hold wrote nothing   → 0
+PASS  row shows the new content, hold still available
+
+──── (s) SUPERSEDED ONLY BY REFERENCE (successor names it; its own superseded_at never landed) ────
+PASS  6b · the cancelled hold is SAID on the successor, not silently dropped
+PASS  6b · the hold wrote NOTHING to the predecessor   → 0
+PASS  6b · successor on the lockout at Confirm Received
+PASS  6b · predecessor is not drawn in any band (not actionable)
+PASS  6b · predecessor not counted in the same-visit cue
+PASS  6b · ack / prep calls on the predecessor write nothing
+PASS  6b · honest notice on the successor
+
+──── (t) THE LOCKOUT RECORD STOPS BEING ANAPHYLAXIS ────
+PASS  E · lockout closed for a record that is no longer anaphylaxis   → false null
+PASS  E · no ANAPHYLAXIS chip left for it
+PASS  E · alarm no longer pending for it
+PASS  E · the record stays on the board, actionable, as SEVERE
+
+──── (u) AN INSERT DURING AN IN-FLIGHT BOARD READ IS NOT PRUNED BY IT ────
+PASS  F · lockout up on the insert
+PASS  F · not pruned by the stale read that began before it
+PASS  F · one more board read ran after the stale one   → 2 reads
+PASS  F · still there after the next poll
+
+──── (v) A REFERENCE FROM ANOTHER TABLE OR SESSION NEVER HIDES A RECORD ────
+PASS  X1 · cross-table INSERT naming T3: T3 stays on the board, on the lockout, alarming
+PASS  X1 · the attacking row is not presented as a correction (no UPDATED)
+PASS  X2 · cross-table reference via board read only: T4 stays live and owed
+PASS  same table, DIFFERENT guest session: the named record stays live
+PASS  a non-matching reference never writes: no milestone to any named record
+
+──── (w) SUPERSESSION CHAINS AND SUCCESSORS THAT LEAVE THE BOARD ────
+PASS  C1 · A ← B ← C with only B.superseded_at: A is hidden and not owed
+PASS  C1 · A never reached the lockout, not even for an instant   → wc000000-c|ack
+PASS  C1 · no milestone is ever written to A
+PASS  C1 · C is the live record
+PASS  C2 · same-visit successor by INSERT: A leaves the lockout, B takes it
+PASS  C2 · B leaves the board: A does NOT come back
+PASS  C3 · same-visit successor by board read: A hidden, off the lockout
+PASS  C3 · B leaves the board: A does NOT come back
+PASS  invariant · every owed anaphylaxis record is on the lockout or queued
+
+──── (x) SELF-REFERENCE, CYCLES AND OLDER "SUCCESSORS" HIDE NOTHING ────
+PASS  S1 · a row naming ITSELF stays on the board, owed and alarming
+PASS  S2 · a cycle P ↔ Q hides NEITHER: both owed
+PASS  a "successor" OLDER than the record it names hides nothing
+PASS  none of these records was written to by the board
+
+──── (y) RELOAD — prepare: chain A ← B ← C in the cache, first board read delayed ────
+PASS  pre-reload: A hidden
+
+──── (y) RELOAD — before the first board read ────
+PASS  no board read yet (the cache is all the board has)
+PASS  A restored from the cache is still hidden (registry travelled with the cache)
+PASS  C from the cache is shown but not escalated
+PASS  a hold on an unconfirmed cached card writes NOTHING
+PASS  …and says so on the row: "Not confirmed with the server yet — nothing was recorded."
+
+──── (y) RELOAD — after the first board read ────
+PASS  A still hidden and never written
+PASS  C confirmed: live, owed, on the lockout
+
+ALL 81 CHECKS PASS
+
+network: no request left the local server

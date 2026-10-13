@@ -6,6 +6,7 @@ PASS  reading the default wrote nothing (no locale save, no AllergyShield write)
 PASS  cached for first paint on the next load
 
 ALL 5 CHECKS PASS
+
       display stored default: zh-CN
 PASS  board started in this display's stored language
 PASS  board text matches
@@ -14,6 +15,7 @@ PASS  reading the default wrote nothing (no locale save, no AllergyShield write)
 PASS  cached for first paint on the next load
 
 ALL 5 CHECKS PASS
+
       display stored default: es
 PASS  board started in this display's stored language
 PASS  board text matches
@@ -22,3 +24,4 @@ PASS  reading the default wrote nothing (no locale save, no AllergyShield write)
 PASS  cached for first paint on the next load
 
 ALL 5 CHECKS PASS
+

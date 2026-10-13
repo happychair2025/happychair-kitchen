@@ -258,31 +258,138 @@ the 14-state walk (`renders/walk-qa.probe.js`) in each language.
 Review matrix: `i18n/KITCHEN_STRINGS_EN_ES_ZH.md` (+ review page), highest-risk terms first.
 Spanish and Chinese stay DRAFT until native speakers who know U.S. restaurant kitchens review them.
 
+## Offline harness (`harness/`)
+
+`node tests/harness/run.js tests/<probe>.probe.js --query='inst=1'` drives the real `index.html` in
+headless Chrome over the DevTools protocol, with no dependencies. **No request leaves the machine:**
+the jsdelivr supabase-js tag is replaced by `harness/stub-supabase.js` (dead clients that record any
+call in `window.__ANON__`), the fixture is inserted before the boot IIFE, and every request to
+anything other than the local server is failed by the DevTools Fetch domain and listed at the end
+of the output. `/__tap?x=&y=` gives a probe a TRUSTED input event (audio unlock); `/__shot?n=`
+saves a screenshot to `../shots-kitchen/`. `harness/run-all.sh` runs the gate and every current
+probe and rewrites the `*.results.txt` files.
+
+Stale before this change (fail on 09b6b94 too, not run): `board-selection` (live data),
+`board-ux` / `lockout` / `verification-contract` (the retired `?fixture=1` built-in fixture),
+`render-churn` / `second-check-persistence` (reference the removed `verifyOpenId`),
+`paired-authorization` (its own 115h fixture).
+
+The fixture's write stub now models the supabase-js builder (`update().eq().is().select().abortSignal()`,
+metadata non-enumerable) and records the once-per-record DELIVERY receipt in `__DW__`, separately
+from milestone writes in `__W__`. `?rows=none` starts empty; `window.__WRITE_MODE='ok'|'err'|'hang'`.
+
+## Safety continuity (`safety-continuity.*`) — W1-3
+
+Fault injection with the realtime socket dead throughout. (a) a record found ONLY by the board read
+→ lockout within one reconcile cycle, alarm, exactly one guarded `delivered_to_kitchen_at` write;
+the alarm repeats every 10s, survives a refused acknowledgement, and stops once the ack is
+confirmed. (b) two anaphylaxis INSERTs in one moment → first on the lockout, second queued,
+"1 of 2", each acknowledged individually, Back opens the next; labels come from the board read and
+the anonymous client is never used. (d) a hung write is released at 10s, fully reverted, the row says
+"Not saved — tap to retry", the sheet says why, a retry records once; a write that committed after
+its timeout is restored by the next board read and the message clears. (e) a `carried_over` record
+sits in "From Earlier Service" between Needs You and In Progress, actionable. (c) after reload the
+blocking "Tap to enable allergy alarms" prompt covers the lockout, nothing claims to sound, a real tap
+unlocks and the pending alarm sounds. `cold=1` repeats (c) in a fresh profile with the browser's
+autoplay rule EMULATED (headless Chrome does not enforce it): an untrusted click cannot dismiss.
+
+Added after the first independent verification: (g) a retry after a timed-out write that
+committed — guarded IS NULL, matches nothing, the board is re-read, "Already recorded — this hold
+changed nothing.", recorded time unchanged, no confirmation chime; (h) three lockouts in one board
+read = ONE alarm, never stacked, slider volume intact; (i) after reload, cached un-acknowledged
+records raise no lockout and no alarm before the first board read, one the read shows acknowledged
+elsewhere never becomes a lockout, one absent is dropped. 81 + 11 checks.
+
+## Safety continuity part 2 (`safety-continuity-2.*`) — client-side merge REMOVED
+
+After the second verification failure the client-side merge of continuation declarations was
+subtracted, not patched: every `allergen_declarations` row is its own card, lockout, milestones and
+acknowledgement. (f) two declarations at one table and guest session → two cards and two lockouts,
+each acknowledged separately; the second never changes the first; a hold in progress on the first
+completes on the first (its content never changed); an honest count cue "Also at this table: 1 other
+allergy record" with no correction claim; supersession still replaces. (j) becoming acknowledged —
+elsewhere on screen, elsewhere in the queue, or by this display's own late commit — never sounds
+the alarm. (o) another declaration while an ack is in flight: the ack lands on its own record only,
+the new one stays owed. (p) a write resolving after its record's content changed, or after it was
+superseded, is stale — no chime, no stage drawn from it, "This record changed while saving —
+showing what is recorded." (q) a guarded write that matched nothing followed by a failed re-read says
+"Couldn't confirm — check the record." / "Not confirmed — tap to check", never "NOT recorded", and
+the next good read resolves it. (r) a hold on content that changes is cancelled for any severity.
+Third verification round: (s) a record superseded ONLY by its successor's `supersedes_id` (its own
+`superseded_at` never landed) — a hold in progress writes nothing, it leaves every band and the
+same-visit count, direct milestone calls on it write nothing, the successor carries "The record you
+were holding was replaced by this newer one — nothing was recorded."; (t) a lockout record whose
+severity changes away from anaphylaxis closes its lockout — no ANAPHYLAXIS chip, no alarm — and stays
+on the board as itself; (u) an INSERT that arrives while a board read is in flight is not pruned by
+that read, and one more read runs after it. Fourth round: (v) a `supersedes_id` from another table
+or another guest session is IGNORED — the named record stays on the board, on the lockout and
+alarming, and the naming row is not shown as UPDATED (the client honours a reference only for the
+same asset_id and the same non-null guest_session_id; `db-proposals/20261008_supersedes_same_visit_check.sql`
+makes the database refuse such rows); (w) a chain A ← B ← C hides A when only B's superseded_at
+landed — A never reaches the lockout, not even for an instant, and is never written — and A does not
+come back when its successor leaves the board. A hold cancelled because a successor arrived is said
+on the successor. Fifth round: (x) a row naming itself, a cycle P ↔ Q, and a "successor" older than
+the record it names hide nothing — a reference counts only if it is not a self-reference, the successor
+is strictly newer, the predecessor does not name the successor back, and both rows' rehearsal/live
+kind is KNOWN from the server and equal (a kind only inferred for a realtime row does not count);
+(y) a reload with the first board read delayed: the supersession registry travels with the cache, so
+a replaced record restored from the cache stays hidden; a hold on a cached card that no board read has
+confirmed writes nothing and says "Not confirmed with the server yet — nothing was recorded."; after the read
+the replaced record is still hidden and never written, and the live one is owed. 78 checks. A timed-out write now reads as UNKNOWN —
+"No response — couldn't confirm. Hold to try again." / row "Not confirmed — tap to check";
+"NOT recorded" is kept only for an explicit refusal.
+
+The fixture now applies `.is()` write guards to `__ROWS` as PostgREST would, and has
+`__WRITE_MODE='hold'` (released by the probe, commits on match) and `'hangcommit'` (commits, never
+answers), `__BOARD_FAIL` for a failing board read, can delay the first board read and seed rows
+across a reload (sessionStorage), and logs every lockout drawn (`__LKLOG`).
+
+Probe adaptations for refactor decision 1 (every un-acknowledged anaphylaxis record raises its own
+lockout on load, queued one at a time — fixture record A now does so at boot): `showLockout(X)`
+used to mean "draw X's lockout now", which is `renderLockout(X,'ack')`; kitchen-milestones'
+"no lockout popped" is asserted as "this action did not change which lockout is up", and Back now
+also asserts that the next waiting lockout opens.
+
 ## Carried-over open work (`carried-over.*`)
 
-`node --test tests/carried-over.test.mjs`. No browser, no network, no dependencies.
+Run with `node --test tests/carried-over.test.mjs`. It needs no browser, no network and no
+dependencies.
 
-`carried-over.harness.mjs` boots the REAL inline board script in node, with:
+**What runs.** `carried-over.harness.mjs` boots the REAL inline board script in node with:
 
 - a minimal fake DOM;
 - a fake supabase client that serves `kitchen_board()` rows and records every write and
   realtime handler;
 - a fake `localStorage`;
-- spies on `chimeAnaphylaxis`, `chimeStandard` and the lockout.
+- spies on `soundAlarm` (the single entry to the anaphylaxis alarm), `chimeAnaphylaxis` and
+  `chimeStandard`;
+- a check of the lockout and of both lockout queues (`lockoutQueue`, `lockoutRoutine`).
 
-The pure `CARRIED-OVER RULES` block in `index.html` is also tested on its own, extracted by
-its BEGIN/END markers.
+The pure `CARRIED-OVER RULES` block in `index.html` is also tested on its own, extracted by its
+BEGIN/END markers.
 
-Covered, against both the CURRENT `kitchen_board()` (no `carried_over` column, behaviour must
-be unchanged) and the new one (admin migration `20261012100000`):
+**The rule under test** (Product Owner decision, PR #5): a carried-over record is visible, in
+its own labelled band, but never actionable and never alarming. That means:
 
-- mixed current and earlier rows;
-- the EARLIER header, which shows the count and the severity word;
-- read-only carried rows and record sheet;
-- boot cache restore, offline and from a pre-change cache;
-- realtime INSERT, including a flagged row and a new row at the same table and session;
-- realtime UPDATE keeping the flag;
-- reconnect/resync turning a current card carried-over while its lockout is up;
-- every Kitchen milestone write refused;
-- server rollback;
-- revoked display and an empty or wrong-venue board read.
+- no lockout in either queue;
+- no alarm, repeat or escalation;
+- no chime;
+- no milestone write and no delivery write.
+
+**What is covered.** Each case runs against both the CURRENT `kitchen_board()` (no
+`carried_over` column, where behaviour must be unchanged) and the new one (admin migration
+`20261012100000`):
+
+- **Mixed rows:** the band, the row, the read-only record sheet and the summary bar.
+- **Cache restore:** offline, and from a pre-change cache.
+- **Realtime INSERT:** carried rows, both anaphylaxis and routine.
+- **Realtime UPDATE:** the record keeps its flag.
+- **Resync, un-acknowledged lockout:** a record whose lockout is up becomes carried-over; the
+  lockout closes and the record leaves the queue.
+- **Resync, routine lockout:** a record displaced from a routine-step lockout becomes
+  carried-over and never returns.
+- **Writes:** every milestone write is refused, including the `writeDeclaration` defence.
+- **Server rollback** to the current `kitchen_board()`.
+- **Revoked display**, and an **empty / wrong-venue board read**.
+
+Each gate was mutation-checked: removing it fails at least one test.

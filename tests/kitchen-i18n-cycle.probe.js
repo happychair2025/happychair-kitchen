@@ -63,7 +63,7 @@ async function cycle(label,where,surfaceText,useLockoutControl){
  closeRecord(); await w(100);
 
  H('5 · ANAPHYLAXIS LOCKOUT OPEN (L) — switched from the lockout\'s own control');
- showLockout(L); await w(250);
+ renderLockout(L,'ack'); await w(250);
  const lockAt=()=>lkOn()?lockoutId+'|'+lockoutStage:'closed';
  ok('lockout up, received owed',lkOn()&&lockoutStage==='ack');
  await cycle('lockout',lockAt,()=>lk().innerText,true);

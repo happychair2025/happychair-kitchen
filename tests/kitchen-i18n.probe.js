@@ -74,7 +74,7 @@ function echo(id){const r=window.__ROWS.find(x=>x.id===id),c=cards[id];['kitchen
  closeRecord(); await w(100);
 
  H('4 · LOCKOUT IN BOTH LANGUAGES (A, opened only)');
- showLockout(A); await w(200); tap('es'); await w(300);
+ renderLockout(A,'ack'); await w(200); tap('es'); await w(300);
  ok('lockout still up on the same record and stage',lkOn()&&lockoutId===A&&lockoutStage==='ack');
  ok('lockout in Spanish, rehearsal first',/^ENSAYO · NO ES UN HUÉSPED REAL/.test(lk().innerText.trim())&&/Mantén presionado para confirmar que se recibió la alergia/.test(lk().innerText));
  ok('lockout data untranslated',/Sesame, Peanut/.test(lk().innerText)&&/Sesame oil/.test(lk().innerText));

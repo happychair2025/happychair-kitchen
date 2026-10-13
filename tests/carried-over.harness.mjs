@@ -70,7 +70,7 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
   if (exchange !== 'none') localStorage.setItem('hc_k_venue_device', JSON.stringify({ device_token: 'tok', device_id: 'dev-1' }))
   if (cache) localStorage.setItem('hc_k_cards_v2', JSON.stringify(cache))
 
-  const rec = { writes: [], rpcs: [], chimeAnaph: [], chimeStd: 0, lockouts: [], handlers: {}, fetches: [] }
+  const rec = { writes: [], rpcs: [], alarms: [], chimeStd: 0, lockouts: [], handlers: {}, fetches: [] }
   let serve = rows
   const result = v => {
     const p = Promise.resolve(v)
@@ -98,8 +98,9 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
         update(payload) {
           const w = { table, payload, id: null }
           rec.writes.push(w)
-          const r = result({ data: null, error: null })
+          const r = result({ data: [{ id: 'x' }], error: null })
           r.eq = (k, v) => { w.id = v; return r }
+          r.is = () => r
           return r
         },
       }
@@ -147,7 +148,10 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
   vm.runInContext(SCRIPT, ctx)
   // Spies on every alarm path. Function declarations are globals of the script, so internal
   // calls resolve through these replacements.
-  ctx.chimeAnaphylaxis = () => rec.chimeAnaph.push(Date.now())
+  // soundAlarm() is the single entry to the anaphylaxis alarm (first sound, repeat, escalation);
+  // chimeAnaphylaxis is spied too in case any path reaches it directly.
+  ctx.soundAlarm = () => { rec.alarms.push(Date.now()); return true }
+  ctx.chimeAnaphylaxis = () => rec.alarms.push(Date.now())
   ctx.chimeStandard = () => { rec.chimeStd++ }
   const realRender = ctx.renderLockout
   ctx.renderLockout = function (id, stage, err) {

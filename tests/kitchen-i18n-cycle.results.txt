@@ -110,3 +110,5 @@ PASS  B and C: zero writes
 PASS  only X written, exactly once (the deliberate Second Check)
 
 ALL 98 CHECKS PASS
+
+network: no request left the local server

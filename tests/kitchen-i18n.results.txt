@@ -85,3 +85,5 @@ PASS  the in-flight write was not duplicated
 PASS  stand-ins B and C untouched
 
 ALL 57 CHECKS PASS
+
+network: no request left the local server
