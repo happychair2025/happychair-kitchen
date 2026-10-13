@@ -1,4 +1,13 @@
 -- ════════════════════════════════════════════════════════════════════════════════════════════
+-- SUPERSEDED — DO NOT APPLY (2026-10-13).
+-- The Product Owner's C4 decision on happychair-admin PR #5 is that carried-over allergy records
+-- are visible but NEVER actionable or alarming on Kitchen, and that FOH/Kitchen cannot record
+-- milestones on them (resolution is a manager disposition). This proposal widens the venue-device
+-- UPDATE policy to carried-over records and makes them lockout-eligible — the opposite.
+-- The server side is happychair-admin migration 20261012100000_carried_over_read_models.sql
+-- (PR #5 / #6), which keeps the venue-device UPDATE policy limited to current-service records.
+-- ════════════════════════════════════════════════════════════════════════════════════════════
+-- ════════════════════════════════════════════════════════════════════════════════════════════
 -- PROPOSAL — NOT APPLIED. W1-3 Safety continuity (Kitchen). For the integrator to review/apply.
 -- Project: hnrojtcctqgtzdrinyvu. Written against the live definitions read on 2026-10-08
 -- (kitchen_board, is_current_service_record, allergyshield_prior_service_backlog_count,
