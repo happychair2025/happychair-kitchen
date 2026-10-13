@@ -1,4 +1,13 @@
 {
   "buildCommand": "node tests/i18n/check-catalog.js",
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "git": {
+    "deploymentEnabled": {
+      "w1/*": false,
+      "w2/*": false,
+      "w3/*": false,
+      "w4/*": false,
+      "w3/carried-over": false
+    }
+  }
 }

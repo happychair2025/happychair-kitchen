@@ -11,7 +11,9 @@
 // (d) a write that hangs → bounded; state reverted; "Not confirmed — tap to check" on the row; the
 //     record sheet says why; a retry with a working connection records exactly once.
 // (e) a carried-over record renders in its own "From Earlier Service" band below Needs You,
-//     labelled and actionable.
+//     labelled, and — Product Owner decision PR #5 — NOT actionable and NEVER alarming: no hold,
+//     no lockout, no alarm, no milestone or delivery write. A manager closes it out in the
+//     Shift Record.
 // (f, j, o, p, q, r) — no client-side merging, alarm-on-ack, stale writes, unknown state, hold
 //     cancellation — live in safety-continuity-2.probe.js (same harness, split for run time).
 // (g) a retry after a timed-out write that DID commit: guarded (IS NULL), matches nothing,
@@ -198,8 +200,10 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
 
  // ── (e) ───────────────────────────────────────────────────────────────────────────────────
  H('(e) CARRIED-OVER RECORD');
- const R5='e5000000-carried',R6='e6000000-current-needs',R7='e7000000-current-working';
- window.__ROWS.push(rowObj(R5,{severity:'severe',table_label:'SP21',zone_name:'Terrace',guest_name:'Yesterday Guest',created_at:ago(60*20),service_instance_id:'s0',carried_over:true}),
+ const R5='e5000000-carried',R6='e6000000-current-needs',R7='e7000000-current-working',R5a='e5a00000-carried-anaph';
+ const alarms0=alarms.length;
+ window.__ROWS.push(rowObj(R5,{severity:'severe',table_label:'SP21',zone_name:'Terrace',guest_name:'Yesterday Guest',created_at:ago(60*20),service_instance_id:'s0',carried_over:true,record_service_date:'2026-10-09',service_label:'Dinner'}),
+   rowObj(R5a,{severity:'anaphylaxis',table_label:'SP22',zone_name:'Terrace',guest_name:'Yesterday Anaph',created_at:ago(60*21),service_instance_id:'s0',carried_over:true,record_service_date:'2026-10-09',service_label:'Dinner'}),
    rowObj(R6,{severity:'discomfort',table_label:'T1',zone_name:'Main Hall',guest_name:'Now Guest'}),
    rowObj(R7,{severity:'severe',table_label:'T2',zone_name:'Main Hall',guest_name:'Working Guest',kitchen_ack_at:ago(0.5),status:'acknowledged'}));
  await until(()=>!!document.querySelector('[data-k="card:'+R5+'"]'),RECONCILE_MS+2000);
@@ -210,12 +214,17 @@ setTimeout(()=>{T.push('WATCHDOG — stalled after the last line above');fetch('
  const hd=document.querySelector('[data-k="sec:carried"]').innerText;
  ok('band labelled "From Earlier Service"',/From Earlier Service/i.test(hd),hd.replace(/\s+/g,' '));
  ok('band explains it is still open',/Still open from an earlier service/.test(document.querySelector('[data-k="carried-note"]').innerText));
- ok('carried record is actionable (Confirm Received hold)',!!document.querySelector('[data-k="card:'+R5+'"] .row .hold-btn'));
+ ok('carried record is NOT actionable (no hold control)',!document.querySelector('[data-k="card:'+R5+'"] .hold-btn')&&!document.querySelector('[data-k="card:'+R5a+'"] .hold-btn'));
+ const r5t=document.querySelector('[data-k="card:'+R5+'"]').innerText;
+ ok('carried row says where it is from and who closes it',/EARLIER SERVICE · Dinner · Oct 9/.test(r5t)&&/Manager closes out/.test(r5t),r5t.replace(/\s+/g,' '));
  ok('not collapsed, not dimmed',getComputedStyle(document.querySelector('[data-k="card:'+R5+'"]')).opacity==='1');
+ ok('a carried-over anaphylaxis record never takes the lockout',lockoutId!==R5a&&lockoutQueue.indexOf(R5a)<0&&lockoutRoutine.indexOf(R5a)<0);
+ await w(1500);checkEscalations();alarmTick();
+ ok('…and never sounds the alarm',alarms.length===alarms0&&!alarmPending(),(alarms.length-alarms0)+' alarms');
  await shot('e-carried-band');
- await hold(document.querySelector('[data-k="card:'+R5+'"] .row .hold-btn'));persist(R5);
- ok('acknowledging it writes once to it',MW(R5).length===1&&!!cards[R5].kitchen_ack_at);
- ok('one delivery write each for R4..R7',[R4,R4b,R5,R6,R7].every(id=>DW(id).length===1));
+ await doAck(R5,'row');await confirmProtocol(R5a,'row');
+ ok('a milestone on a carried-over record writes nothing and says why',MW(R5).length===0&&MW(R5a).length===0&&cards[R5]._error==='err.carried');
+ ok('one delivery write each for R4, R4b, R6, R7 — none for carried-over records',[R4,R4b,R6,R7].every(id=>DW(id).length===1)&&DW(R5).length===0&&DW(R5a).length===0);
 
  // ── (g) ───────────────────────────────────────────────────────────────────────────────────
  H('(g) RETRY AFTER A TIMED-OUT WRITE THAT DID COMMIT');

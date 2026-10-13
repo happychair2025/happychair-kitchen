@@ -349,3 +349,47 @@ lockout on load, queued one at a time — fixture record A now does so at boot):
 used to mean "draw X's lockout now", which is `renderLockout(X,'ack')`; kitchen-milestones'
 "no lockout popped" is asserted as "this action did not change which lockout is up", and Back now
 also asserts that the next waiting lockout opens.
+
+## Carried-over open work (`carried-over.*`)
+
+Run with `node --test tests/carried-over.test.mjs`. It needs no browser, no network and no
+dependencies.
+
+**What runs.** `carried-over.harness.mjs` boots the REAL inline board script in node with:
+
+- a minimal fake DOM;
+- a fake supabase client that serves `kitchen_board()` rows and records every write and
+  realtime handler;
+- a fake `localStorage`;
+- spies on `soundAlarm` (the single entry to the anaphylaxis alarm), `chimeAnaphylaxis` and
+  `chimeStandard`;
+- a check of the lockout and of both lockout queues (`lockoutQueue`, `lockoutRoutine`).
+
+The pure `CARRIED-OVER RULES` block in `index.html` is also tested on its own, extracted by its
+BEGIN/END markers.
+
+**The rule under test** (Product Owner decision, PR #5): a carried-over record is visible, in
+its own labelled band, but never actionable and never alarming. That means:
+
+- no lockout in either queue;
+- no alarm, repeat or escalation;
+- no chime;
+- no milestone write and no delivery write.
+
+**What is covered.** Each case runs against both the CURRENT `kitchen_board()` (no
+`carried_over` column, where behaviour must be unchanged) and the new one (admin migration
+`20261012100000`):
+
+- **Mixed rows:** the band, the row, the read-only record sheet and the summary bar.
+- **Cache restore:** offline, and from a pre-change cache.
+- **Realtime INSERT:** carried rows, both anaphylaxis and routine.
+- **Realtime UPDATE:** the record keeps its flag.
+- **Resync, un-acknowledged lockout:** a record whose lockout is up becomes carried-over; the
+  lockout closes and the record leaves the queue.
+- **Resync, routine lockout:** a record displaced from a routine-step lockout becomes
+  carried-over and never returns.
+- **Writes:** every milestone write is refused, including the `writeDeclaration` defence.
+- **Server rollback** to the current `kitchen_board()`.
+- **Revoked display**, and an **empty / wrong-venue board read**.
+
+Each gate was mutation-checked: removing it fails at least one test.

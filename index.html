@@ -112,6 +112,11 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 /* FROM EARLIER SERVICE — open work a closed service did not complete. Fully actionable and
    never collapsed (C4): it is neutral-labelled, not dimmed, because dimming reads as "done". */
 .carried-note{font-size:13px;color:var(--t2);margin:-4px 0 10px 2px}
+/* Carried over: amber, never red, never pulsing — unresolved, but not this service's urgency. */
+.row.carried{border-color:rgba(245,158,11,.35)}
+.r-carried{flex:0 0 100%;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--warn)}
+.r-carried-note{margin-left:auto;font-size:14px;font-weight:600;color:var(--t2);padding:0 6px}
+.vfy-carried{font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--warn);margin:6px 0 2px}
 /* A write that did not land, stated ON the row. The whole strip opens the record, where the
    hold is — retrying a safety milestone is still a hold, never a tap. */
 .row-retry{display:block;width:100%;margin:-4px 0 8px;padding:8px 12px;border-radius:0 0 8px 8px;cursor:pointer;
@@ -206,8 +211,6 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .lk-also{font-size:16px;font-weight:600;color:var(--t2);margin-bottom:12px;text-align:center}
 .r-also{font-size:12px;font-weight:600;color:var(--t2);white-space:nowrap}
 .vfy-also{font-size:14px;font-weight:600;color:var(--t2);margin:2px 0 4px}
-.lk-carried{font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--t1);
-  border:1px solid var(--b2);border-radius:8px;padding:6px 14px;margin-bottom:14px}
 .lk-note,.vfy-note{max-width:500px;width:100%;margin-bottom:14px;padding:10px 14px;border-radius:8px;text-align:center;
   font-size:17px;font-weight:700;color:var(--t1);border:1px solid var(--b2);background:var(--s2)}
 .vfy-note{max-width:none;font-size:14px;margin:8px 0}
@@ -514,7 +517,12 @@ var I18N={
   'board.working':'In Progress',
   'board.done':'Done This Service',
   'board.carried':'From Earlier Service',
-  'board.carried_note':'Still open from an earlier service. Closing that service did not complete it.',
+  'board.carried_note':'Still open from an earlier service. Closing that service did not complete it. A manager closes these out in the Shift Record.',
+  'row.carried':'EARLIER SERVICE',
+  'row.carried_note':'Manager closes out',
+  'title.carried':'Earlier service — still open',
+  'do.carried':'This record is from an earlier service. Nothing is recorded from this board. A manager closes it out in the Shift Record.',
+  'err.carried':'This record is from an earlier service. A manager closes it out in the Shift Record.',
   'summary.tables.one':'{n} Table',
   'summary.tables.other':'{n} Tables',
   'summary.allergies.one':'{n} Allergy',
@@ -622,7 +630,12 @@ var I18N={
   'board.working':'En curso',
   'board.done':'Terminadas en este servicio',
   'board.carried':'De un servicio anterior',
-  'board.carried_note':'Sigue abierta desde un servicio anterior. Cerrar ese servicio no la completó.',
+  'board.carried_note':'Sigue abierta desde un servicio anterior. Cerrar ese servicio no la completó. Un gerente las cierra en el Shift Record.',
+  'row.carried':'SERVICIO ANTERIOR',
+  'row.carried_note':'La cierra un gerente',
+  'title.carried':'Servicio anterior — sigue abierta',
+  'do.carried':'Este registro es de un servicio anterior. Desde esta pantalla no se registra nada. Un gerente lo cierra en el Shift Record.',
+  'err.carried':'Este registro es de un servicio anterior. Un gerente lo cierra en el Shift Record.',
   'summary.tables.one':'{n} mesa',
   'summary.tables.other':'{n} mesas',
   'summary.allergies.one':'{n} alergia',
@@ -730,7 +743,12 @@ var I18N={
   'board.working':'进行中',
   'board.done':'本餐段已完成',
   'board.carried':'之前餐段遗留',
-  'board.carried_note':'之前餐段遗留，仍未完成。关闭该餐段并不会完成它。',
+  'board.carried_note':'之前餐段遗留，仍未完成。关闭该餐段并不会完成它。由经理在 Shift Record 中结案。',
+  'row.carried':'之前的餐段',
+  'row.carried_note':'由经理结案',
+  'title.carried':'之前的餐段 — 仍未结案',
+  'do.carried':'此记录来自之前的餐段。此屏幕不记录任何操作。由经理在 Shift Record 中结案。',
+  'err.carried':'此记录来自之前的餐段。由经理在 Shift Record 中结案。',
   'summary.tables.one':'{n} 桌',
   'summary.tables.other':'{n} 桌',
   'summary.allergies.one':'{n} 项过敏',
@@ -981,12 +999,54 @@ var CK='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" 
 // venue the CLIENT named; both are answered inside the authenticated board read now —
 // service_kind per row, membership already applied. Deleted rather than left dormant.
 
+// ═══ CARRIED-OVER RULES — BEGIN ════════════════════════════════════════════════════════════
+// Pure functions only (no DOM, no network, no globals). tests/carried-over.test.mjs extracts
+// this block by its BEGIN/END markers and runs it in node — keep it self-contained.
+//
 // Every row the board holds came from kitchen_board(), which applied membership server-side
-// before returning it. A row is either current-service work, or open work an EARLIER service
+// before returning it. A row is either current-service work, or OPEN work an EARLIER service
 // left unresolved — flagged carried_over=true by the server (C4: a service closing never hides
-// unresolved safety work). There is deliberately no age test anywhere. A board read from a
-// server that predates carried_over simply never sets it, and every row reads as current.
-function inCurrentService(c){ return !!c&&!c.carried_over }
+// unresolved safety work; admin migration 20261012100000). There is deliberately no age test
+// anywhere. A board read from a server that predates carried_over never sets it, and every row
+// reads as current — exactly the behaviour before this change. The flag is read as === true.
+//
+// PRODUCT OWNER DECISION (PR #5, binding): a carried-over record is VISIBLE — its own labelled
+// band — but NOT ACTIONABLE and NEVER ALARMING on this board. No lockout (neither queue: the
+// un-acknowledged lockoutQueue nor the routine/displaced lockoutRoutine), no anaphylaxis alarm,
+// no repeating alarm, no escalation chime, no standard chime, no Kitchen milestone, no delivery
+// write. A manager closes it out in the Shift Record (allergyshield_close_record). The venue
+// device cannot write it anyway (the UPDATE policy is current-service only), and a late stamp
+// would be evidence nobody produced at the time.
+function isCarriedOver(c){ return !!(c&&c.carried_over===true) }
+function inCurrentService(c){ return !!c&&!isCarriedOver(c) }
+
+// THE GATE. Every alarm / lockout / chime / escalation eligibility check includes this.
+function alarmEligible(c){ return !!c&&!isCarriedOver(c) }
+
+// The columns kitchen_board() computes. A raw realtime UPDATE row never carries them, and the
+// card keeps its own values (foldDeclaration copies only what the row has). A completed BOARD
+// READ is the truth: a read without them (older kitchen_board, or the server rolled back) clears
+// them, so a stale cached flag cannot outlive its source.
+var BOARD_COMPUTED=['carried_over','record_service_date','service_label'];
+function syncBoardComputed(cur,row){
+  BOARD_COMPUTED.forEach(function(k){ if(row&&k in row)cur[k]=row[k]; else delete cur[k] });
+  return cur;
+}
+
+// "Dinner · Oct 9". record_service_date is a venue calendar date (YYYY-MM-DD) and is formatted
+// AS a calendar date — read in UTC so the browser's timezone can never move it a day.
+function serviceRefText(c,localeTag){
+  var parts=[];
+  if(c&&c.service_label)parts.push(String(c.service_label));
+  var m=c&&typeof c.record_service_date==='string'&&c.record_service_date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m){
+    var dt=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+    try{parts.push(dt.toLocaleDateString(localeTag||'en-US',{month:'short',day:'numeric',timeZone:'UTC'}))}
+    catch(e){parts.push(c.record_service_date)}
+  }
+  return parts.join(' · ');
+}
+// ═══ CARRIED-OVER RULES — END ══════════════════════════════════════════════════════════════
 
 // Still outstanding — nothing has completed it. Read from the row's own stamps so it stays
 // correct between reconciles and immediately after an optimistic local write.
@@ -1191,6 +1251,7 @@ function ingestDeclaration(row,source){
     // A card with a write outstanding is left alone by the board read: folding mid-write would
     // race the optimistic value against a database row that does not have it yet.
     if(!(source==='reconcile'&&cur._writing))foldDeclaration(cur,d);
+    if(source==='reconcile')syncBoardComputed(cur,d);
   }else{
     if(source==='update')return null;          // an UPDATE never introduces a card
     cur=cards[id]=d;isNew=true;cur._seq=++ingestSeq;
@@ -1233,7 +1294,7 @@ function afterIngest(c,source,isNew,prevSig){
     if(wasHeld)showNotice(c.id,'note.superseded');
   }
   if(lockoutEligible(c)){if(enqueueLockout(c.id))soundAlarm()}
-  else if(isNew&&source!=='cache'&&!isAnaph(c.severity))chimeStandard();
+  else if(isNew&&source!=='cache'&&!isAnaph(c.severity)&&alarmEligible(c))chimeStandard();
 }
 
 // The delivery handshake: this record reached this display. Once per record per page life, and
@@ -1241,6 +1302,9 @@ function afterIngest(c,source,isNew,prevSig){
 // Failure is logged and retried on the next ingest; it never blocks or delays ingest itself.
 function recordDelivery(id,d,source){
   if(source==='cache'||source==='update')return;
+  // Not on a carried-over record: the board writes nothing to it (and the venue-device UPDATE
+  // policy is current-service only, so it would be refused).
+  if(isCarriedOver(cards[id]))return;
   if(!paired()||deliveryAttempted[id]||(d&&d.delivered_to_kitchen_at))return;
   deliveryAttempted[id]=true;
   try{
@@ -1260,9 +1324,10 @@ function renderCards(){
 
   // Four bands, and the question the board exists to answer is the first one.
   // Membership comes from the server; openness from the row's own stamps. A record an EARLIER
-  // service left open sits in its own band directly below Needs You — labelled, expanded and
-  // fully actionable. It used to be collapsed to a count under "Earlier", which is hiding.
-  // Once completed here it leaves that band for Done, like any other record.
+  // service left open sits in its own band directly below Needs You — labelled and expanded,
+  // never collapsed to a count (that would be hiding). It is NOT actionable here and never
+  // alarms (PO decision, PR #5): it leaves the band when a manager closes it out in the Shift
+  // Record, through the next board read.
   var cur=visible.filter(function(id){return inCurrentService(cards[id])||!isOpenWork(cards[id])});
   var earlier=visible.filter(function(id){return !inCurrentService(cards[id])&&isOpenWork(cards[id])});
   var needs=cur.filter(function(id){return isOpenWork(cards[id])&&!isAcked(cards[id])});
@@ -1312,6 +1377,10 @@ function renderCards(){
 
     // Always the collapsed geometry now — a row has no expanded form to open into.
     if(!isSrv)rowCls=rowCls.replace('row ','row closed ');
+    // Carried over (PO decision, PR #5): no pulse — not this service's urgency — and no action.
+    // Severity keeps its word and colour; the row says in words where it is from and who closes it.
+    var carried=isCarriedOver(c);
+    if(carried){rowCls='row closed carried';accCol='var(--warn)'}
 
     // THE SINGLE NEXT REQUIRED ACTION on the board — the fast path. The record sheet shows the
     // same one action for the same record, and because the sheet is a full-screen overlay only
@@ -1320,7 +1389,9 @@ function renderCards(){
     // Every one of these stops the event: the row itself is now a control that opens the sheet,
     // so without this, holding a row button would open the sheet on top of the gesture.
     var act='';
-    if(!isSrv){
+    if(carried){
+      act='<div class="r-carried-note">'+th('row.carried_note')+'</div>';
+    }else if(!isSrv){
       if(!acked){
         // The fill was missing here entirely, so the row hold showed no progress at all —
         // the whole of finding 1. A real <button> so it is focusable and keyboard-operable.
@@ -1354,6 +1425,8 @@ function renderCards(){
       +' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openRecord(\''+esc(id)+'\')}">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
     if(isRehearsal(c))h+='<div class="r-reh">'+th('row.rehearsal')+'</div>';
+    if(carried){var ref=serviceRefText(c,LOCALE_TAG[locale]);
+      h+='<div class="r-carried">'+th('row.carried')+(ref?' · '+esc(ref):'')+'</div>'}
     h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||tt('misc.table')).split(' ')[0])+'</div>';
     h+='<div class="r-guest"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc(guestLabel(c))+'</div>';
     h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
@@ -1411,7 +1484,8 @@ function renderCards(){
     var c=cards[id];
     return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,isValidCorrection(c)?1:0,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
-            c.served_at,c._error||'',c._notice||'',c._ackPending?1:0,sameVisitOthers(c),locale].join('|');
+            c.served_at,c._error||'',c._notice||'',c._ackPending?1:0,sameVisitOthers(c),
+            isCarriedOver(c)?1:0,c.service_label,c.record_service_date,locale].join('|');
   }
   function pushCards(list){list.forEach(function(id){
     seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
@@ -1419,7 +1493,7 @@ function renderCards(){
   if(needs.length){ sec('needs','board.needs','red',needs.length); pushCards(needs) }
   // FROM EARLIER SERVICE — below Needs You, above In Progress. Never collapsed.
   if(earlier.length){
-    sec('carried','board.carried','gray',earlier.length);
+    sec('carried','board.carried','amber',earlier.length);
     seq.push({k:'carried-note',sig:locale,cls:'carried-note',html:th('board.carried_note')});
     pushCards(earlier);
   }
@@ -1464,7 +1538,8 @@ function renderGhosts(gIds){
 }
 
 function updateSummary(){
-  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at&&!isSupersededRow(cards[id])});
+  // The current service only. Carried-over work is counted in its own band, never in "need action".
+  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at&&!isSupersededRow(cards[id])&&!isCarriedOver(cards[id])});
   var tables=new Set(),alCount=0,anCount=0,unack=0;
   ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!isAcked(c))unack++});
   var p=[];
@@ -1589,6 +1664,8 @@ function boundWrite(q){
 // time — altering evidence. A guarded write that matches no row sets r.noRow; the caller then
 // re-reads the board to learn whether the milestone is already recorded (see settleNoRow).
 function writeDeclaration(id,patch,guard){
+  // Defence in depth: nothing is ever written to a carried-over record from this board.
+  if(isCarriedOver(cards[id]))return Promise.resolve({data:null,error:{message:'carried over',code:'HC_CARRIED_OVER'}});
   var q=sbv.from('allergen_declarations').update(patch).eq('id',id);
   if(guard&&q&&typeof q.is==='function')q=q.is(guard.col,null);
   if(q&&typeof q.select==='function')q=q.select('id');
@@ -1622,6 +1699,13 @@ function showUnconfirmed(id,field){
 // undone, the board is re-read, and the record is shown as the DATABASE has it, with a notice.
 // A superseded record (by either signal) is history: nothing is written to it. The hold that
 // reached here ends with an honest notice, and the board moves to the successor.
+// A milestone attempted on a carried-over record: nothing is written, the reason is stated.
+function refuseCarried(id){
+  invalidateRecord(id);
+  if(recordFlow&&recordFlow.id===id)recordFlow=null;
+  if(lockoutId===id)closeLockout();
+  showRowError(id,'err.carried');
+}
 function refuseSuperseded(id){
   invalidateRecord(id);
   if(recordFlow&&recordFlow.id===id)recordFlow=null;
@@ -1685,6 +1769,7 @@ async function doAck(id,origin){
   // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
   // known, so nothing is written to it.
   if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -1725,6 +1810,7 @@ async function confirmProtocol(id,origin){
   // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
   // known, so nothing is written to it.
   if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -1755,6 +1841,7 @@ async function verifyDish(id,origin){
   // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
   // known, so nothing is written to it.
   if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -1784,6 +1871,7 @@ async function markServed(id,origin){
   // Restored from this tablet's cache and not yet confirmed by a board read: its state is not
   // known, so nothing is written to it.
   if(c._fromCache){showNotice(id,'note.checking');return}
+  if(isCarriedOver(c)){refuseCarried(id);return}
   if(isSupersededRow(c)){refuseSuperseded(id);return}
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
@@ -2139,6 +2227,8 @@ function renderRecord(){
     return;
   }
 
+  // Carried over: the record, read-only, and who closes it out. No hold, no milestone.
+  if(isCarriedOver(c)){renderCarriedRecord(c,lc);return}
   if(recordFlow&&recordFlow.id!==recordOpenId)recordFlow=null;
   if(recordFlow&&recordFlow.phase==='saving')return;   // never show the next step before the write lands
   if(recordFlow&&recordFlow.phase==='done'&&recordFlow.a==='verify'&&c.verified_at&&!c.served_at){renderSecondCheckDone(c,lc);return}
@@ -2176,6 +2266,24 @@ function renderRecord(){
   lc.innerHTML=h;
 }
 
+
+// A record from an earlier service. Same header, rail and reference as any record, so the cook
+// sees what was declared and how far it got — and then, instead of a hold, the one sentence that
+// says who closes it out. Nothing on this sheet writes.
+function renderCarriedRecord(c,lc){
+  var ref=serviceRefText(c,LOCALE_TAG[locale]);
+  var sig=['carried',c.id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
+           c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,ref,c._error||'',locale].join('|');
+  if(sig===recordSig)return;
+  recordSig=sig;
+  var h=recordHeadHtml(c,'title.carried',false,'');
+  if(ref)h+='<div class="vfy-carried">'+th('row.carried')+' · '+esc(ref)+'</div>';
+  h+=railHtml(c);
+  h+=referenceHtml(c);
+  h+='<div class="vfy-act"><div class="vfy-do">'+th('do.carried')+'</div>'
+    +'<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">'+th('nav.back')+'</button></div>';
+  lc.innerHTML=h;
+}
 
 // Second Check success. Same header, identity lines and rail as the review, so it is
 // unmistakably the SAME record; the rail now shows Second Check complete. Mark Served is
@@ -2230,7 +2338,7 @@ var lockoutQueue=[];
 // not evidence of current state, and a record acknowledged elsewhere since must not come back as a
 // lockout here. The first board read (or realtime row) that carries the record clears the flag,
 // and only then is escalation decided — from database truth.
-function lockoutEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!c.kitchen_ack_at&&!isSupersededRow(c)}
+function lockoutEligible(c){return alarmEligible(c)&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!c.kitchen_ack_at&&!isSupersededRow(c)}
 
 // ── QUEUE POLICY — the ONLY place lockout ordering is decided ─────────────────────────────
 // Product Owner decision (W2-K1, Oct 9 2026): an UN-ACKNOWLEDGED anaphylaxis lockout takes priority
@@ -2252,7 +2360,7 @@ function lockoutEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOp
 //   · The on-screen record acknowledged by ANOTHER display while a routine record waits: it has lost
 //     the priority it was shown for, so the waiting routine record returns (see syncLockouts).
 var lockoutRoutine=[];
-function lockoutRoutineEligible(c){return !!c&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!!c.kitchen_ack_at&&!isSupersededRow(c)}
+function lockoutRoutineEligible(c){return alarmEligible(c)&&!c._fromCache&&isAnaph(c.severity)&&isOpenWork(c)&&!!c.kitchen_ack_at&&!isSupersededRow(c)}
 function lockoutRoutineWaiting(){
   lockoutRoutine=lockoutRoutine.filter(function(q){return q!==lockoutId&&lockoutQueue.indexOf(q)<0&&lockoutRoutineEligible(cards[q])});
   return lockoutRoutine.length;
@@ -2367,7 +2475,7 @@ function advanceLockout(){
 // eligible record not yet held is enqueued (a safety net — ingest already enqueues); a label
 // that arrived after the lockout went up is drawn — but never while a hold is running.
 function syncLockouts(){
-  if(lockoutId&&(!cards[lockoutId]||isSupersededRow(cards[lockoutId])||cards[lockoutId].closed_at||cards[lockoutId].served_at)){closeLockout();}
+  if(lockoutId&&(!cards[lockoutId]||isSupersededRow(cards[lockoutId])||cards[lockoutId].closed_at||cards[lockoutId].served_at||!alarmEligible(cards[lockoutId]))){closeLockout();}
   Object.keys(cards).sort(function(a,b){return new Date(cards[a].created_at)-new Date(cards[b].created_at)})
     .forEach(function(id){if(enqueueLockout(id))soundAlarm()});
   if(lockoutId&&!holdInProgress()){
@@ -2420,6 +2528,9 @@ function renderLockout(id,stage,err){
   var prevStage=lockoutStage,prevErr=lockoutErr,prevBtn=document.querySelector('#lockoutContent .hold-btn');
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
   if(!c)return;
+  // Never for a carried-over record: it could not be cleared from this board. (If it is the one
+  // on screen — it became carried-over — the lockout closes and the next waiting one opens.)
+  if(!alarmEligible(c)){if(lockoutId===id)closeLockout();return}
   var allergens=(c.allergens||[]).join(', '),gn=guestLabel(c);
   var avoidHtml='';
   // Same hit/miss branch and labelling as buildCard. Severity prominence does not
@@ -2446,8 +2557,6 @@ function renderLockout(id,stage,err){
     :'<div class="lockout-sub">'+th('lock.next')+'</div><button type="button" class="lockout-back" onclick="closeLockout()">'+th('nav.back')+'</button>';
   // Order: REHEARSAL first (locked), then where it came from, then how many are waiting.
   lc.innerHTML=(isRehearsal(c)?'<div class="lockout-reh">'+th('reh.full')+'</div>':'')
-    // A record a closed service left open. Stated, so a cook does not read it as a new arrival.
-    +(c.carried_over?'<div class="lk-carried">'+th('board.carried')+'</div>':'')
     +'<div class="lk-queue" id="lkQueue" role="status" hidden></div>'
     +'<div class="lk-also" id="lkAlso" hidden></div>'+done+(err?'<div class="lk-err" role="alert">'+th(err)+'</div>':c._notice?'<div class="lk-note" role="status">'+th(c._notice)+'</div>':'')+'<div class="lockout-title">'+esc(c._assetLabel||tt('misc.table'))+'</div><div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:8px">'+esc(gn)+'</div><div style="font-size:32px;font-weight:800;color:var(--danger);margin-bottom:16px">'+esc(allergens)+'</div><div class="lk-chips" style="display:flex;gap:8px;margin-bottom:12px"><div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('sev.anaphylaxis')+'</div>'+(c.cross_contact?'<div style="padding:6px 14px;border-radius:6px;font-size:16px;font-weight:700;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:var(--danger)">'+th('chip.cross_contact')+'</div>':'')+'</div>'+avoidHtml
     // Guest notes were missing from the lockout entirely. Verbatim, esc()'d, labelled — the
@@ -2515,7 +2624,7 @@ function checkEscalations(){
   // acknowledgement only (see the contract above), so an in-flight or failed attempt does
   // not appear here and cannot suppress a required escalation. Do NOT substitute isAcked()
   // — that predicate includes _ackPending and would restore the false-safety defect.
-  Object.keys(cards).forEach(function(id){var c=cards[id];if(c.kitchen_ack_at||c.closed_at||c.served_at||c._fromCache)return;
+  Object.keys(cards).forEach(function(id){var c=cards[id];if(!alarmEligible(c)||c.kitchen_ack_at||c.closed_at||c.served_at||c._fromCache)return;
     var elapsed=Date.now()-new Date(c.created_at).getTime();var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
     if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity)){if(Date.now()-lastAlarmAt>=1500)soundAlarm()}else chimeStandard()}   // anaphylaxis through the single-flight alarm; an alarm that has just sounded (an arrival in the same moment, e.g. a reconnect read) is not doubled
   });

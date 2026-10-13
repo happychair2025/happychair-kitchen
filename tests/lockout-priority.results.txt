@@ -34,7 +34,7 @@ PASS  no further writes to B
 
 ──── (2b) ARRIVAL DURING AN IN-FLIGHT PREP WRITE — it settles by timing out first ────
 PASS  C's hung write is not interrupted
-PASS  the arrival takes the screen only once the write timed out   → 12661ms
+PASS  the arrival takes the screen only once the write timed out   → 12683ms
 PASS  C reverted (Prep not recorded) and waits in the routine queue
 PASS  C returns at Prep and still says the outcome is unknown   → ALLERGY RECEIVED / No response — couldn't confirm. Hold to try again. / T7 · Terrace / HUNG P.
 PASS  C confirmed on retry; nothing else written
