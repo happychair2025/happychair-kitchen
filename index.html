@@ -109,8 +109,16 @@ body.hc-mode{--bg:#000;--s1:#0a0a0a;--s2:#111;--b:#333;--b2:#555;--b-soft:rgba(5
 .row .r-act--srv{background:var(--s2);border:1px solid var(--b2);color:var(--t1)}
 /* Same table, more than one open submission. A statement of fact, not a merge. */
 .r-el{font-size:12px;color:var(--t3);font-variant-numeric:tabular-nums;margin-left:auto;padding-right:4px}
-/* EARLIER — present, preserved, and quiet. */
-.earlier-l{opacity:.55}
+/* EARLIER — present, preserved, and quiet. Carried-over open work lives here: amber, never
+   red, never pulsing — unresolved, but not this service's urgency. */
+.earlier-l{opacity:.8}
+.sec-sev{font-size:12px;font-weight:800;letter-spacing:.06em;padding:2px 8px;border-radius:5px;margin-left:8px;border:1px solid}
+.sec-sev.r{color:var(--danger);border-color:rgba(239,68,68,.5)}
+.sec-sev.a{color:var(--warn);border-color:rgba(245,158,11,.5)}
+.row.carried{border-color:rgba(245,158,11,.35)}
+.r-carried{flex:0 0 100%;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--warn)}
+.r-carried-note{margin-left:auto;font-size:14px;font-weight:600;color:var(--t2);padding:0 6px}
+.vfy-carried{font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--warn);margin:6px 0 2px}
 .earlier-tg{background:none;border:1px solid var(--b2);color:var(--t2);font:inherit;font-size:12px;
   padding:3px 10px;border-radius:6px;cursor:pointer;margin-left:8px}
 .earlier-note{font-size:13px;color:var(--t3);margin:-4px 0 10px 2px}
@@ -480,7 +488,12 @@ var I18N={
   'board.earlier':'Earlier',
   'board.show':'Show',
   'board.hide':'Hide',
-  'board.earlier_note':'Not part of the service running now. Review in the Shift Record.',
+  'board.earlier_note':'Still open from an earlier service. Not part of the service running now. A manager closes these out in the Shift Record.',
+  'row.carried':'EARLIER SERVICE',
+  'row.carried_note':'Manager closes out',
+  'title.carried':'Earlier service — still open',
+  'do.carried':'This record is from an earlier service. Nothing is recorded from this board. A manager closes it out in the Shift Record.',
+  'err.carried':'This record is from an earlier service. A manager closes it out in the Shift Record.',
   'summary.tables.one':'{n} Table',
   'summary.tables.other':'{n} Tables',
   'summary.allergies.one':'{n} Allergy',
@@ -579,7 +592,12 @@ var I18N={
   'board.earlier':'Anteriores',
   'board.show':'Mostrar',
   'board.hide':'Ocultar',
-  'board.earlier_note':'No forman parte del servicio en curso. Revísalas en el Shift Record.',
+  'board.earlier_note':'Siguen abiertas desde un servicio anterior. No forman parte del servicio en curso. Un gerente las cierra en el Shift Record.',
+  'row.carried':'SERVICIO ANTERIOR',
+  'row.carried_note':'La cierra un gerente',
+  'title.carried':'Servicio anterior — sigue abierta',
+  'do.carried':'Este registro es de un servicio anterior. Desde esta pantalla no se registra nada. Un gerente lo cierra en el Shift Record.',
+  'err.carried':'Este registro es de un servicio anterior. Un gerente lo cierra en el Shift Record.',
   'summary.tables.one':'{n} mesa',
   'summary.tables.other':'{n} mesas',
   'summary.allergies.one':'{n} alergia',
@@ -678,7 +696,12 @@ var I18N={
   'board.earlier':'更早的记录',
   'board.show':'显示',
   'board.hide':'隐藏',
-  'board.earlier_note':'不属于当前餐段。请在 Shift Record 中查看。',
+  'board.earlier_note':'来自之前餐段，仍未结案。不属于当前餐段。由经理在 Shift Record 中结案。',
+  'row.carried':'之前的餐段',
+  'row.carried_note':'由经理结案',
+  'title.carried':'之前的餐段 — 仍未结案',
+  'do.carried':'此记录来自之前的餐段。此屏幕不记录任何操作。由经理在 Shift Record 中结案。',
+  'err.carried':'此记录来自之前的餐段。由经理在 Shift Record 中结案。',
   'summary.tables.one':'{n} 桌',
   'summary.tables.other':'{n} 桌',
   'summary.allergies.one':'{n} 项过敏',
@@ -922,16 +945,102 @@ var earlierOpen=false;
 // venue the CLIENT named; both are answered inside the authenticated board read now —
 // service_kind per row, membership already applied. Deleted rather than left dormant.
 
-// Every row the board holds came from kitchen_board(), which applied current-service
-// membership server-side before returning it. Nothing is left for the client to decide, and
-// there is deliberately no age test anywhere: a record is current because its SERVICE is.
-function inCurrentService(c){ return !!c }
+// ═══ CARRIED-OVER RULES — BEGIN ════════════════════════════════════════════════════════════
+// Pure functions only (no DOM, no network, no globals). tests/carried-over.test.mjs extracts
+// this block by its BEGIN/END markers and runs it in node — keep it self-contained.
+//
+// kitchen_board() returns current-service rows (carried_over=false) and, from migration
+// 20261012100000 on, OPEN rows from a service that is no longer current (carried_over=true).
+// An older kitchen_board() has no carried_over column: every row is then current, which is
+// exactly today's behaviour. The flag is read as `=== true` so absent / null / false all mean
+// current — never the other way round.
+//
+// A carried-over record is unresolved and must stay visible (C4), but it is NOT this
+// service's work: no alarm, no lockout, no chime, no escalation, no Kitchen milestone. The
+// board cannot write it anyway (the venue-device UPDATE policy is current-service only), and
+// a late stamp would be evidence nobody produced at the time. A manager closes it out in the
+// Shift Record.
+function isCarriedOver(c){ return !!(c&&c.carried_over===true) }
+
+// Every row the board holds came from kitchen_board(), which applied membership server-side.
+// There is deliberately no age test anywhere: a record is current because its SERVICE is, and
+// a record from an ended service says so itself.
+function inCurrentService(c){ return !!c&&!isCarriedOver(c) }
 
 // Still outstanding — nothing has completed it. Read from the row's own stamps so it stays
 // correct between reconciles and immediately after an optimistic local write.
 function isOpenWork(c){
   return !!c&&!c.superseded_at&&!c.served_at&&!c.closed_at;
 }
+
+// UI predicate — confirmed OR attempt-in-progress (see the ack-contract comment further down).
+// Safety code must read kitchen_ack_at directly and must NOT use isAcked().
+function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
+
+// THE GATE for every alarm path: escalation chime, anaphylaxis chime, lockout, standard chime.
+// Every caller goes through this, whatever the ingest path (boot cache, reconcile, realtime
+// INSERT/UPDATE).
+function alarmEligible(c){ return !!c&&!isCarriedOver(c) }
+
+// Kitchen milestones (Confirm Received, Confirm Prep, Second Check, Mark Served). Never on a
+// carried-over record.
+function actionable(c){ return !!c&&!isCarriedOver(c)&&isOpenWork(c) }
+
+// A realtime merge folds a continuation into an existing card. Never across the carried-over
+// boundary: same table or same guest does not make an old record part of this service's one.
+function canMergeInto(host,d){ return !!host&&!isCarriedOver(host)&&!isCarriedOver(d) }
+
+// The columns kitchen_board() computes. A raw realtime row never carries them, so an UPDATE
+// must keep the card's own values (exactly as service_kind is kept) — otherwise a carried-over
+// card would silently become "current" on its next write and reach the alarm paths.
+var BOARD_COMPUTED=['carried_over','record_service_date','service_label'];
+function keepBoardComputed(prev,raw){
+  var out={};
+  BOARD_COMPUTED.forEach(function(k){ if(raw&&k in raw)out[k]=raw[k]; else if(prev&&k in prev)out[k]=prev[k] });
+  return out;
+}
+// After a successful board read the server is the truth for these columns: a read without
+// them (older kitchen_board) clears them, so a stale cached flag cannot outlive its source.
+function syncBoardComputed(cur,row){
+  BOARD_COMPUTED.forEach(function(k){ if(row&&k in row)cur[k]=row[k]; else delete cur[k] });
+  return cur;
+}
+
+// Which band a card belongs to. Carried-over never enters NEEDS / WORKING / DONE.
+function boardBand(c){
+  if(isCarriedOver(c))return 'earlier';
+  if(!isOpenWork(c))return 'served';
+  return isAcked(c)?'working':'needs';
+}
+
+// The EARLIER header: its count and the most serious open severity, as a WORD, so the band can
+// be collapsed without hiding what is in it.
+function earlierSummary(list){
+  var n=0,sev=null;
+  (list||[]).forEach(function(c){
+    if(!isCarriedOver(c)||!isOpenWork(c))return;
+    n++;
+    var s=(c.severity||'').toLowerCase();
+    if(s==='anaphylaxis')sev='anaphylaxis';
+    else if(s==='severe'&&sev!=='anaphylaxis')sev='severe';
+  });
+  return {n:n,sev:sev};
+}
+
+// "Dinner · Oct 9". record_service_date is a venue calendar date (YYYY-MM-DD) and is formatted
+// AS a calendar date — read in UTC so the browser's timezone can never move it a day.
+function serviceRefText(c,localeTag){
+  var parts=[];
+  if(c&&c.service_label)parts.push(String(c.service_label));
+  var m=c&&typeof c.record_service_date==='string'&&c.record_service_date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m){
+    var dt=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+    try{parts.push(dt.toLocaleDateString(localeTag||'en-US',{month:'short',day:'numeric',timeZone:'UTC'}))}
+    catch(e){parts.push(c.record_service_date)}
+  }
+  return parts.join(' · ');
+}
+// ═══ CARRIED-OVER RULES — END ══════════════════════════════════════════════════════════════
 
 function toggleEarlier(){earlierOpen=!earlierOpen;renderCards()}
 
@@ -969,8 +1078,7 @@ function guestLabel(c){
 //
 // isAcked() is the UI predicate — confirmed OR attempt-in-progress — so the card still
 // advances the instant the operator finishes the hold. Safety code must use
-// kitchen_ack_at directly and must NOT use isAcked().
-function isAcked(c){return !!(c&&(c.kitchen_ack_at||c._ackPending))}
+// kitchen_ack_at directly and must NOT use isAcked(). (Defined in CARRIED-OVER RULES above.)
 
 // DECLARATION SUPERSESSION.
 // A guest correction does not edit a declaration — it inserts a new one carrying
@@ -1097,6 +1205,10 @@ function renderCards(){
 
     // Always the collapsed geometry now — a row has no expanded form to open into.
     if(!isSrv)rowCls=rowCls.replace('row ','row closed ');
+    // Carried over: no pulse (no urgency for this service), no action. Severity keeps its word
+    // and colour; the row says in words that it belongs to an earlier service.
+    var carried=isCarriedOver(c);
+    if(carried){rowCls='row closed carried';accCol='var(--warn)'}
 
     // THE SINGLE NEXT REQUIRED ACTION on the board — the fast path. The record sheet shows the
     // same one action for the same record, and because the sheet is a full-screen overlay only
@@ -1105,7 +1217,9 @@ function renderCards(){
     // Every one of these stops the event: the row itself is now a control that opens the sheet,
     // so without this, holding a row button would open the sheet on top of the gesture.
     var act='';
-    if(!isSrv){
+    if(carried){
+      act='<div class="r-carried-note">'+th('row.carried_note')+'</div>';
+    }else if(!isSrv){
       if(!acked){
         // The fill was missing here entirely, so the row hold showed no progress at all —
         // the whole of finding 1. A real <button> so it is focusable and keyboard-operable.
@@ -1139,6 +1253,8 @@ function renderCards(){
       +' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openRecord(\''+esc(id)+'\')}">';
     h+='<div class="ac" style="background:'+accCol+'"></div>';
     if(isRehearsal(c))h+='<div class="r-reh">'+th('row.rehearsal')+'</div>';
+    if(carried){var ref=serviceRefText(c,LOCALE_TAG[locale]);
+      h+='<div class="r-carried">'+th('row.carried')+(ref?' · '+esc(ref):'')+'</div>'}
     h+='<div class="r-tbl"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc((c._assetLabel||tt('misc.table')).split(' ')[0])+'</div>';
     h+='<div class="r-guest"'+(isSrv?' style="color:var(--t3)"':'')+'>'+esc(guestLabel(c))+'</div>';
     h+='<div class="r-al" style="color:'+(isSrv?'var(--t3)':sevCol)+'">'+esc(allergens)+'</div>';
@@ -1186,7 +1302,7 @@ function renderCards(){
     var c=cards[id];
     return [c.severity,(c.allergens||[]).join(','),c.guest_name,c.cross_contact,c.supersedes_id,
             c.service_kind,c._assetLabel,c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,
-            c.served_at,c._error||'',c._ackPending?1:0,locale].join('|');
+            c.served_at,c._error||'',c._ackPending?1:0,c.carried_over===true?1:0,c.service_label,c.record_service_date,locale].join('|');
   }
   function pushCards(list){list.forEach(function(id){
     seq.push({k:'card:'+id,sig:cardSig(id),cls:'card-wrap',build:id})})}
@@ -1197,8 +1313,12 @@ function renderCards(){
   // EARLIER — preserved, never deleted, and deliberately quiet. Collapsed to a count so a
   // prior service cannot compete with the one running now.
   if(earlier.length){
-    sec('earlier','board.earlier','gray',earlier.length,
-        '<button class="earlier-tg" onclick="toggleEarlier()">'+th(earlierOpen?'board.hide':'board.show')+'</button>');
+    // The count and the most serious open severity (as a WORD) stay in the header whether the
+    // band is open or collapsed — collapsing it never hides what is in it.
+    var es=earlierSummary(earlier.map(function(id){return cards[id]}));
+    sec('earlier','board.earlier','amber',earlier.length,
+        (es.sev?'<span class="sec-sev '+(es.sev==='anaphylaxis'?'r':'a')+'">'+sevLabel(es.sev)+'</span>':'')
+        +'<button class="earlier-tg" onclick="toggleEarlier()">'+th(earlierOpen?'board.hide':'board.show')+'</button>');
     seq.push({k:'earlier-note',sig:locale,cls:'earlier-note',
       html:th('board.earlier_note')});
     if(earlierOpen)pushCards(earlier);
@@ -1241,7 +1361,9 @@ function renderGhosts(gIds){
 }
 
 function updateSummary(){
-  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at});
+  // The summary bar is the CURRENT service. Carried-over work is counted, with its severity in
+  // words, in the EARLIER header instead — never folded into "needs action" here.
+  var ids=Object.keys(cards).filter(function(id){return !cards[id].closed_at&&!cards[id].served_at&&!isCarriedOver(cards[id])});
   var tables=new Set(),alCount=0,anCount=0,unack=0;
   ids.forEach(function(id){var c=cards[id];tables.add(c.asset_id);alCount+=(c.allergens||[]).length;if(isAnaph(c.severity))anCount++;if(!isAcked(c))unack++});
   var p=[];
@@ -1348,6 +1470,7 @@ function holdKeyUp(e,id,el){
 async function doAck(id,origin){
   if(holdTimers[id]){cancelAnimationFrame(holdTimers[id]);delete holdTimers[id]}
   var c=cards[id];if(!c)return;
+  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1383,6 +1506,7 @@ async function doAck(id,origin){
 
 async function confirmProtocol(id,origin){
   var c=cards[id];if(!c)return;
+  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1405,6 +1529,7 @@ async function confirmProtocol(id,origin){
 
 async function verifyDish(id,origin){
   var c=cards[id];if(!c)return;
+  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1426,6 +1551,7 @@ async function verifyDish(id,origin){
 
 async function markServed(id,origin){
   var c=cards[id];if(!c)return;
+  if(isCarriedOver(c)){showRowError(id,'err.carried');return}   // no milestone on an earlier service's record
   if(!paired()){showRowError(id,'err.not_paired');return}
   if(c._writing)return;
   c._writing=true;
@@ -1772,6 +1898,8 @@ function renderRecord(){
     return;
   }
 
+  // Carried over: the record, read-only, and who closes it out. No hold, no milestone.
+  if(isCarriedOver(c)){renderCarriedRecord(c,lc);return}
   if(recordFlow&&recordFlow.id!==recordOpenId)recordFlow=null;
   if(recordFlow&&recordFlow.phase==='saving')return;   // never show the next step before the write lands
   if(recordFlow&&recordFlow.phase==='done'&&recordFlow.a==='verify'&&c.verified_at&&!c.served_at){renderSecondCheckDone(c,lc);return}
@@ -1809,6 +1937,24 @@ function renderRecord(){
   lc.innerHTML=h;
 }
 
+
+// A record from an earlier service. Same header, rail and reference as any record, so the cook
+// sees exactly what was declared and how far it got — and then, instead of a hold, the one
+// sentence that says who closes it out. Nothing on this sheet writes.
+function renderCarriedRecord(c,lc){
+  var ref=serviceRefText(c,LOCALE_TAG[locale]);
+  var sig=['carried',c.id,c.severity,(c.allergens||[]).join(','),c.cross_contact,c.guest_name,c.notes,c._assetLabel,
+           c.kitchen_ack_at,c.protocol_confirmed_at,c.verified_at,ref,c._error||'',locale].join('|');
+  if(sig===recordSig)return;
+  recordSig=sig;
+  var h=recordHeadHtml(c,'title.carried',false,'');
+  if(ref)h+='<div class="vfy-carried">'+th('row.carried')+' · '+esc(ref)+'</div>';
+  h+=railHtml(c);
+  h+=referenceHtml(c);
+  h+='<div class="vfy-act"><div class="vfy-do">'+th('do.carried')+'</div>'
+    +'<button type="button" class="vfy-back vfy-back--only" onclick="closeRecord()">'+th('nav.back')+'</button></div>';
+  lc.innerHTML=h;
+}
 
 // Second Check success. Same header, identity lines and rail as the review, so it is
 // unmistakably the SAME record; the rail now shows Second Check complete. Mark Served is
@@ -1848,10 +1994,13 @@ function renderServedDone(c,lc){
 var lockoutId=null;
 // Which stage (and error key) the lockout is showing, so a language change redraws it in place.
 var lockoutStage=null,lockoutErr=null;
-function showLockout(id){renderLockout(id,'ack')}
+function showLockout(id){if(!alarmEligible(cards[id]))return;renderLockout(id,'ack')}
 
 function renderLockout(id,stage,err){
   var c=cards[id],lk=document.getElementById('lockout'),lc=document.getElementById('lockoutContent');
+  // The blocking modal never shows a record it cannot be cleared from: a carried-over record
+  // has no acknowledgement on this board. (Also closes one that became carried-over while up.)
+  if(!alarmEligible(c)){if(lockoutId===id)closeLockout();return}
   var allergens=(c.allergens||[]).join(', '),gn=guestLabel(c);
   var avoidHtml='';
   // Same hit/miss branch and labelling as buildCard. Severity prominence does not
@@ -1920,7 +2069,9 @@ function checkEscalations(){
   // acknowledgement only (see the contract above), so an in-flight or failed attempt does
   // not appear here and cannot suppress a required escalation. Do NOT substitute isAcked()
   // — that predicate includes _ackPending and would restore the false-safety defect.
-  Object.keys(cards).forEach(function(id){var c=cards[id];if(c.kitchen_ack_at||c.closed_at||c.served_at)return;
+  // Carried-over records never escalate: they are not this service's acknowledgement window,
+  // and the board cannot acknowledge them (alarmEligible, CARRIED-OVER RULES).
+  Object.keys(cards).forEach(function(id){var c=cards[id];if(!alarmEligible(c))return;if(c.kitchen_ack_at||c.closed_at||c.served_at)return;
     var elapsed=Date.now()-new Date(c.created_at).getTime();var timeout=isAnaph(c.severity)?ACK_TIMEOUT_ANAPH:ACK_TIMEOUT;
     if(elapsed>timeout&&!c._escalated){c._escalated=true;if(isAnaph(c.severity))chimeAnaphylaxis();else chimeStandard()}
   });
@@ -2018,7 +2169,9 @@ async function reconcile(){
     res.data.slice().reverse().forEach(function(d){
       var label=(d.table_label||'T?')+(d.zone_name?' · '+d.zone_name:'');
       var host=mergedInto[d.id];
-      if(host&&cards[host]){foldMergedContent(cards[host],d);return}   // never a second card
+      // never a second card — and never fold across the carried-over boundary
+      if(host&&cards[host]&&canMergeInto(cards[host],d)){foldMergedContent(cards[host],d);return}
+      if(host&&!(cards[host]&&canMergeInto(cards[host],d)))delete mergedInto[d.id];
       // A superseded declaration is history, not an active card. Dropped rather than
       // rendered so a corrected-away allergen or a lowered severity cannot sit on the board
       // next to the current declaration.
@@ -2029,6 +2182,7 @@ async function reconcile(){
         // race the optimistic value against a database row that does not have it yet.
         if(cur._writing)return;
         foldDeclaration(cur,d);
+        syncBoardComputed(cur,d);
         cur._assetLabel=label;
       }else{
         var seed={};Object.keys(d).forEach(function(k){if(k.charAt(0)!=='_')seed[k]=d[k]});
@@ -2051,11 +2205,22 @@ async function reconcile(){
       delete cards[id];delete ghosted[id];delete mergedInto[id];
     });
 
+    // A lockout up for a record that has since become carried-over is closed: it could never be
+    // cleared from this board.
+    if(lockoutId&&!alarmEligible(cards[lockoutId]))closeLockout();
     lastReconcileOk=Date.now();
     setOnline(true);
     renderCards();cacheCards();resetDim();
     return true;
   }finally{reconcileInFlight=false}
+}
+
+// The single alarm decision for a row that just arrived. Every realtime ingest branch calls
+// this instead of chiming / locking out directly, so the carried-over gate cannot be missed.
+function ingestAlert(id){
+  var c=cards[id];
+  if(!alarmEligible(c))return;
+  if(isAnaph(c.severity)){chimeAnaphylaxis();showLockout(id)}else{chimeStandard()}
 }
 
 function startReconcileLoop(){
@@ -2092,12 +2257,13 @@ function subscribe(){
           var prior=cards[d.supersedes_id];
           if(prior){ prior.superseded_at=prior.superseded_at||new Date().toISOString(); delete cards[d.supersedes_id]; }
           cards[d.id]=d; d._updated=true;
-          if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}
+          ingestAlert(d.id);
           renderCards();cacheCards();resetDim();
           return;
         }
         var existing=d.guest_session_id&&Object.keys(cards).find(function(id){
           return cards[id].guest_session_id===d.guest_session_id&&cards[id].asset_id===d.asset_id&&!cards[id].closed_at
+            &&canMergeInto(cards[id],d)   // never into a carried-over card
         });
         if(existing){
           var cur=cards[existing];
@@ -2135,9 +2301,9 @@ function subscribe(){
           // database row still holds the old ack. Without this flag the next reconcile
           // would restore it and silently drop the re-ack requirement.
           cur._reackRequired=true;
-          if(isAnaph(merged)){chimeAnaphylaxis();showLockout(existing)}else{chimeStandard()}
+          ingestAlert(existing);
         }
-        else{cards[d.id]=d;sbv.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});if(isAnaph(d.severity)){chimeAnaphylaxis();showLockout(d.id)}else{chimeStandard()}}
+        else{cards[d.id]=d;sbv.from('allergen_declarations').update({delivered_to_kitchen_at:new Date().toISOString(),device_id:deviceName}).eq('id',d.id).then(function(res){if(res.error)console.error('[kitchen] delivery handshake failed:',res.error)});ingestAlert(d.id)}
         renderCards();cacheCards();resetDim();
       });
     })
@@ -2151,7 +2317,11 @@ function subscribe(){
         // the REHEARSAL badge vanished at Mark Served. Carried only while the row is still
         // stamped to the same instance; a restamp waits for the next board read.
         service_kind:(d.service_instance_id===p.service_instance_id?p.service_kind:undefined),
-        _updated:p._updated,_escalated:p._escalated,_writing:p._writing,_ackPending:p._ackPending,_reackRequired:p._reackRequired,_error:p._error};cards[d.id]=Object.assign(d,ui);
+        _updated:p._updated,_escalated:p._escalated,_writing:p._writing,_ackPending:p._ackPending,_reackRequired:p._reackRequired,_error:p._error};
+        // carried_over / record_service_date / service_label are board-computed too: kept from
+        // the card, so a write on a carried-over record cannot turn it "current" and alarming.
+        Object.assign(ui,keepBoardComputed(p,d));
+        cards[d.id]=Object.assign(d,ui);
       // Database provenance settles a pending attempt.
       if(cards[d.id].kitchen_ack_at)delete cards[d.id]._ackPending;
       Object.keys(cards[d.id]).forEach(function(k){if(cards[d.id][k]===undefined)delete cards[d.id][k]});

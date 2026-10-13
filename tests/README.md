@@ -257,3 +257,32 @@ the 14-state walk (`renders/walk-qa.probe.js`) in each language.
 
 Review matrix: `i18n/KITCHEN_STRINGS_EN_ES_ZH.md` (+ review page), highest-risk terms first.
 Spanish and Chinese stay DRAFT until native speakers who know U.S. restaurant kitchens review them.
+
+## Carried-over open work (`carried-over.*`)
+
+`node --test tests/carried-over.test.mjs`. No browser, no network, no dependencies.
+
+`carried-over.harness.mjs` boots the REAL inline board script in node, with:
+
+- a minimal fake DOM;
+- a fake supabase client that serves `kitchen_board()` rows and records every write and
+  realtime handler;
+- a fake `localStorage`;
+- spies on `chimeAnaphylaxis`, `chimeStandard` and the lockout.
+
+The pure `CARRIED-OVER RULES` block in `index.html` is also tested on its own, extracted by
+its BEGIN/END markers.
+
+Covered, against both the CURRENT `kitchen_board()` (no `carried_over` column, behaviour must
+be unchanged) and the new one (admin migration `20261012100000`):
+
+- mixed current and earlier rows;
+- the EARLIER header, which shows the count and the severity word;
+- read-only carried rows and record sheet;
+- boot cache restore, offline and from a pre-change cache;
+- realtime INSERT, including a flagged row and a new row at the same table and session;
+- realtime UPDATE keeping the flag;
+- reconnect/resync turning a current card carried-over while its lockout is up;
+- every Kitchen milestone write refused;
+- server rollback;
+- revoked display and an empty or wrong-venue board read.
