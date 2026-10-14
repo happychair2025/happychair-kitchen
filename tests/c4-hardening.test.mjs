@@ -273,3 +273,15 @@ test('cache: an in-flight optimistic Served never reaches the cache through anot
   await b.runTimers(10000); await p
 })
 
+test('cache: a milestone the cache holds but the database does NOT is not shown as recorded after the read', async () => {
+  // An optimistic Served (in flight) reached the cache through an unrelated cacheCards() call,
+  // then the tablet reloaded. The database never recorded it.
+  const b = await bootBoard({ cache: { c1: cur({ kitchen_ack_at: ago(40e3), protocol_confirmed_at: ago(30e3), served_at: ago(5e3), status: 'resolved' }) },
+    rows: [cur({ kitchen_ack_at: ago(40e3), protocol_confirmed_at: null, served_at: null, status: 'acknowledged' })] })
+  const c = b.cards().c1
+  assert.equal(c.served_at, null, 'not served — the database says so')
+  assert.equal(c.protocol_confirmed_at, null, 'prep not confirmed — the database says so')
+  assert.equal(c.status, 'acknowledged')
+  assert.match(b.board(), /In Progress/, 'still open work on the board')
+})
+
