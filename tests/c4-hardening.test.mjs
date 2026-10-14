@@ -263,3 +263,13 @@ test('ghost state left by an older build never hides a carried-over record from 
   assert.match(rowOf(b, 'o1'), /EARLIER SERVICE/, 'shown in the band, not minimised to a tab')
   assert.equal(b.els('ghostTabs').innerHTML, '')
 })
+test('cache: an in-flight optimistic Served never reaches the cache through another write path', async () => {
+  const b = await bootBoard({ rows: [cur({ kitchen_ack_at: ago(40e3), protocol_confirmed_at: ago(30e3), verified_at: ago(20e3), status: 'acknowledged' })], writeMode: 'hang' })
+  const p = b.ctx.markServed('c1', 'row')
+  b.setRows([cur({ kitchen_ack_at: ago(40e3), protocol_confirmed_at: ago(30e3), verified_at: ago(20e3), status: 'acknowledged' }), cur({ id: 'z', asset_id: 'az', severity: 'severe' })])
+  await b.realtime('INSERT', raw(cur({ id: 'z', asset_id: 'az', severity: 'severe' })))
+  const cached = JSON.parse(b.store.get('hc_k_cards_v2'))
+  assert.equal(cached.c1.served_at, null, 'the cache holds the database value, not the optimistic one')
+  await b.runTimers(10000); await p
+})
+
