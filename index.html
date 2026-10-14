@@ -1182,6 +1182,16 @@ function ingestDeclaration(row,source){
   if(cur){
     // Any database-sourced row confirms a cache-restored card; from here escalation is decided on
     // database truth.
+    // That includes its milestones. foldDeclaration keeps a held card's own lifecycle stamps
+    // (set-once-forward) to protect THIS page's in-flight optimistic writes — but a card restored
+    // from the cache has none (writes are refused while _fromCache), so its stamps are only what an
+    // earlier page cached. Kept against the database, a stamp the database does not hold (an
+    // optimistic Served cached by an older build, a cache from before a server correction) would
+    // show as recorded for ever. On the first database row the row's own stamps and status win.
+    if(source!=='cache'&&cur._fromCache){
+      LIFECYCLE_TS.forEach(function(k){if(k in d)cur[k]=d[k]});
+      if('status' in d)cur.status=d.status;
+    }
     if(source!=='cache')delete cur._fromCache;
     if(source==='update'&&d.service_instance_id!==undefined&&d.service_instance_id!==cur.service_instance_id){
       // service_kind / carried_over are computed by kitchen_board(), not columns. Kept across a
@@ -1730,12 +1740,12 @@ async function confirmProtocol(id,origin){
   if(c._writing)return;
   c._writing=true;
   var gen=c._gen||0;
-  var prev={protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by};
+  var prev={protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by};c._pre=prev;
   if(origin==='sheet'&&recordOpenId===id)recordFlow={id:id,a:'prep',phase:'saving'};
   c.protocol_confirmed_at=new Date().toISOString();c.protocol_confirmed_by=deviceName;
   renderCards();
   var r=await writeDeclaration(id,{protocol_confirmed_at:c.protocol_confirmed_at,protocol_confirmed_by:c.protocol_confirmed_by},{col:'protocol_confirmed_at'});
-  delete c._writing;lockoutDwell(id);
+  delete c._writing;delete c._pre;lockoutDwell(id);
   if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleStale(id,'protocol_confirmed_at');return}
   if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);c._settling=1;renderCards();await settleNoRow(id,'protocol_confirmed_at','err.prep');return}
   if(r.error){console.error('[kitchen] protocol confirm failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
@@ -1760,12 +1770,12 @@ async function verifyDish(id,origin){
   if(c._writing)return;
   c._writing=true;
   var gen=c._gen||0;
-  var prev={verified_at:c.verified_at,verified_by:c.verified_by};
+  var prev={verified_at:c.verified_at,verified_by:c.verified_by};c._pre=prev;
   if(recordOpenId===id)recordFlow={id:id,a:'verify',phase:'saving'};
   c.verified_at=new Date().toISOString();c.verified_by=deviceName;
   renderCards();
   var r=await writeDeclaration(id,{verified_at:c.verified_at,verified_by:c.verified_by},{col:'verified_at'});
-  delete c._writing;
+  delete c._writing;delete c._pre;
   if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleStale(id,'verified_at');return}
   if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'verified_at','err.verify');return}
   if(r.error){console.error('[kitchen] verify failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
@@ -1789,13 +1799,13 @@ async function markServed(id,origin){
   if(c._writing)return;
   c._writing=true;
   var gen=c._gen||0;
-  var prev={served_at:c.served_at,status:c.status};
+  var prev={served_at:c.served_at,status:c.status};c._pre=prev;
   var inSheet=origin==='sheet'&&recordOpenId===id;
   if(inSheet)recordFlow={id:id,a:'serve',phase:'saving'};
   c.served_at=new Date().toISOString();c.status='resolved';
   renderCards();
   var r=await writeDeclaration(id,{served_at:c.served_at,status:'resolved'},{col:'served_at'});
-  delete c._writing;
+  delete c._writing;delete c._pre;
   if(writeIsStale(id,c,gen)){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleStale(id,'served_at');return}
   if(r.noRow){if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);renderCards();await settleNoRow(id,'served_at','err.serve');return}
   if(r.error){console.error('[kitchen] mark served failed:',r.error);if(recordFlow&&recordFlow.id===id)recordFlow=null;Object.assign(c,prev);
@@ -2549,7 +2559,13 @@ var CACHE_K='hc_k_cards_v2',GHOST_K='hc_k_ghosts_v2';
 // record hidden because something replaced it is still hidden when it is restored after a reload,
 // before any board read.
 var SUPER_K='hc_k_supersession_v1';
-function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cards,function(k,v){return (typeof k==='string'&&k.charAt(0)==='_')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted));
+// A card with a milestone write IN FLIGHT holds an optimistic value the database has not
+// accepted. Realtime, the board read and other cards' writes all call cacheCards() while that
+// write is outstanding, so the cache would hold the optimistic value — and a reload restored it
+// as recorded (§12.4: cache only what the database confirmed). Such a card is cached with its
+// pre-write values (_pre, set by the writer, UI-ephemeral like every underscore field).
+function cacheSnapshot(){var o={};Object.keys(cards).forEach(function(id){var c=cards[id];o[id]=c._writing&&c._pre?Object.assign({},c,c._pre):c});return o}
+function cacheCards(){try{localStorage.setItem(CACHE_K,JSON.stringify(cacheSnapshot(),function(k,v){return (typeof k==='string'&&k.charAt(0)==='_')?undefined:v}));localStorage.setItem(GHOST_K,JSON.stringify(ghosted));
   var meta={},succ={};Object.keys(cards).forEach(function(id){if(rowMeta[id])meta[id]=rowMeta[id];
     if(successorsOf[id]){succ[id]=successorsOf[id];Object.keys(successorsOf[id]).forEach(function(s2){if(rowMeta[s2])meta[s2]=rowMeta[s2]})}});
   localStorage.setItem(SUPER_K,JSON.stringify({m:meta,s:succ}))}catch(e){}}
