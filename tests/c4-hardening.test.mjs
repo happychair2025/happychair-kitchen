@@ -258,3 +258,8 @@ test('cache: corrupt JSON and UI latches from an older build are discarded, not 
   assert.equal(b2.cards().c1._writing, undefined)
   assert.equal(b2.ctx.lockoutId, 'c1', 'escalation decided from the database, not the cached latch')
 })
+test('ghost state left by an older build never hides a carried-over record from EARLIER', async () => {
+  const b = await bootBoard({ ghosts: { o1: true }, rows: [old()] })
+  assert.match(rowOf(b, 'o1'), /EARLIER SERVICE/, 'shown in the band, not minimised to a tab')
+  assert.equal(b.els('ghostTabs').innerHTML, '')
+})

@@ -1319,8 +1319,11 @@ function renderCards(){
   var ids=Object.keys(cards);
   // A superseded record (superseded_at, OR named by a successor's supersedes_id) is history and is
   // not drawn in any band: it is not actionable and is not counted anywhere.
-  var visible=ids.filter(function(id){return !ghosted[id]&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
-  var ghostIds=ids.filter(function(id){return ghosted[id]&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
+  // A carried-over record is never minimised to a ghost tab: C4 says it stays visible in its
+  // band, and a ghost tab is a bare table label in a colour. Ghost state for it can only come
+  // from this tablet's storage (an older build, or the record minimised while it was current).
+  var visible=ids.filter(function(id){return (!ghosted[id]||isCarriedOver(cards[id]))&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
+  var ghostIds=ids.filter(function(id){return ghosted[id]&&!isCarriedOver(cards[id])&&!cards[id].closed_at&&!isSupersededRow(cards[id])});
 
   // Four bands, and the question the board exists to answer is the first one.
   // Membership comes from the server; openness from the row's own stamps. A record an EARLIER
