@@ -393,3 +393,22 @@ its own labelled band, but never actionable and never alarming. That means:
 - **Revoked display**, and an **empty / wrong-venue board read**.
 
 Each gate was mutation-checked: removing it fails at least one test.
+
+## C4 release hardening (`c4-hardening.*`)
+
+Run with `node --test tests/c4-hardening.test.mjs` (same node harness as `carried-over.*`; no
+browser, no network). The harness gained options whose defaults keep the original behaviour:
+`writeMode` (ok / err / norow / hang), `realAlarm` (the real single-flight `soundAlarm`, spying
+on `chimeAnaphylaxis`), `cacheRaw`, `ghosts`, plus captured-timer, channel-status and
+visibilitychange drivers.
+
+Covers: classification from the server flag only; carried-over silent through the REAL alarm
+path and no completed hold on it reaching the network; current anaphylaxis lockout, one alarm,
+repeat; ack / prep / second check / served each writing their own milestone with the chime only
+after success; refused and hung writes reverting exactly (§12.1); channel drop / rejoin and tab
+wake re-reading and deciding from the read; cache restore never fabricating state (carried
+restored as carried; optimistic in-flight values never cached; a cache-restored card takes its
+milestones from the database); ghost state never hiding a carried-over record. 23 checks.
+
+Real-device QA script: `docs/qa/KITCHEN_C4_DEVICE_QA.md`. Translation review package:
+`docs/i18n/C4_TRANSLATION_REVIEW.md`.
