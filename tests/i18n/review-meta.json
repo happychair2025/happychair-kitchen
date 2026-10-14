@@ -746,7 +746,7 @@
  "board.carried": {
   "group": "status",
   "where": "Board section heading, directly below Needs You",
-  "meaning": "Records still open from an earlier service. They still need the kitchen steps.",
+  "meaning": "Records still open from an earlier service. Shown so they are not lost; they are NOT actioned on this board — a manager closes them out in the Shift Record.",
   "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker.",
   "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. 餐段 is used for \"service\" throughout.",
   "priority": null
@@ -754,9 +754,49 @@
  "board.carried_note": {
   "group": "status",
   "where": "Under the From Earlier Service heading",
-  "meaning": "These records are still open; closing the earlier service did not complete them.",
-  "concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not imply the records are finished or archived.",
-  "zh_concern": "Machine draft (W1-3, Oct 8 2026) — not reviewed by a native speaker. Must not imply the records are finished or archived.",
+  "meaning": "These records are still open; closing the earlier service did not complete them; a manager closes them out in the Shift Record (not the kitchen).",
+  "concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must not imply the records are finished or archived. Number agreement: “Sigue abierta … la completó” is singular, “Un gerente las cierra” plural — pick one. “Shift Record” kept in English as the Admin surface name.",
+  "zh_concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must not imply the records are finished or archived. 结案 (close the case) — confirm it reads as a manager's close-out, not as 'resolved'. “Shift Record” kept in English.",
+  "priority": null
+ },
+ "row.carried": {
+  "group": "status",
+  "where": "Board row, carried-over record, before the service name and date (e.g. “EARLIER SERVICE · Dinner · Oct 9”)",
+  "meaning": "This record belongs to an earlier service.",
+  "concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. The service name after it (“Dinner”) comes from the database and is NOT translated.",
+  "zh_concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. The service name after it comes from the database and is NOT translated.",
+  "priority": null
+ },
+ "row.carried_note": {
+  "group": "actions",
+  "where": "Board row, carried-over record, where the action button would be",
+  "meaning": "No action here: a manager closes this record out.",
+  "concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Gender: “La cierra” (feminine) while do.carried says “Este registro … lo cierra” (masculine). Must not read as 'resolved' or 'handled'.",
+  "zh_concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must not read as 'resolved' or 'handled'.",
+  "priority": null
+ },
+ "title.carried": {
+  "group": "status",
+  "where": "Record sheet title for a carried-over record",
+  "meaning": "Opened record is from an earlier service and is still open.",
+  "concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Gender: “sigue abierta” (feminine) vs “registro” (masculine) elsewhere.",
+  "zh_concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. 仍未结案 — confirm it means 'still open', not 'unsolved case'.",
+  "priority": null
+ },
+ "do.carried": {
+  "group": "safety",
+  "where": "Record sheet, in place of the hold button",
+  "meaning": "Nothing can be recorded from this board for this record; a manager closes it out in the Shift Record.",
+  "concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must state that NOTHING is recorded here. “Shift Record” kept in English.",
+  "zh_concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must state that NOTHING is recorded here. “Shift Record” kept in English.",
+  "priority": null
+ },
+ "err.carried": {
+  "group": "errors",
+  "where": "Row / sheet message after a hold was attempted on a carried-over record",
+  "meaning": "The step was not recorded because the record is from an earlier service; a manager closes it out.",
+  "concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must read as 'not recorded', never as an error the cook can retry.",
+  "zh_concern": "Machine draft (C4 carried-over, Oct 2026) — not reviewed by a native speaker. Must read as 'not recorded', never as an error the cook can retry.",
   "priority": null
  },
  "lock.queue": {

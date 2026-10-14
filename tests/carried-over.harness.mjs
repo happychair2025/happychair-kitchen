@@ -59,7 +59,18 @@ function el(id) {
  *   cache       — cards object pre-seeded into localStorage (boot cache restore)
  *   exchange    — 'ok' (paired) | 'revoked' (401) | 'none' (no stored credential)
  */
-export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {}) {
+/*
+ * Options added for the C4 hardening suite (tests/c4-hardening.test.mjs); defaults keep the
+ * original behaviour, so tests/carried-over.test.mjs is unaffected:
+ *   writeMode  — 'ok' (default) | 'err' (PostgREST refusal) | 'norow' (guard matched nothing)
+ *                | 'hang' (never settles; boundWrite's own timer — captured — decides)
+ *   realAlarm  — keep the REAL soundAlarm (single-flight, audio-ready gate) and spy one level
+ *                lower on chimeAnaphylaxis, with the audio context unlocked
+ *   cacheRaw   — a raw string seeded as the card cache (corrupt / foreign caches)
+ *   ghosts     — a ghost map seeded into localStorage (state left by an older build)
+ */
+export async function bootBoard({ rows = [], cache = null, exchange = 'ok', writeMode = 'ok', realAlarm = false,
+  cacheRaw = null, ghosts = null } = {}) {
   const els = new Map()
   const byId = id => { if (!els.has(id)) els.set(id, el(id)); return els.get(id) }
   const store = new Map()
@@ -69,8 +80,12 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
   }
   if (exchange !== 'none') localStorage.setItem('hc_k_venue_device', JSON.stringify({ device_token: 'tok', device_id: 'dev-1' }))
   if (cache) localStorage.setItem('hc_k_cards_v2', JSON.stringify(cache))
+  if (cacheRaw != null) localStorage.setItem('hc_k_cards_v2', cacheRaw)
+  if (ghosts) localStorage.setItem('hc_k_ghosts_v2', JSON.stringify(ghosts))
 
-  const rec = { writes: [], rpcs: [], alarms: [], chimeStd: 0, lockouts: [], handlers: {}, fetches: [] }
+  const rec = { writes: [], rpcs: [], alarms: [], chimeStd: 0, chimeAck: 0, lockouts: [], handlers: {}, fetches: [],
+    status: null, listeners: {}, channels: 0 }
+  let mode = writeMode
   let serve = rows
   const result = v => {
     const p = Promise.resolve(v)
@@ -98,7 +113,10 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
         update(payload) {
           const w = { table, payload, id: null }
           rec.writes.push(w)
-          const r = result({ data: [{ id: 'x' }], error: null })
+          const r = mode === 'err' ? result({ data: null, error: { message: 'permission denied', code: '42501' } })
+            : mode === 'norow' ? result({ data: [], error: null })
+            : mode === 'hang' ? (() => { const q = result(null); const never = new Promise(() => {}); q.then = (a, b) => never.then(a, b); return q })()
+            : result({ data: [{ id: 'x' }], error: null })
           r.eq = (k, v) => { w.id = v; return r }
           r.is = () => r
           return r
@@ -107,9 +125,10 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
       return q
     },
     channel() {
+      rec.channels++
       const ch = {
         on(_t, spec, fn) { rec.handlers[spec.event] = fn; return ch },
-        subscribe(cb) { if (cb) cb('SUBSCRIBED'); return ch },
+        subscribe(cb) { rec.status = cb; if (cb) cb('SUBSCRIBED'); return ch },
       }
       return ch
     },
@@ -122,7 +141,8 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
     Date, Intl, JSON, Math, Promise, Object, Array, String, Number, Boolean, RegExp, Error, Set, Map, URLSearchParams, AbortController,
     setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length },
     clearTimeout() {}, setInterval: (fn, ms) => { timers.push({ fn, ms, every: true }); return timers.length }, clearInterval() {},
-    requestAnimationFrame: () => 0, cancelAnimationFrame() {}, addEventListener() {}, removeEventListener() {},
+    requestAnimationFrame: () => 0, cancelAnimationFrame() {},
+    addEventListener(t, fn) { (rec.listeners['window:' + t] ||= []).push(fn) }, removeEventListener() {},
     localStorage,
     location: { search: '', hostname: 'kitchen.test', href: 'https://kitchen.test/' },
     navigator: { userAgent: 'node' },
@@ -138,7 +158,7 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
   }
   const document = {
     getElementById: byId, querySelector: () => byId('__q'), querySelectorAll: () => [],
-    createElement: () => el(null), addEventListener() {}, hidden: false,
+    createElement: () => el(null), addEventListener(t, fn) { (rec.listeners['document:' + t] ||= []).push(fn) }, hidden: false,
     documentElement: { style: { setProperty() {} }, lang: 'en' }, body: byId('__body'), title: '',
   }
   ctx.document = document
@@ -150,9 +170,17 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
   // calls resolve through these replacements.
   // soundAlarm() is the single entry to the anaphylaxis alarm (first sound, repeat, escalation);
   // chimeAnaphylaxis is spied too in case any path reaches it directly.
-  ctx.soundAlarm = () => { rec.alarms.push(Date.now()); return true }
+  if (realAlarm) {
+    // The real single-flight soundAlarm, with the audio context unlocked; the sound itself is
+    // the spy. A captured setTimeout(…, 0) plays it — run with runTimers(0).
+    ctx.audioReady = true
+    ctx.ctx = { state: 'running', currentTime: 0, resume: async () => {} }
+  } else {
+    ctx.soundAlarm = () => { rec.alarms.push(Date.now()); return true }
+  }
   ctx.chimeAnaphylaxis = () => rec.alarms.push(Date.now())
   ctx.chimeStandard = () => { rec.chimeStd++ }
+  ctx.chimeAck = () => { rec.chimeAck++ }
   const realRender = ctx.renderLockout
   ctx.renderLockout = function (id, stage, err) {
     const before = ctx.lockoutId
@@ -164,6 +192,20 @@ export async function bootBoard({ rows = [], cache = null, exchange = 'ok' } = {
   return {
     ctx, rec, els: byId,
     setRows(r) { serve = r },
+    setWriteMode(m) { mode = m },
+    timers,
+    /** Run (once) every captured one-shot timer whose delay is <= ms. Intervals never run. */
+    async runTimers(ms = 0) {
+      const due = timers.filter(t => !t.every && !t.ran && t.ms <= ms)
+      due.forEach(t => { t.ran = true; t.fn() })
+      await flush()
+      return due.length
+    },
+    /** Fire a realtime channel status, as realtime-js does on drop / rejoin. */
+    async channelStatus(s) { rec.status(s); await flush() },
+    /** Fire a window or document event the board listens for (e.g. 'document:visibilitychange'). */
+    async fire(key) { (rec.listeners[key] || []).forEach(fn => fn({})); await flush() },
+    store,
     cards: () => ctx.cards,
     lockoutOn: () => byId('lockout').classList.contains('on'),
     async reconcile() { const r = await ctx.reconcile(); await flush(); return r },
