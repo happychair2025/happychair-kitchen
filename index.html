@@ -1182,6 +1182,16 @@ function ingestDeclaration(row,source){
   if(cur){
     // Any database-sourced row confirms a cache-restored card; from here escalation is decided on
     // database truth.
+    // That includes its milestones. foldDeclaration keeps a held card's own lifecycle stamps
+    // (set-once-forward) to protect THIS page's in-flight optimistic writes — but a card restored
+    // from the cache has none (writes are refused while _fromCache), so its stamps are only what an
+    // earlier page cached. Kept against the database, a stamp the database does not hold (an
+    // optimistic Served cached by an older build, a cache from before a server correction) would
+    // show as recorded for ever. On the first database row the row's own stamps and status win.
+    if(source!=='cache'&&cur._fromCache){
+      LIFECYCLE_TS.forEach(function(k){if(k in d)cur[k]=d[k]});
+      if('status' in d)cur.status=d.status;
+    }
     if(source!=='cache')delete cur._fromCache;
     if(source==='update'&&d.service_instance_id!==undefined&&d.service_instance_id!==cur.service_instance_id){
       // service_kind / carried_over are computed by kitchen_board(), not columns. Kept across a
