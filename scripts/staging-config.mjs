@@ -22,7 +22,10 @@
 //   node scripts/staging-config.mjs                  on Vercel (VERCEL=1): rewrites index.html in
 //                                                    the build checkout only when staging.
 //                                                    Locally: validates and prints the target.
-//   node scripts/staging-config.mjs --out <dir>      writes <dir>/index.html (LAN device QA).
+//   node scripts/staging-config.mjs --out <dir>      writes <dir>/index.html (LAN device QA). Needs the
+//                                                    staging pair; without it the command FAILS.
+//   node scripts/staging-config.mjs --out <dir> --production
+//                                                    writes the production board on purpose.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -71,6 +74,15 @@ export function resolveTarget({ vercelEnv = '', url: rawUrl, key: rawKey } = {})
   return { target: 'staging', url, key }
 }
 
+/** Staging-only offsets for the overlays anchored to the top of the viewport (strip = 22px). */
+export const STAGING_CSS = [
+  '.vfy{top:calc(var(--hdr-h,52px) + 22px)!important}',
+  '.ghost-tabs{top:74px!important}',
+  '.lockout,.audio-prompt{top:22px!important}',
+  '.lk-lang{top:36px!important}',
+  '.i18n-fail{top:22px!important}',
+].join('')
+
 /** The staging replacement for the two config lines. Keeps the same two globals. */
 export function stagingBlock(url, key) {
   return [
@@ -84,6 +96,9 @@ export function stagingBlock(url, key) {
     `var s=document.createElement('div');s.id='hcStaging';s.setAttribute('role','status');s.textContent='STAGING \\u2014 test data only \\u2014 not a live kitchen';`,
     `s.style.cssText='position:fixed;top:0;left:0;right:0;height:22px;z-index:2147483647;background:#b45309;color:#fff;font:700 13px/22px system-ui,sans-serif;letter-spacing:.06em;text-align:center;pointer-events:none';`,
     `document.body.insertBefore(s,document.body.firstChild);var a=document.getElementById('app');if(a){a.style.height='calc(100vh - 22px)';a.style.marginTop='22px';}`,
+    // Every fixed overlay that is anchored to the top of the viewport moves below the strip, so the
+    // strip never covers a card, the lockout, the verify sheet, the ghost tabs or a language switch.
+    `var c=document.createElement('style');c.id='hcStagingCss';c.textContent=${JSON.stringify(STAGING_CSS)};document.head.appendChild(c);`,
     `document.title='[STAGING] '+document.title;})();`,
   ].join('\n')
 }
@@ -114,6 +129,15 @@ function main() {
   try { res = configure(readFileSync(src, 'utf8'), env) }
   catch (e) { console.error(`[staging guard] ${e.message}`); process.exit(1) }
   if (outDir) {
+    const wantProduction = process.argv.includes('--production')
+    if (res.target !== 'staging' && !wantProduction) {
+      console.error('[staging guard] --out needs the STAGING pair (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY); pass --production to write the production board on purpose')
+      process.exit(1)
+    }
+    if (res.target === 'staging' && wantProduction) {
+      console.error('[staging guard] --production was passed but the variables name staging; refusing')
+      process.exit(1)
+    }
     mkdirSync(outDir, { recursive: true })
     writeFileSync(join(outDir, 'index.html'), res.html)
     console.log(`[staging-config] ${res.target} → ${join(outDir, 'index.html')}`)

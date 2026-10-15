@@ -86,15 +86,16 @@ function runBlock(hostname) {
   const appended = []
   const app = { style: {} }
   const body = { innerHTML: '', firstChild: null, insertBefore: el => appended.push(el) }
+  const styles = []
   const document = {
-    title: 'HC Kitchen', body,
+    title: 'HC Kitchen', body, head: { appendChild: el => styles.push(el) },
     createElement: () => ({ style: {}, setAttribute() {}, textContent: '' }),
     getElementById: id => (id === 'app' ? app : null),
   }
   const ctx = vm.createContext({ document, location: { hostname } })
   let error = null
   try { vm.runInContext(stagingBlock(STAGING_URL, STAGING_KEY), ctx) } catch (e) { error = e }
-  return { error, appended, document, body, ctx }
+  return { error, appended, document, body, ctx, styles }
 }
 
 test('a staging build refuses to start on a production Kitchen host', () => {
@@ -114,6 +115,8 @@ test('a staging build shows a STAGING strip on every other host', () => {
     assert.match(r.appended[0].textContent, /STAGING/)
     assert.match(r.document.title, /^\[STAGING\] /)
     assert.equal(r.ctx.SUPABASE_URL, STAGING_URL)
+    assert.equal(r.styles.length, 1, 'staging overlay offsets are installed')
+    for (const sel of ['.vfy', '.ghost-tabs', '.lockout', '.audio-prompt', '.lk-lang', '.i18n-fail']) assert.ok(r.styles[0].textContent.includes(sel), sel)
   }
 })
 
@@ -130,6 +133,19 @@ test('CLI: a misconfigured Preview build exits non-zero; --out writes a staging 
   assert.equal(ok.status, 0, ok.stderr)
   const written = readFileSync(join(dir, 'index.html'), 'utf8')
   assert.ok(written.includes(STAGING_URL) && !written.includes(PRODUCTION_REF))
+  // --out without the staging pair FAILS (it used to write the production board silently)
+  const dir2 = mkdtempSync(join(tmpdir(), 'hc-kitchen-noenv-'))
+  const noEnv = spawnSync(process.execPath, [script, '--out', dir2], { env: clean, encoding: 'utf8' })
+  assert.equal(noEnv.status, 1)
+  assert.match(noEnv.stderr, /--out needs the STAGING pair/)
+  assert.throws(() => readFileSync(join(dir2, 'index.html')), 'nothing was written')
+  // --production writes the production board on purpose, byte for byte
+  const prod = spawnSync(process.execPath, [script, '--out', dir2, '--production'], { env: clean, encoding: 'utf8' })
+  assert.equal(prod.status, 0, prod.stderr)
+  assert.ok(Buffer.from(readFileSync(join(dir2, 'index.html'), 'utf8')).equals(Buffer.from(HTML)))
+  // --production with staging variables is a contradiction → refused
+  const both = spawnSync(process.execPath, [script, '--out', dir2, '--production'], { env: { ...clean, VITE_SUPABASE_URL: STAGING_URL, VITE_SUPABASE_ANON_KEY: STAGING_KEY }, encoding: 'utf8' })
+  assert.equal(both.status, 1)
   // the repo's index.html is untouched by a local run
   assert.ok(Buffer.from(readFileSync(join(root, 'index.html'), 'utf8')).equals(Buffer.from(HTML)))
 })
