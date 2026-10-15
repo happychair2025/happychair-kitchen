@@ -49,7 +49,8 @@ export function resolveTarget({ vercelEnv = '', url: rawUrl, key: rawKey } = {})
   const url = clean(rawUrl), key = clean(rawKey)
   const ref = key ? keyRef(key) : null
   if (vercelEnv === 'production') {
-    if ((url && url !== PRODUCTION_URL) || (key && ref !== PRODUCTION_REF)) {
+    // The URL decides where data goes; a key only fails the build if it decodes to another project.
+    if ((url && url !== PRODUCTION_URL) || (ref !== null && ref !== PRODUCTION_REF)) {
       throw new Error('production build was given non-production VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY; remove them from the Production environment')
     }
     return { target: 'production' }

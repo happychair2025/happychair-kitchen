@@ -47,6 +47,8 @@ test('a production build given staging (or any non-production) variables fails',
   assert.throws(() => resolveTarget({ vercelEnv: 'production', url: STAGING_URL, key: STAGING_KEY }), /production build/)
   assert.throws(() => resolveTarget({ vercelEnv: 'production', key: STAGING_KEY }), /production build/)
   assert.throws(() => resolveTarget({ vercelEnv: 'production', url: STAGING_URL }), /production build/)
+  // an unreadable (non-JWT) key cannot redirect anything: production is not broken by it
+  assert.equal(resolveTarget({ vercelEnv: 'production', key: 'sb_publishable_abc' }).target, 'production')
 })
 
 test('a Preview build is staging or it fails', () => {
