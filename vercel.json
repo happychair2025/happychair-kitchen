@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node tests/i18n/check-catalog.js",
+  "buildCommand": "node tests/i18n/check-catalog.js && node scripts/staging-config.mjs",
   "outputDirectory": ".",
   "git": {
     "deploymentEnabled": {
