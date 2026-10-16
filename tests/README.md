@@ -412,3 +412,17 @@ milestones from the database); ghost state never hiding a carried-over record. 2
 
 Real-device QA script: `docs/qa/KITCHEN_C4_DEVICE_QA.md`. Translation review package:
 `docs/i18n/C4_TRANSLATION_REVIEW.md`.
+
+## Staging configuration (`staging-config.test.mjs`)
+
+`node --test tests/staging-config.test.mjs` — proves `scripts/staging-config.mjs` (run by the
+Vercel `buildCommand`) leaves `index.html` byte for byte on every production path, that a
+staging build differs only in the two config lines it replaces (staging project, STAGING strip,
+refusal on a production Kitchen host), and that a misconfigured Preview or a production build
+given staging variables fails. `--out` needs the staging pair (or `--production`, on purpose).
+
+`node tests/staging-strip.run.mjs` builds a staging board with a staging-SHAPED key (never a real
+one) and runs `staging-strip.probe.js` in the offline harness: in a real Chrome the 22px strip
+covers no text on the board, the lockout (and its language switch) or the record sheet, and every
+top-anchored overlay starts below it. Results: `staging-strip.results.txt`.
+Runbook: `happychair-admin/docs/staging/THREE_APP_STAGING.md`.

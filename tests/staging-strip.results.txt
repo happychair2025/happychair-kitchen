@@ -1,0 +1,24 @@
+PASS  STAGING strip present   → STAGING — test data only — not a live kitchen
+PASS  strip is the top 22px   → [0,22]
+PASS  title says [STAGING]   → [STAGING] HC Kitchen · AllergyShield™
+PASS  fixture cards rendered   → 3 cards
+PASS  board: strip covers no text
+PASS  header starts below the strip   → top=22
+PASS  lockout open
+PASS  lockout starts below the strip   → top=22
+PASS  lockout card below the strip   → top=86
+PASS  lockout: strip covers no text
+PASS  lockout language switch below the strip   → top=36
+PASS  record sheet open
+PASS  record sheet starts below the header + strip   → top=75 hdr=53
+PASS  record sheet: strip covers no text
+PASS  .ghost-tabs top at or below the strip   → top=74
+PASS  .audio-prompt top at or below the strip   → top=22
+PASS  .i18n-fail top at or below the strip   → top=22
+PASS  .vfy top at or below the strip   → top=75
+PASS  final: strip covers no text
+PASS  no page errors
+
+20 passed, 0 failed
+
+network: no request left the local server
