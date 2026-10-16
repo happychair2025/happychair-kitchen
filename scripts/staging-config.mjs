@@ -90,7 +90,7 @@ export function stagingBlock(url, key) {
     `var SUPABASE_KEY='${key}';`,
     `// STAGING BUILD (scripts/staging-config.mjs). Never runs on a production Kitchen host.`,
     `var HC_STAGING=true;`,
-    `(function(){var p=${JSON.stringify(PRODUCTION_HOSTS)};if(p.indexOf(location.hostname.toLowerCase())!==-1){`,
+    `(function(){var p=${JSON.stringify(PRODUCTION_HOSTS)};if(p.indexOf(String(location.hostname).toLowerCase().replace(/\\.+$/,''))!==-1){`,
     `document.body.innerHTML='<div style="padding:40px;font:600 22px system-ui;color:#fff;background:#7f1d1d;min-height:100vh">STAGING build on a production Kitchen host. Refusing to start.</div>';`,
     `throw new Error('staging build on production host');}`,
     `var s=document.createElement('div');s.id='hcStaging';s.setAttribute('role','status');s.textContent='STAGING \\u2014 test data only \\u2014 not a live kitchen';`,
