@@ -1,6 +1,6 @@
 # Kitchen staging candidate (phase 1)
 
-**Status:** prepared and tested on 2026-10-16. **Not deployed.** No `staging/kitchen` branch
+**Status:** prepared and tested on 2026-10-16; updated the same day after the review of #4 (trailing-dot host fix merged, all checks re-run). **Not deployed.** No `staging/kitchen` branch
 exists yet. Nothing here was merged into `main`, pushed to `staging/*`, or applied to any
 database. Runbook: `happychair-admin` `docs/staging/THREE_APP_STAGING.md`. The production
 hotfix gate (`docs/release/KITCHEN_RELEASE_GATE.md`) is **not** exercised or changed by this.
@@ -12,8 +12,11 @@ hotfix gate (`docs/release/KITCHEN_RELEASE_GATE.md`) is **not** exercised or cha
 | Production (`main`, deployed) | `cf39eb1dde294fe88bd23cd2f63ee8e99d6e0eb8` |
 | Base: `w3/staging-config` (#4; contains #1 `2517905` and #2 `ee45dbf`) | `1d881f73f29da73e69a6e1b0ed2a7587db7fdb6f` |
 | Merged: `w3/kitchen-release-gate` (#3, cache hotfix) | `9af0306e0a238041ec5a5af6e977c597c7040d36` |
-| Candidate code (merge commit) | `07a9135fb620ac36fc9b81b74a7e91c93267d48e` |
-| Candidate head (`w3/staging-candidate`) | the commit that adds this file. Its only parent is `07a9135` and it changes nothing else |
+| First candidate code (merge commit) | `07a9135fb620ac36fc9b81b74a7e91c93267d48e` |
+| First candidate head (added this file) | `b0123ae` |
+| Merged after review: `w3/staging-config` (#4) head, adds the trailing-dot host fix `decedd3` | `decedd33be3652a8b368075df52aeb5267e2e71e` |
+| **Candidate code** (merge commit of `decedd3` into `b0123ae`) | `6234fc39dcdae5b3daa38594a6250b09f8ca8e28` |
+| **Candidate head** (`w3/staging-candidate`) | the commit that updates this file. Its only parent is `6234fc3` and it changes nothing else |
 
 ### Merge order and conflicts
 
@@ -26,6 +29,11 @@ hotfix gate (`docs/release/KITCHEN_RELEASE_GATE.md`) is **not** exercised or cha
      cherry-picks of `cf02eae` / `fed9387`, which #2 already carries.
    - Net effect of the merge: two new files only, `docs/release/KITCHEN_RELEASE_GATE.md` and
      `tests/cache-hotfix.test.mjs`.
+3. Commit this file (`b0123ae`).
+4. `git merge w3/staging-config` (`decedd3`), no conflicts. Net effect against `b0123ae`:
+   `scripts/staging-config.mjs` (1 line: the staging block's host refusal now lowercases **and**
+   strips trailing dots) and `tests/staging-config.test.mjs` (case + trailing-dot cases). No
+   change to `index.html` and no change to production output.
 
 **Why the hotfix belongs on the staging candidate: yes.** The fixes are already in the board
 code via #2, so the merge adds no runtime change; it adds the hotfix's own test suite (the
@@ -42,11 +50,11 @@ produces no Preview. `staging/*` is not named, so `staging/kitchen` will deploy.
 | Check | Result |
 |---|---|
 | `node tests/i18n/check-catalog.js` | pass (111 keys × 3 locales) |
-| `node --test tests/*.test.mjs` (staging-config, c4-hardening, carried-over, cache-hotfix) | **67/67** |
-| `node tests/staging-strip.run.mjs` (headless Chrome, offline) | **20 passed / 0 failed**, no request left the local server |
-| `sh tests/harness/run-all.sh` (every current offline probe) | **all pass**: copy 84, i18n-cycle 98, i18n 57, layout 15 runs × 97, milestones 72, record-sheet 83, second-check-success 48, sheet-coherence 20, ux-pass 42, i18n-boot 3 × 5, safety-continuity 88, safety-continuity-2 81, cold 11, lockout-priority 75. The regenerated `*.results.txt` differed only in timings and timestamps and were not committed |
+| `node --test tests/*.test.mjs` (staging-config, c4-hardening, carried-over, cache-hotfix) | **67/67** (re-run at `6234fc3`) |
+| `node tests/staging-strip.run.mjs` (headless Chrome, offline) | **20 passed / 0 failed**, no request left the local server (re-run at `6234fc3`) |
+| `sh tests/harness/run-all.sh` (every current offline probe; run at `07a9135`, not re-run after `decedd3`, which changes no board code: `index.html` is identical) | **all pass**: copy 84, i18n-cycle 98, i18n 57, layout 15 runs × 97, milestones 72, record-sheet 83, second-check-success 48, sheet-coherence 20, ux-pass 42, i18n-boot 3 × 5, safety-continuity 88, safety-continuity-2 81, cold 11, lockout-priority 75. The regenerated `*.results.txt` differed only in timings and timestamps and were not committed |
 
-### Builds (the Vercel `buildCommand`, run in a clean `git archive` of the candidate with `VERCEL=1`)
+### Builds (the Vercel `buildCommand`, run in a clean `git archive` of the candidate with `VERCEL=1`; re-run at `6234fc3`, same results)
 
 | Environment | Result |
 |---|---|
@@ -98,12 +106,24 @@ aborted (the supabase-js CDN included, so the board cannot reach any project).
 | staging | `https://happychair-kitchen-staging.vercel.app/` | runs; strip "STAGING — test data only — not a live kitchen"; title `[STAGING] HC Kitchen…` |
 | production | both hosts | runs, no strip (Kitchen has no production-on-staging-host refusal by design; the board's config is fixed at build time) |
 
-**Gap found (not fixed here):** the staging refusal does **not** strip a trailing dot.
-`https://happychair-kitchen.vercel.app./` runs the staging board (with its strip, talking to
-staging only). THREE_APP_STAGING.md says a trailing dot is ignored in all four apps; for Kitchen
-it is not. Low risk (the board still shows STAGING and still targets staging only). Fix, if
-wanted, in `scripts/staging-config.mjs` `stagingBlock`: compare
-`location.hostname.toLowerCase().replace(/\.+$/,'')`, plus a test.
+**Trailing-dot gap: fixed in `decedd3`.** The first run found that `https://happychair-kitchen.vercel.app./`
+(the FQDN form of the production host) ran the staging board. The staging block now compares
+`location.hostname.toLowerCase().replace(/\.+$/,'')`.
+
+Re-run at `6234fc3`. Method: Chromium headless shell 1193. The built staging `index.html` (Preview
+build, staging-shaped key) was served by a local HTTPS server (self-signed, `--ignore-certificate-errors`),
+and `--host-resolver-rules=MAP * 127.0.0.1` sent every hostname to it, so nothing left the machine.
+Each page was loaded at the real hostname and its rendered DOM was checked: a refused page's body
+is replaced, so the board script and `#cardArea` are gone; an allowed page has the rendered
+`<div id="hcStaging">`.
+
+| Bundle | Host | Result |
+|---|---|---|
+| staging | `happychair-kitchen.vercel.app` | **refused** |
+| staging | `happychair-kitchen.vercel.app.` | **refused** (was: ran) |
+| staging | `HAPPYCHAIR-KITCHEN.VERCEL.APP.` | **refused** |
+| staging | `happychair-kitchen-staging.vercel.app` and `…staging.vercel.app.` | runs, strip present |
+| staging, **pre-fix** build (`1d881f7`), control | `happychair-kitchen.vercel.app.` | ran (the gap reproduces), so the check is sensitive |
 
 ## Later: creating `staging/kitchen` (NOT run now)
 
@@ -112,8 +132,8 @@ has neither variable) and founder approval.
 
 ```sh
 git fetch origin
-git rev-parse origin/w3/staging-candidate^            # must print 07a9135fb620ac36fc9b81b74a7e91c93267d48e
-git diff --stat 07a9135 origin/w3/staging-candidate   # must list only docs/release/STAGING_CANDIDATE.md
+git rev-parse origin/w3/staging-candidate^            # must print 6234fc39dcdae5b3daa38594a6250b09f8ca8e28
+git diff --stat 6234fc3 origin/w3/staging-candidate   # must list only docs/release/STAGING_CANDIDATE.md
 git push origin origin/w3/staging-candidate:refs/heads/staging/kitchen   # creates it; never --force
 ```
 
