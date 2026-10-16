@@ -99,7 +99,8 @@ function runBlock(hostname) {
 }
 
 test('a staging build refuses to start on a production Kitchen host', () => {
-  for (const h of PRODUCTION_HOSTS) {
+  // case and the FQDN trailing-dot form are the same host and must be refused too
+  for (const h of PRODUCTION_HOSTS.flatMap(x => [x, x.toUpperCase(), `${x}.`, `${x.toUpperCase()}..`])) {
     const r = runBlock(h)
     assert.match(String(r.error), /staging build on production host/)
     assert.match(r.body.innerHTML, /Refusing to start/)
