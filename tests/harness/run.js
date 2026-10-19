@@ -15,6 +15,7 @@
 // Screenshots: GET /__shot?n=name → <shots>/<name>.png. Results: POST /__results.
 'use strict';
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),{spawn}=require('child_process');
+const {evaluateProbe}=require('./result-status.cjs');
 const ROOT=path.join(__dirname,'..','..');
 const arg=k=>{const a=process.argv.find(x=>x.startsWith('--'+k+'='));return a?a.slice(k.length+3):null};
 const probeFile=path.resolve(process.argv[2]);
@@ -22,6 +23,8 @@ const query=arg('query')??'inst=1';
 const fixture=path.resolve(arg('fixture')||path.join(ROOT,'tests','record-sheet.fixture.js'));
 const out=arg('out'),shots=arg('shots')||path.join(ROOT,'..','shots-kitchen'),TIMEOUT=+(arg('timeout')||240000);
 const CHROME=process.env.CHROME||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+// Never let a previous passing report survive a failed or interrupted new run.
+if(out)fs.rmSync(out,{force:true});
 
 function page(){
   let h=fs.readFileSync(process.env.KITCHEN_INDEX||path.join(ROOT,'index.html'),'utf8');
@@ -89,9 +92,11 @@ const srv=http.createServer(async(q,s)=>{
   }
   got.then(b=>{clearTimeout(to);
     const tail='\n\nnetwork: '+(blocked.length?blocked.length+' request(s) blocked — '+[...new Set(blocked)].join(', '):'no request left the local server');
-    console.log(b+tail);if(out)fs.writeFileSync(out,b+tail+'\n');
+    const evaluation=evaluateProbe(b,{probeServed,blocked});
+    const report=b+(evaluation.ok?'':'\nFAIL  HARNESS RESULT INVALID: '+evaluation.reason);
+    console.log(report+tail);if(out)fs.writeFileSync(out,report+tail+'\n');
     kill();srv.close();
-    process.exit(/^FAIL |HARNESS TIMEOUT|WATCHDOG|stalled after/m.test(b)?1:0)});
+    process.exit(evaluation.ok?0:1)});
   for(let attempt=0;attempt<START_TRIES&&!probeServed;attempt++){
     const t0=Date.now();
     try{await Promise.race([launch(attempt),new Promise((_,j)=>setTimeout(()=>j(new Error('start-up timed out')),START_MS))])}
