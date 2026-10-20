@@ -298,11 +298,11 @@ body.dimmed .summary{opacity:.3}
 <button class="hdr-btn" id="contrastBtn" onclick="toggleContrast()" title="Contrast" data-i18n-title="hdr.contrast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"/></svg></button>
 </div>
 </div>
-<div class="offline-banner" id="offlineBanner" data-i18n="offline.banner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
+<div class="offline-banner on" id="offlineBanner" data-i18n="offline.banner">OFFLINE — NOT RECEIVING ALLERGY ALERTS</div>
 <div class="lockout" id="lockout"><div class="lockout-card" id="lockoutContent"></div></div>
 <div class="vfy" id="verify"><div class="vfy-card" id="verifyContent"></div></div>
 <div class="vfy" id="pair"><div class="vfy-card" id="pairContent"></div></div>
-<div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text" data-i18n="board.empty">No Active Allergies</div></div></div>
+<div class="main" id="cardArea"><div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text" data-i18n="board.unverified">Allergy status unverified</div></div></div>
 <div class="ghost-tabs" id="ghostTabs"></div>
 <div class="summary" id="summaryBar"></div>
 </div>
@@ -513,6 +513,7 @@ var I18N={
   'status.pair_title':'Pair this display',
   'offline.banner':'OFFLINE — NOT RECEIVING ALLERGY ALERTS',
   'board.empty':'No Active Allergies',
+  'board.unverified':'Allergy status unverified',
   'board.needs':'Needs You',
   'board.working':'In Progress',
   'board.done':'Done This Service',
@@ -626,6 +627,7 @@ var I18N={
   'status.pair_title':'Vincular esta pantalla',
   'offline.banner':'SIN CONEXIÓN — NO SE ESTÁN RECIBIENDO ALERTAS DE ALERGIAS',
   'board.empty':'No hay alergias activas',
+  'board.unverified':'Estado de alergias sin verificar',
   'board.needs':'Requiere acción',
   'board.working':'En curso',
   'board.done':'Terminadas en este servicio',
@@ -739,6 +741,7 @@ var I18N={
   'status.pair_title':'配对此显示屏',
   'offline.banner':'已离线 — 收不到新的过敏提醒',
   'board.empty':'当前没有过敏记录',
+  'board.unverified':'过敏记录状态尚未核实',
   'board.needs':'需要处理',
   'board.working':'进行中',
   'board.done':'本餐段已完成',
@@ -1366,7 +1369,7 @@ function renderCards(){
   needs.sort(sSort);working.sort(sSort);served.sort(sSort);earlier.sort(sSort);
 
   if(!needs.length&&!working.length&&!served.length&&!earlier.length&&!ghostIds.length){
-    area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">'+th('board.empty')+'</div></div>';
+    area.innerHTML='<div class="empty"><svg width="64" height="80" viewBox="0 0 72.71 90.04" opacity=".3"><path style="fill:var(--cyan)" d="M36.36,0C16.28,0,.6,16.3.01,36.36c-.64,21.77,29.31,48.22,35.31,53.29.61.52,1.48.52,2.08,0,5.96-4.98,35.31-30.65,35.31-53.31C72.71,16.27,56.43,0,36.36,0z"/><path fill="#fff" d="M25.11,17.28c0-1.61,1.3-2.91,2.91-2.91s2.91,1.3,2.91,2.91v12.86h13.77c1.61,0,2.91,1.3,2.91,2.91v14.3c0,1.6-1.3,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-11.4h-10.86v11.98c0,1.6-1.31,2.91-2.91,2.91s-2.91-1.31-2.91-2.91v-30.65z"/><path fill="#fff" d="M56.41,54.42c-3.84,7.64-11.53,12.39-20.07,12.39s-16.31-4.87-20.07-12.4c-.71-1.44-.12-3.18,1.31-3.9,1.44-.71,3.18-.12,3.9,1.31,2.77,5.57,8.61,9.18,14.86,9.18s12.02-3.52,14.87-9.19c.73-1.43,2.47-2.01,3.9-1.28,1.44.71,2.02,2.47,1.3,3.9z"/></svg><div class="empty-text">'+th(online?'board.empty':'board.unverified')+'</div></div>';
     updateSummary();resetDim();syncLockouts();return;
   }
 
@@ -2691,7 +2694,15 @@ function loadCache(){try{
     Object.keys(sr.m).forEach(function(id){rowMeta[id]=Object.assign(rowMeta[id]||{},sr.m[id])});
     Object.keys(sr.s).forEach(function(id){successorsOf[id]=Object.assign(successorsOf[id]||{},sr.s[id])})}}catch(e){}
   if(c){var o=JSON.parse(c);Object.keys(o).forEach(function(id){noteRow(o[id])});Object.keys(o).forEach(function(id){ingestDeclaration(o[id],'cache')})}}catch(e){}}
-function setOnline(v){online=v;var hb=document.getElementById('heartbeat');var bn=document.getElementById('offlineBanner');if(v){hb.className='hb ok';bn.classList.remove('on')}else{hb.className='hb off';bn.classList.add('on')}}
+function setOnline(v){
+  online=v;
+  var hb=document.getElementById('heartbeat'),bn=document.getElementById('offlineBanner');
+  if(v){hb.className='hb ok';bn.classList.remove('on')}
+  else{hb.className='hb off';bn.classList.add('on')}
+  // Empty is only a verified absence after a successful board read.
+  var empty=document.querySelector('#cardArea .empty-text');
+  if(empty)empty.textContent=th(v?'board.empty':'board.unverified');
+}
 
 // Bounds a READ at READ_TIMEOUT_MS. `fetch` has no default timeout and supabase-js sets
 // none, so without this a half-open connection stalls the request forever — the await
@@ -2778,6 +2789,10 @@ async function reconcile(opts){
     setOnline(true);
     renderCards();cacheCards();resetDim();
     return true;
+  }catch(e){
+    console.error('[kitchen] reconcile exception:',e);
+    setOnline(false);
+    return false;
   }finally{reconcileInFlight=false;
     if(reconcileAgain){reconcileAgain=false;setTimeout(function(){reconcile()},0)}}
 }
